@@ -7,11 +7,11 @@ on:
   pull_request:
     branches:
       - main
+  workflow_dispatch:  # lets you manually trigger a run from the Actions tab
 
 jobs:
   test:
     runs-on: ubuntu-latest
-
     steps:
       - name: Checkout repository
         uses: actions/checkout@v4
