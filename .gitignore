@@ -22,3 +22,9 @@ dist-ssr
 *.njsproj
 *.sln
 *.sw?
+
+# Agent & Context
+.agents/
+.agent/
+.context
+.context/
