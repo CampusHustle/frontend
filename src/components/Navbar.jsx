@@ -1,6 +1,7 @@
 import { useState } from 'react'
 import { IconMenu2, IconX } from '@tabler/icons-react'
 import Logo from './Logo.jsx'
+import { label } from 'motion/react-client'
 
 const links = [
   { label: 'How it works', href: '#how-it-works' },
