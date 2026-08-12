@@ -1,9 +1,6 @@
 @import "tailwindcss";
 
 @theme {
-  --font-display: "Space Grotesk", ui-sans-serif, system-ui, sans-serif;
-  --font-sans: "DM Sans", ui-sans-serif, system-ui, sans-serif;
-
   --color-ink-950: #0a0a0c;
   --color-ink-900: #101014;
   --color-ink-850: #14141a;
@@ -22,73 +19,117 @@
   --color-hustle-600: #f59e0b;
   --color-hustle-700: #d97706;
 
-  --animate-marquee: marquee 36s linear infinite;
-  --animate-float: float 7s ease-in-out infinite;
-  --animate-float-slow: float 10s ease-in-out infinite;
-  --animate-pulse-dot: pulse-dot 2.4s ease-in-out infinite;
-}
+  --color-ink-contrast: #1a1200;
 
-@keyframes marquee {
-  from {
-    transform: translateX(0);
-  }
-  to {
-    transform: translateX(-50%);
-  }
-}
+  --font-display: "Montserrat Variable", "Montserrat", sans-serif;
+  --font-body: "Inter Variable", "Inter", sans-serif;
 
-@keyframes float {
-  0%,
-  100% {
-    transform: translateY(0);
-  }
-  50% {
-    transform: translateY(-14px);
-  }
-}
+  --animate-marquee: marquee 34s linear infinite;
+  --animate-float: float 6s ease-in-out infinite;
+  --animate-float-slow: float 9s ease-in-out infinite;
 
-@keyframes pulse-dot {
-  0%,
-  100% {
-    opacity: 1;
+  @keyframes marquee {
+    from {
+      transform: translateX(0);
+    }
+    to {
+      transform: translateX(-50%);
+    }
   }
-  50% {
-    opacity: 0.35;
+
+  @keyframes float {
+    0%,
+    100% {
+      transform: translateY(0);
+    }
+    50% {
+      transform: translateY(-10px);
+    }
   }
 }
 
-@media (prefers-reduced-motion: reduce) {
-  .animate-marquee,
-  .animate-float,
-  .animate-float-slow,
-  .animate-pulse-dot {
-    animation: none;
+@utility font-display {
+  font-family: var(--font-display);
+}
+
+@variant light (&:where(.light, .light *));
+
+/*
+ * Light mode. The ink scale is inverted (dark surfaces become light, light
+ * text becomes dark) so every component flips without per-class overrides.
+ * --color-white / --color-black are also swapped so white-alpha borders and
+ * subtle fills become dark-alpha in light mode. ink-contrast is the one
+ * non-inverting token: it stays dark for text sitting on amber accents.
+ */
+.light {
+  --color-ink-950: #f6f6f7;
+  --color-ink-900: #ffffff;
+  --color-ink-850: #ffffff;
+  --color-ink-800: #f3f3f4;
+  --color-ink-700: #ececef;
+  --color-ink-600: #d4d4da;
+  --color-ink-400: #a1a1ac;
+  --color-ink-300: #6a6a75;
+  --color-ink-200: #45454f;
+  --color-ink-100: #26262f;
+  --color-ink-50: #14141a;
+  --color-white: #0a0a0c;
+  --color-black: #f6f6f7;
+}
+
+@media (prefers-color-scheme: light) {
+  :root:not(.dark) {
+    --color-ink-950: #f6f6f7;
+    --color-ink-900: #ffffff;
+    --color-ink-850: #ffffff;
+    --color-ink-800: #f3f3f4;
+    --color-ink-700: #ececef;
+    --color-ink-600: #d4d4da;
+    --color-ink-400: #a1a1ac;
+    --color-ink-300: #6a6a75;
+    --color-ink-200: #45454f;
+    --color-ink-100: #26262f;
+    --color-ink-50: #14141a;
+    --color-white: #0a0a0c;
+    --color-black: #f6f6f7;
   }
 }
 
-body {
-  @apply bg-ink-950 font-sans text-ink-100 antialiased;
-  font-feature-settings: "ss01";
-}
+@layer base {
+  html {
+    scroll-behavior: smooth;
+  }
 
-::selection {
-  background-color: var(--color-hustle-500);
-  color: #1a1200;
-}
+  body {
+    background-color: var(--color-ink-950);
+    color: var(--color-ink-100);
+    font-family: var(--font-body);
+    font-size: 16px;
+    line-height: 1.5;
+    -webkit-font-smoothing: antialiased;
+    text-rendering: optimizeLegibility;
+  }
 
-::-webkit-scrollbar {
-  width: 10px;
-}
+  ::selection {
+    background-color: var(--color-hustle-500);
+    color: #1a1200;
+  }
 
-::-webkit-scrollbar-track {
-  background: var(--color-ink-950);
-}
+  :focus-visible {
+    outline: 2px solid var(--color-hustle-500);
+    outline-offset: 2px;
+    border-radius: 4px;
+  }
 
-::-webkit-scrollbar-thumb {
-  background: var(--color-ink-700);
-  border-radius: 8px;
-}
+  @media (prefers-reduced-motion: reduce) {
+    html {
+      scroll-behavior: auto;
+    }
 
-::-webkit-scrollbar-thumb:hover {
-  background: var(--color-ink-600);
+    .animate-marquee,
+    .animate-float,
+    .animate-float-slow {
+      animation: none;
+    }
+  }
 }
