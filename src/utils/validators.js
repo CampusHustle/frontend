@@ -1,11 +1,21 @@
 const EMAIL_REGEX = /^[^\s@]+@[^\s@]+\.[^\s@]+$/
 
-export function validateEmail(email) {
+export function validateUsername(username) {
+  if (!username || username.trim() === '') {
+    return 'Username is required'
+  }
+  return null
+}
+
+export function validateEduEmail(email) {
   if (!email || email.trim() === '') {
     return 'Email is required'
   }
   if (!EMAIL_REGEX.test(email)) {
     return 'Enter a valid email address'
+  }
+  if (!email.trim().toLowerCase().endsWith('.edu')) {
+    return 'Email must end in .edu'
   }
   return null
 }
@@ -30,9 +40,9 @@ export function validateConfirmPassword(password, confirm) {
   return null
 }
 
-export function validateName(name) {
-  if (!name || name.trim() === '') {
-    return 'Name is required'
+export function validateTerms(checked) {
+  if (!checked) {
+    return 'You must agree to the terms to continue'
   }
   return null
 }

@@ -2,7 +2,19 @@
 
 @theme {
   --font-display: "Space Grotesk", ui-sans-serif, system-ui, sans-serif;
-  --font-sans: "DM Sans", ui-sans-serif, system-ui, sans-serif;
+  --font-heading: "Montserrat", ui-sans-serif, system-ui, sans-serif;
+  --font-sans: "Inter", ui-sans-serif, system-ui, sans-serif;
+
+  --color-primary: #041534;
+  --color-secondary-container: #feae2c;
+  --color-on-secondary-container: #6b4500;
+  --color-surface: #f8f9fa;
+  --color-surface-container-lowest: #ffffff;
+  --color-surface-container-low: #f3f4f5;
+  --color-outline-variant: #c5c6cf;
+  --color-error: #ba1a1a;
+  --color-error-container: #ffdad6;
+  --color-on-error-container: #93000a;
 
   --color-ink-950: #0a0a0c;
   --color-ink-900: #101014;
@@ -67,13 +79,28 @@
 }
 
 body {
-  @apply bg-ink-950 font-sans text-ink-100 antialiased;
-  font-feature-settings: "ss01";
+  @apply bg-surface font-sans text-primary antialiased;
+}
+
+.material-symbols-outlined {
+  font-family: "Material Symbols Outlined";
+  font-weight: normal;
+  font-style: normal;
+  line-height: 1;
+  letter-spacing: normal;
+  text-transform: none;
+  display: inline-block;
+  white-space: nowrap;
+  word-wrap: normal;
+  direction: ltr;
+  -webkit-font-feature-settings: "liga";
+  -webkit-font-smoothing: antialiased;
+  font-variation-settings: "FILL" 0, "wght" 400, "GRAD" 0, "opsz" 24;
 }
 
 ::selection {
-  background-color: var(--color-hustle-500);
-  color: #1a1200;
+  background-color: var(--color-primary);
+  color: var(--color-surface-container-lowest);
 }
 
 ::-webkit-scrollbar {
@@ -81,14 +108,14 @@ body {
 }
 
 ::-webkit-scrollbar-track {
-  background: var(--color-ink-950);
+  background: var(--color-surface);
 }
 
 ::-webkit-scrollbar-thumb {
-  background: var(--color-ink-700);
+  background: var(--color-outline-variant);
   border-radius: 8px;
 }
 
 ::-webkit-scrollbar-thumb:hover {
-  background: var(--color-ink-600);
+  background: var(--color-secondary-container);
 }
