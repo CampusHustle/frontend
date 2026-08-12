@@ -17,10 +17,12 @@ export default function MarketplacePage() {
 
       <div className="mt-4 flex w-full items-center gap-2 sm:mt-0 sm:w-auto max-[224px]:mt-3 max-[224px]:flex-col max-[224px]:items-stretch">
         <span className="text-sm text-gray-500 max-[224px]:text-xs">Sort by:</span>
-        <select className="w-full min-w-0 rounded-md border border-gray-300 bg-white px-3 py-1.5 text-sm shadow-sm transition focus:outline-none focus:ring-2 focus:ring-blue-500 sm:w-auto max-[224px]:px-2 max-[224px]:py-1 max-[224px]:text-[10px]">
-          <option>Most Popular</option>
-          <option>Newest</option>
-          <option>Price: Low to High</option>
+        <select
+          className="w-full min-w-0 rounded-md border border-yellow-300 bg-white px-3 py-1.5 text-sm text-black shadow-sm transition focus:border-yellow-600 focus:outline-none focus:ring-2 focus:ring-yellow-400 sm:w-auto max-[224px]:px-2 max-[224px]:py-1 max-[224px]:text-[10px]"
+        >
+          <option className="bg-white text-black">Most Popular</option>
+          <option className="bg-white text-black">Newest</option>
+          <option className="bg-white text-black">Price: Low to High</option>
         </select>
       </div>
     </div>
