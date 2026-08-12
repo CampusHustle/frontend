@@ -1,7 +1,22 @@
 import { IconArrowRight } from '@tabler/icons-react'
+import { motion, useReducedMotion } from 'motion/react'
 import Reveal from './Reveal.jsx'
 
-export default function FinalCta() {
+export default function FinalCta({ onNavigate }) {
+  const reduce = useReducedMotion()
+
+  const handleNav = (targetView) => (e) => {
+    e.preventDefault()
+    if (onNavigate) onNavigate(targetView)
+  }
+
+  const ctaProps = reduce
+    ? {}
+    : {
+        whileHover: { y: -2 },
+        whileTap: { scale: 0.97 },
+      }
+
   return (
     <section
       id="start"
@@ -13,7 +28,7 @@ export default function FinalCta() {
       />
       <div className="relative mx-auto max-w-3xl">
         <Reveal>
-          <h2 className="font-display text-4xl font-semibold leading-[1.02] tracking-tight text-ink-50 sm:text-6xl lg:text-7xl">
+          <h2 className="pb-1 font-display text-4xl font-semibold leading-[1.1] tracking-tight text-ink-50 sm:text-6xl lg:text-7xl">
             Ready to make
             <br />
             your campus <span className="italic text-hustle-500">pay?</span>
@@ -23,22 +38,25 @@ export default function FinalCta() {
             this week.
           </p>
           <div className="mt-10 flex flex-wrap items-center justify-center gap-4">
-            <a
-              href="#top"
-              className="group inline-flex items-center gap-2 rounded-full bg-hustle-500 px-8 py-4 font-semibold text-ink-950 transition-[background-color,transform] duration-200 hover:bg-hustle-400 active:scale-[0.98]"
+            <motion.a
+              {...ctaProps}
+              href="#"
+              onClick={handleNav('signup')}
+              className="group inline-flex items-center gap-2 rounded-full bg-hustle-500 px-8 py-4 font-semibold text-ink-contrast transition-[background-color] duration-200 hover:bg-hustle-400"
             >
-              Join the hustle
+              Start hustling
               <IconArrowRight
                 size={18}
                 className="transition-transform duration-200 group-hover:translate-x-0.5"
               />
-            </a>
-            <a
-              href="#how-it-works"
+            </motion.a>
+            <motion.a
+              {...ctaProps}
+              href="#gigs"
               className="inline-flex items-center gap-2 rounded-full border border-white/15 px-7 py-4 font-semibold text-ink-100 transition-colors duration-200 hover:border-white/30 hover:bg-white/5"
             >
               See it in action
-            </a>
+            </motion.a>
           </div>
         </Reveal>
       </div>

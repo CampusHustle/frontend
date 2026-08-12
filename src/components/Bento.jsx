@@ -13,7 +13,7 @@ const CELL_C_IMG = 'https://picsum.photos/seed/campus-hustle-friends/600/600'
 function CellShell({ className = '', children }) {
   return (
     <div
-      className={`relative overflow-hidden rounded-3xl border border-white/10 ${className}`}
+      className={`relative overflow-hidden rounded-3xl border border-white/10 transition-[border-color,transform,box-shadow] duration-300 hover:-translate-y-1 hover:border-white/20 hover:shadow-[0_24px_60px_-24px_rgba(0,0,0,0.8)] ${className}`}
     >
       {children}
     </div>
@@ -61,17 +61,17 @@ function CellB() {
     <CellShell className="flex min-h-[280px] flex-col justify-between bg-hustle-500 p-7 md:min-h-[320px]">
       <div className="flex items-start justify-between">
         <span className="flex size-11 items-center justify-center rounded-2xl bg-ink-950/15">
-          <IconWallet size={22} className="text-ink-950" />
+          <IconWallet size={22} className="text-ink-contrast" />
         </span>
-        <span className="font-display text-6xl font-bold leading-none text-ink-950/20">
+        <span className="font-display text-6xl font-bold leading-none text-ink-contrast/20">
           $
         </span>
       </div>
       <div>
-        <h3 className="font-display text-2xl font-bold leading-tight tracking-tight text-ink-950 lg:text-3xl">
+        <h3 className="font-display text-2xl font-bold leading-tight tracking-tight text-ink-contrast lg:text-3xl">
           Get paid fast
         </h3>
-        <p className="mt-2 max-w-xs text-sm leading-relaxed text-ink-950/80">
+        <p className="mt-2 max-w-xs text-sm leading-relaxed text-ink-contrast/80">
           Money lands in your account within 24 hours of a gig marked done. No
           hidden fees, no withdrawal minimums.
         </p>
@@ -137,7 +137,7 @@ function CellD() {
             Can you shoot the club fair on Saturday?
           </div>
           <div className="w-fit max-w-[80%] rounded-2xl rounded-bl-md bg-white/8 px-4 py-2.5 text-[13px] leading-snug text-ink-100">
-            Yeah — I'll do it for $30. Meet at 9am on the quad?
+            Deal. $30 and I'll meet you at 9am on the quad.
           </div>
         </div>
         <p className="text-xs text-ink-400">
@@ -166,7 +166,7 @@ function CellE() {
           4.9 average
         </p>
         <p className="mt-1.5 text-sm text-ink-300">
-          Both sides rate each other after every gig — so the best hustlers
+          Both sides rate each other after every gig. The best hustlers
           rise to the top.
         </p>
       </div>

@@ -1,20 +1,26 @@
+import {
+  IconArrowUpRight,
+  IconCurrencyDollar,
+  IconPlus,
+  IconUserSearch,
+} from '@tabler/icons-react'
 import Reveal from './Reveal.jsx'
 
 const steps = [
   {
-    number: '01',
+    icon: IconPlus,
     title: 'Post a gig or skill',
-    body: 'Tell your campus what you can do. List a service in under two minutes — no resume required.',
+    body: 'Tell your campus what you can do. List a service in under two minutes, no resume required.',
   },
   {
-    number: '02',
+    icon: IconUserSearch,
     title: 'Get matched',
     body: 'Nearby students bid on your gig. Compare offers, check ratings, and chat in-app before you commit.',
   },
   {
-    number: '03',
+    icon: IconCurrencyDollar,
     title: 'Get paid',
-    body: 'Money is released to your account within days of delivery. No chasing invoices, no drama.',
+    body: 'Money lands in your account within days of delivery. No chasing invoices, no drama.',
   },
 ]
 
@@ -34,13 +40,10 @@ export default function HowItWorks() {
 
       <div className="mt-14 border-t border-white/10">
         {steps.map((step, i) => (
-          <Reveal key={step.number} delay={i * 0.06}>
-            <div className="group grid gap-4 border-b border-white/10 py-10 transition-colors duration-300 md:grid-cols-[140px_1fr_1fr] md:items-baseline md:gap-10 lg:py-12">
-              <span
-                className="font-display text-5xl font-bold tracking-tight text-transparent transition-colors duration-300 group-hover:text-hustle-500 lg:text-6xl"
-                style={{ WebkitTextStroke: '1.5px var(--color-ink-600)' }}
-              >
-                {step.number}
+          <Reveal key={step.title} delay={i * 0.06}>
+            <div className="group grid gap-5 border-b border-white/10 py-9 transition-colors duration-300 md:grid-cols-[80px_1fr_1.2fr_auto] md:items-center md:gap-8 lg:py-11">
+              <span className="flex size-14 items-center justify-center rounded-2xl border border-white/10 bg-ink-900 text-hustle-500 transition-colors duration-300 group-hover:border-hustle-500/40">
+                <step.icon size={22} />
               </span>
               <h3 className="font-display text-xl font-semibold tracking-tight text-ink-50 sm:text-2xl">
                 {step.title}
@@ -48,6 +51,10 @@ export default function HowItWorks() {
               <p className="max-w-md text-base leading-relaxed text-ink-300">
                 {step.body}
               </p>
+              <IconArrowUpRight
+                size={22}
+                className="hidden text-ink-600 transition-all duration-300 group-hover:translate-x-1 group-hover:-translate-y-1 group-hover:text-hustle-500 md:block"
+              />
             </div>
           </Reveal>
         ))}
