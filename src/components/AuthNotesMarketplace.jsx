@@ -1,9 +1,8 @@
-// src/components/AuthNotesMarketplace.jsx
 import React from 'react';
 import AuthNoteCard from './AuthNoteCard';
 
 export default function AuthNotesMarketplace() {
-    // The fake database for authenticated users
+    {/*The fake database for authenticated users*/}
     const authDummyNotes = [
         {
             id: 1,
