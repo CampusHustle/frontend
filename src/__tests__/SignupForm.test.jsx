@@ -1,7 +1,7 @@
 import { describe, it, expect } from 'vitest'
 import { render, screen } from '@testing-library/react'
 import userEvent from '@testing-library/user-event'
-import SignUpForm from '../pages/SignUpForm.jsx'
+import SignUpForm from '../pages/SignupForm.jsx'
 
 const setup = () => {
   const user = userEvent.setup()

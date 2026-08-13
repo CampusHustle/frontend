@@ -1,4 +1,5 @@
-import { motion, useReducedMotion } from 'motion/react'
+import { useRef } from 'react'
+import { motion, useReducedMotion, useScroll, useTransform } from 'motion/react'
 import { IconArrowRight, IconCheck } from '@tabler/icons-react'
 
 const HERO_TALL_IMG =
@@ -30,15 +31,7 @@ function GigCard() {
         <span className="font-display text-2xl font-semibold text-hustle-500">
           $45
         </span>
-        <span className="text-xs text-ink-400">4 bids · near you</span>
-      </div>
-      <div className="mt-3 flex items-center gap-3">
-        <div className="h-1.5 flex-1 overflow-hidden rounded-full bg-white/10">
-          <div className="h-full w-2/3 rounded-full bg-hustle-500" />
-        </div>
-        <span className="whitespace-nowrap text-[11px] text-ink-400">
-          3 matched
-        </span>
+        <span className="text-xs text-ink-400">3 bids · near you</span>
       </div>
     </div>
   )
@@ -48,7 +41,7 @@ function PaymentChip() {
   return (
     <div className="flex items-center gap-2.5 rounded-full border border-white/10 bg-ink-900/90 py-2.5 pl-3 pr-4 shadow-[0_12px_30px_-8px_rgba(0,0,0,0.5)] backdrop-blur-md">
       <span className="flex size-6 items-center justify-center rounded-full bg-emerald-500/20">
-        <IconCheck size={14} className="text-emerald-400" />
+        <IconCheck size={14} className="text-emerald-400 light:text-emerald-600" />
       </span>
       <span className="text-xs font-semibold text-ink-100">
         Payment received{' '}
@@ -58,13 +51,34 @@ function PaymentChip() {
   )
 }
 
-export default function Hero() {
+export default function Hero({ onNavigate }) {
   const reduce = useReducedMotion()
+  const sectionRef = useRef(null)
+  const { scrollYProgress } = useScroll({
+    target: sectionRef,
+    offset: ['start start', 'end start'],
+  })
+  const yTall = useTransform(scrollYProgress, [0, 1], [0, -48])
+  const ySquare = useTransform(scrollYProgress, [0, 1], [0, -84])
+  const yCards = useTransform(scrollYProgress, [0, 1], [0, 64])
+
+  const handleNav = (targetView) => (e) => {
+    e.preventDefault()
+    if (onNavigate) onNavigate(targetView)
+  }
+
+  const ctaProps = reduce
+    ? {}
+    : {
+        whileHover: { y: -2 },
+        whileTap: { scale: 0.97 },
+      }
 
   return (
     <section
+      ref={sectionRef}
       id="top"
-      className="relative overflow-hidden pt-28 pb-16 sm:pt-32 lg:min-h-[calc(100svh-4rem)] lg:pb-0"
+      className="relative overflow-hidden pt-28 pb-20 sm:pt-32 lg:min-h-[calc(100svh-4rem)]"
     >
       <div
         aria-hidden="true"
@@ -74,8 +88,7 @@ export default function Hero() {
       <div className="relative mx-auto grid max-w-6xl items-center gap-14 px-4 sm:px-6 lg:grid-cols-[1.05fr_0.95fr] lg:gap-10 lg:px-8">
         <div className="max-w-xl">
           <motion.div {...fade(reduce, 0)}>
-            <span className="inline-flex items-center gap-2 rounded-full border border-white/10 bg-white/5 px-3.5 py-1.5 text-[13px] font-medium text-ink-200">
-              <span className="size-1.5 animate-pulse-dot rounded-full bg-hustle-500" />
+            <span className="inline-flex items-center rounded-full border border-white/10 bg-white/5 px-3.5 py-1.5 text-[13px] font-medium text-ink-200">
               The campus gig platform
             </span>
           </motion.div>
@@ -101,22 +114,25 @@ export default function Hero() {
             {...fade(reduce, 0.24)}
             className="mt-9 flex flex-wrap items-center gap-4"
           >
-            <a
-              href="#start"
-              className="group inline-flex items-center gap-2 rounded-full bg-hustle-500 px-7 py-3.5 font-semibold text-ink-950 transition-[background-color,transform] duration-200 hover:bg-hustle-400 active:scale-[0.98]"
+            <motion.a
+              {...ctaProps}
+              href="#"
+              onClick={handleNav('signup')}
+              className="group inline-flex items-center gap-2 rounded-full bg-hustle-500 px-7 py-3.5 font-semibold text-ink-contrast transition-[background-color] duration-200 hover:bg-hustle-400"
             >
               Start hustling
               <IconArrowRight
                 size={18}
                 className="transition-transform duration-200 group-hover:translate-x-0.5"
               />
-            </a>
-            <a
+            </motion.a>
+            <motion.a
+              {...ctaProps}
               href="#how-it-works"
               className="inline-flex items-center gap-2 rounded-full border border-white/15 px-6 py-3.5 font-semibold text-ink-100 transition-colors duration-200 hover:border-white/30 hover:bg-white/5"
             >
               How it works
-            </a>
+            </motion.a>
           </motion.div>
         </div>
 
@@ -129,7 +145,10 @@ export default function Hero() {
             className="pointer-events-none absolute -top-10 -right-6 size-40 rounded-full bg-hustle-500/20 blur-3xl"
           />
 
-          <div className="relative aspect-[3/4] w-[64%] overflow-hidden rounded-[2rem] border border-white/10">
+          <motion.div
+            style={reduce ? undefined : { y: yTall }}
+            className="relative aspect-[3/4] w-[64%] overflow-hidden rounded-[2rem] border border-white/10"
+          >
             <img
               src={HERO_TALL_IMG}
               alt="Student on campus"
@@ -139,9 +158,12 @@ export default function Hero() {
               decoding="async"
               className="size-full object-cover"
             />
-          </div>
+          </motion.div>
 
-          <div className="absolute top-1/3 right-0 aspect-square w-[56%] overflow-hidden rounded-[1.75rem] border border-white/10 shadow-[0_24px_60px_-16px_rgba(0,0,0,0.6)]">
+          <motion.div
+            style={reduce ? undefined : { y: ySquare }}
+            className="absolute top-1/3 right-0 aspect-square w-[56%] overflow-hidden rounded-[1.75rem] border border-white/10 shadow-[0_24px_60px_-16px_rgba(0,0,0,0.6)]"
+          >
             <img
               src={HERO_SQUARE_IMG}
               alt="Late night study session"
@@ -151,26 +173,22 @@ export default function Hero() {
               decoding="async"
               className="size-full object-cover"
             />
-          </div>
+          </motion.div>
 
-          <div className="absolute -left-2 bottom-6 animate-float sm:left-0">
+          <motion.div
+            style={reduce ? undefined : { y: yCards }}
+            className="absolute -left-2 bottom-6 animate-float sm:left-0"
+          >
             <GigCard />
-          </div>
+          </motion.div>
 
-          <div className="absolute top-4 -left-2 animate-float-slow sm:top-6 sm:left-2">
+          <motion.div
+            style={reduce ? undefined : { y: yCards }}
+            className="absolute top-4 -left-2 animate-float-slow sm:top-6 sm:left-2"
+          >
             <PaymentChip />
-          </div>
+          </motion.div>
         </motion.div>
-      </div>
-
-      <div className="relative mx-auto mt-16 max-w-6xl px-4 sm:px-6 lg:px-8">
-        <a
-          href="#how-it-works"
-          className="inline-flex items-center gap-3 text-[13px] font-medium tracking-widest text-ink-400 uppercase transition-colors hover:text-ink-100"
-        >
-          <span className="h-px w-10 bg-ink-700" />
-          Scroll to explore
-        </a>
       </div>
     </section>
   )

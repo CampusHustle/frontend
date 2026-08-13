@@ -1,6 +1,6 @@
 import Reveal from './Reveal.jsx'
 
-// Sample stats — swap these for real platform numbers before launch.
+// Sample stats, swap these for real platform numbers before launch.
 const stats = [
   { value: '2,000+', label: 'gigs completed on campus' },
   { value: '120+', label: 'campuses live this semester' },
