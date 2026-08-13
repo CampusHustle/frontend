@@ -6,10 +6,10 @@ export default function AuthNotesMarketplace() {
     const authDummyNotes = [
         {
             id: 1,
-            contentType: "VIDEO COURSE",
+            contentType: "PDF NOTES",
             price: "$24.00",
-            rating: 4.9,
             title: "Advanced Data Structures & Algorithms",
+            course: "CS 301",
             authorName: "Prof. John Doe",
             authorAvatar: "https://i.pravatar.cc/150?u=john",
             coverImage: "https://images.unsplash.com/photo-1516116216624-53e697fedbea?w=400&q=80"
@@ -18,8 +18,8 @@ export default function AuthNotesMarketplace() {
             id: 2,
             contentType: "PDF NOTES",
             price: "$15.00",
-            rating: 4.8,
             title: "Macroeconomics Midterm Master Notes",
+            course: "ECON 201",
             authorName: "Sarah Jenkins",
             authorAvatar: "https://i.pravatar.cc/150?u=sarah",
             coverImage: "https://images.unsplash.com/photo-1611095790444-1dfa35e37b52?w=400&q=80"
@@ -28,8 +28,8 @@ export default function AuthNotesMarketplace() {
             id: 3,
             contentType: "PDF + QUIZ",
             price: "$18.50",
-            rating: 5.0,
             title: "Organic Chemistry 101: Reaction Mechanisms",
+            course: "CHEM 101",
             authorName: "Michael Chang",
             authorAvatar: "https://i.pravatar.cc/150?u=michael",
             coverImage: "https://images.unsplash.com/photo-1532094349884-543bc11b234d?w=400&q=80"
@@ -45,8 +45,8 @@ export default function AuthNotesMarketplace() {
                         key={note.id}
                         contentType={note.contentType}
                         price={note.price}
-                        rating={note.rating}
                         title={note.title}
+                        course={note.course}
                         authorName={note.authorName}
                         authorAvatar={note.authorAvatar}
                         coverImage={note.coverImage}
