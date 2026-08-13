@@ -1,6 +1,21 @@
 @import "tailwindcss";
 
 @theme {
+  --font-display: "Space Grotesk", ui-sans-serif, system-ui, sans-serif;
+  --font-heading: "Montserrat", ui-sans-serif, system-ui, sans-serif;
+  --font-sans: "Inter", ui-sans-serif, system-ui, sans-serif;
+
+  --color-primary: #041534;
+  --color-secondary-container: #feae2c;
+  --color-on-secondary-container: #6b4500;
+  --color-surface: #f8f9fa;
+  --color-surface-container-lowest: #ffffff;
+  --color-surface-container-low: #f3f4f5;
+  --color-outline-variant: #c5c6cf;
+  --color-error: #ba1a1a;
+  --color-error-container: #ffdad6;
+  --color-on-error-container: #93000a;
+
   --color-ink-950: #0a0a0c;
   --color-ink-900: #101014;
   --color-ink-850: #14141a;
@@ -19,117 +34,88 @@
   --color-hustle-600: #f59e0b;
   --color-hustle-700: #d97706;
 
-  --color-ink-contrast: #1a1200;
+  --animate-marquee: marquee 36s linear infinite;
+  --animate-float: float 7s ease-in-out infinite;
+  --animate-float-slow: float 10s ease-in-out infinite;
+  --animate-pulse-dot: pulse-dot 2.4s ease-in-out infinite;
+}
 
-  --font-display: "Montserrat Variable", "Montserrat", sans-serif;
-  --font-body: "Inter Variable", "Inter", sans-serif;
-
-  --animate-marquee: marquee 34s linear infinite;
-  --animate-float: float 6s ease-in-out infinite;
-  --animate-float-slow: float 9s ease-in-out infinite;
-
-  @keyframes marquee {
-    from {
-      transform: translateX(0);
-    }
-    to {
-      transform: translateX(-50%);
-    }
+@keyframes marquee {
+  from {
+    transform: translateX(0);
   }
-
-  @keyframes float {
-    0%,
-    100% {
-      transform: translateY(0);
-    }
-    50% {
-      transform: translateY(-10px);
-    }
+  to {
+    transform: translateX(-50%);
   }
 }
 
-@utility font-display {
-  font-family: var(--font-display);
-}
-
-@variant light (&:where(.light, .light *));
-
-/*
- * Light mode. The ink scale is inverted (dark surfaces become light, light
- * text becomes dark) so every component flips without per-class overrides.
- * --color-white / --color-black are also swapped so white-alpha borders and
- * subtle fills become dark-alpha in light mode. ink-contrast is the one
- * non-inverting token: it stays dark for text sitting on amber accents.
- */
-.light {
-  --color-ink-950: #f6f6f7;
-  --color-ink-900: #ffffff;
-  --color-ink-850: #ffffff;
-  --color-ink-800: #f3f3f4;
-  --color-ink-700: #ececef;
-  --color-ink-600: #d4d4da;
-  --color-ink-400: #a1a1ac;
-  --color-ink-300: #6a6a75;
-  --color-ink-200: #45454f;
-  --color-ink-100: #26262f;
-  --color-ink-50: #14141a;
-  --color-white: #0a0a0c;
-  --color-black: #f6f6f7;
-}
-
-@media (prefers-color-scheme: light) {
-  :root:not(.dark) {
-    --color-ink-950: #f6f6f7;
-    --color-ink-900: #ffffff;
-    --color-ink-850: #ffffff;
-    --color-ink-800: #f3f3f4;
-    --color-ink-700: #ececef;
-    --color-ink-600: #d4d4da;
-    --color-ink-400: #a1a1ac;
-    --color-ink-300: #6a6a75;
-    --color-ink-200: #45454f;
-    --color-ink-100: #26262f;
-    --color-ink-50: #14141a;
-    --color-white: #0a0a0c;
-    --color-black: #f6f6f7;
+@keyframes float {
+  0%,
+  100% {
+    transform: translateY(0);
+  }
+  50% {
+    transform: translateY(-14px);
   }
 }
 
-@layer base {
-  html {
-    scroll-behavior: smooth;
+@keyframes pulse-dot {
+  0%,
+  100% {
+    opacity: 1;
   }
-
-  body {
-    background-color: var(--color-ink-950);
-    color: var(--color-ink-100);
-    font-family: var(--font-body);
-    font-size: 16px;
-    line-height: 1.5;
-    -webkit-font-smoothing: antialiased;
-    text-rendering: optimizeLegibility;
+  50% {
+    opacity: 0.35;
   }
+}
 
-  ::selection {
-    background-color: var(--color-hustle-500);
-    color: #1a1200;
+@media (prefers-reduced-motion: reduce) {
+  .animate-marquee,
+  .animate-float,
+  .animate-float-slow,
+  .animate-pulse-dot {
+    animation: none;
   }
+}
 
-  :focus-visible {
-    outline: 2px solid var(--color-hustle-500);
-    outline-offset: 2px;
-    border-radius: 4px;
-  }
+body {
+  @apply bg-surface font-sans text-primary antialiased;
+}
 
-  @media (prefers-reduced-motion: reduce) {
-    html {
-      scroll-behavior: auto;
-    }
+.material-symbols-outlined {
+  font-family: "Material Symbols Outlined";
+  font-weight: normal;
+  font-style: normal;
+  line-height: 1;
+  letter-spacing: normal;
+  text-transform: none;
+  display: inline-block;
+  white-space: nowrap;
+  word-wrap: normal;
+  direction: ltr;
+  -webkit-font-feature-settings: "liga";
+  -webkit-font-smoothing: antialiased;
+  font-variation-settings: "FILL" 0, "wght" 400, "GRAD" 0, "opsz" 24;
+}
 
-    .animate-marquee,
-    .animate-float,
-    .animate-float-slow {
-      animation: none;
-    }
-  }
+::selection {
+  background-color: var(--color-primary);
+  color: var(--color-surface-container-lowest);
+}
+
+::-webkit-scrollbar {
+  width: 10px;
+}
+
+::-webkit-scrollbar-track {
+  background: var(--color-surface);
+}
+
+::-webkit-scrollbar-thumb {
+  background: var(--color-outline-variant);
+  border-radius: 8px;
+}
+
+::-webkit-scrollbar-thumb:hover {
+  background: var(--color-secondary-container);
 }
