@@ -13,23 +13,21 @@ export default function DocumentCarousel({ previewPages }) {
 
   if (!previewPages || previewPages.length === 0) {
     return (
-      <div className="flex h-96 items-center justify-center rounded-xl bg-gray-100 text-gray-500">
+      <div className="flex h-96 items-center justify-center rounded-2xl bg-white border border-gray-200 shadow-sm text-gray-600">
         No preview pages available
       </div>
     );
   }
 
   return (
-    <div className="relative w-full overflow-hidden rounded-2xl bg-gray-100 shadow-inner group">
-      {/* Aspect ratio container for the document page */}
-      <div className="relative aspect-[3/4] w-full max-h-[800px] flex items-center justify-center bg-white shadow-sm mx-auto">
+    <div className="relative w-full overflow-hidden rounded-2xl bg-white border border-gray-200 shadow-sm group">
+      <div className="relative aspect-[3/4] w-full max-h-[800px] flex items-center justify-center bg-gray-50 mx-auto">
         <img 
           src={previewPages[currentIndex]} 
           alt={`Preview page ${currentIndex + 1}`} 
           className="object-cover w-full h-full pointer-events-none"
         />
         
-        {/* Navigation Buttons (Fade in on hover) */}
         {previewPages.length > 1 && (
           <>
             <button 
