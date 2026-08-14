@@ -9,11 +9,10 @@ Campus Hustle connects students who need quick tasks done with fellow campus pee
 ## ✨ Features
 
 - **🎓 Campus-Centric Gig Board**: Hyper-local micro-task matching tailored specifically to university communities.
-- **⚡ Modern Dark-Mode UI**: Built with a sleek dark aesthetic (`bg-ink-950`), vibrant gold accents (`hustle-500`), smooth custom scrollbars, and glassmorphism elements.
-- **📱 Fully Responsive & Animated**: Powered by [Motion](https://motion.dev/) for fluid scroll reveals, animated stats, interactive cards, and responsive layouts.
-- **🧩 Bento Grid Layout**: Dynamic preview grid highlighting core platform capabilities (instant matching, student verification, secure escrows, and quick payouts).
-- **💬 Community Testimonials & Social Proof**: Live marquee ticker of university partners and student success stories.
-- **🎨 Custom Design System**: Tailored theme tokens (`ink` palette, `hustle` brand palette) with `Space Grotesk` and `DM Sans` typography.
+- **⚡ Modern Light-Mode UI**: Built with a clean light aesthetic (`surface`), deep navy accents (`primary`), vibrant gold CTAs (`secondary-container`), and rounded Material-style cards.
+- **🔐 Student Verified Sign-Up / Sign-In**: `.edu` email validation, terms acceptance, and an SSO-enabled sign-in flow with a mocked API.
+- **📱 Fully Responsive**: Clean, centered card layouts that adapt across mobile and desktop viewports.
+- **🎨 Custom Design System**: Tailored theme tokens (navy `primary`, gold `secondary-container`, `surface` palette, `error-container`) with `Montserrat` and `Inter` typography and Material Symbols icons.
 
 ---
 
@@ -24,8 +23,8 @@ Campus Hustle connects students who need quick tasks done with fellow campus pee
 | **[React 19](https://react.dev/)** | Component-based UI library |
 | **[Vite 8](https://vitejs.dev/)** | High-performance frontend build tooling |
 | **[Tailwind CSS v4](https://tailwindcss.com/)** | Utility-first CSS framework with custom theme tokens |
-| **[Motion](https://motion.dev/)** | Animations, scroll reveals, and micro-interactions |
-| **[Tabler Icons](https://tabler-icons.io/)** | Crisp UI icons for React components |
+| **[Vitest](https://vitest.dev/)** | Unit & component testing with React Testing Library |
+| **[Material Symbols](https://fonts.google.com/icons)** | Outline icons for inputs, badges, and CTAs |
 
 ---
 
@@ -35,23 +34,27 @@ Campus Hustle connects students who need quick tasks done with fellow campus pee
 frontend/
 ├── public/              # Static assets and favicons
 ├── src/
-│   ├── components/      # Modular UI components
-│   │   ├── Bento.jsx        # Interactive platform feature grid
-│   │   ├── FinalCta.jsx     # Call-to-action banner
-│   │   ├── Footer.jsx       # Footer layout & quick links
-│   │   ├── Hero.jsx         # Hero section with live gig cards & CTA
-│   │   ├── HowItWorks.jsx   # Step-by-step workflow guide
-│   │   ├── Logo.jsx         # Brand logo component
-│   │   ├── Marquee.jsx      # Animated campus ticker
-│   │   ├── Navbar.jsx       # Navigation header with mobile menu
-│   │   ├── Reveal.jsx       # Scroll animation wrapper component
-│   │   ├── Stats.jsx        # Key platform metrics & stats counter
-│   │   └── Testimonial.jsx  # Student reviews & testimonials
-│   ├── App.jsx          # Root application component
+│   ├── __tests__/       # Component & integration tests
+│   │   ├── SignUpForm.test.jsx  # Sign-up flow tests
+│   │   └── SignInForm.test.jsx  # Sign-in flow tests
+│   ├── api/
+│   │   └── mockAuthApi.js       # Mocked auth API (swap for real fetch later)
+│   ├── components/
+│   │   ├── AuthTextField.jsx    # Labeled input with icon + error state
+│   │   ├── PrimaryButton.jsx    # Gold CTA button with loading spinner
+│   │   ├── Toast.jsx            # Success / error banner
+│   │   └── TrustBadge.jsx       # Verified-students / SSO pill badge
+│   ├── pages/
+│   │   ├── SignUpForm.jsx       # Sign-up form (.edu email, terms)
+│   │   └── SignInForm.jsx       # Sign-in form (remember me, SSO)
+│   ├── utils/
+│   │   └── validators.js        # Pure validation helpers
+│   ├── App.jsx          # Root component with sign-in / sign-up toggle
 │   ├── main.jsx         # Application entry point
-│   └── index.css        # Global CSS, font configuration & Tailwind CSS v4 setup
+│   ├── setupTests.js    # Jest-DOM matchers for Vitest
+│   └── index.css        # Global CSS, fonts & Tailwind CSS v4 theme tokens
 ├── eslint.config.js     # ESLint configuration
-├── vite.config.js       # Vite configuration
+├── vite.config.js       # Vite + Vitest configuration
 └── package.json         # Project dependencies and script declarations
 ```
 
@@ -94,6 +97,8 @@ In the project directory, you can run:
 - `npm run build` - Compiles and bundles production-ready assets into the `dist/` directory.
 - `npm run preview` - Serves the production build locally for verification.
 - `npm run lint` - Runs ESLint to check for code quality and syntax errors.
+- `npm test` - Runs the Vitest test suite once.
+- `npm run test:watch` - Runs Vitest in watch mode.
 
 ---
 

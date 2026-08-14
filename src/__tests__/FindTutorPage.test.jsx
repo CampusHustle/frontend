@@ -25,7 +25,7 @@ describe('FindTutorPage', () => {
 
     expect(screen.queryByText('Daniel Kim')).not.toBeInTheDocument()
 
-    await user.click(screen.getByRole('button', { name: 'Load More Tutors' }))
+    await user.click(screen.getByRole('button', { name: /Load More Tutors/i }))
 
     expect(screen.getByText('Daniel Kim')).toBeInTheDocument()
   })
