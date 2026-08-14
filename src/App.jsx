@@ -1,10 +1,12 @@
-import { useState } from 'react'
-import HomePage from './pages/HomePage.jsx'
-import LoginForm from './pages/LoginForm.jsx'
-import SignupForm from './pages/SignupForm.jsx'
-import VerifyEmailPage from './pages/VerifyEmailPage.jsx'
-import CompleteProfilePage from './pages/CompleteProfilePage.jsx'
-import FindTutorPage from './pages/FindTutorPage.jsx'
+import { useState, useEffect } from 'react'
+import { BrowserRouter, Routes, Route, useNavigate, Navigate, useLocation } from 'react-router-dom'
+import HomeScreen from './screens/HomeScreen.jsx'
+import LoginScreen from './screens/LoginScreen.jsx'
+import SignupScreen from './screens/SignupScreen.jsx'
+import VerifyEmailScreen from './screens/VerifyEmailScreen.jsx'
+import CompleteProfileScreen from './screens/CompleteProfileScreen.jsx'
+import FindTutorScreen from './screens/FindTutorScreen.jsx'
+import MarketplaceScreen from './screens/MarketplaceScreen.jsx'
 import { mockUpdateProfile } from './api/mockAuthApi.js'
 import {
   clearSession,
@@ -15,109 +17,163 @@ import {
 } from './utils/session.js'
 import { profileFromForm } from './utils/user.js'
 
-function getInitialView(user) {
+function getInitialPath() {
+  const user = loadSessionUser()
   const savedView = loadSessionView()
   if (user) {
-    // If logged-in user was in the middle of completing profile, preserve it,
-    // otherwise default to find-tutor so existing users never see onboarding.
-    if (savedView === 'complete-profile') return 'complete-profile'
-    return 'find-tutor'
+    if (savedView === 'complete-profile') return '/complete-profile'
+    if (savedView === 'marketplace' || savedView === 'market') return '/market'
+    return '/tutor'
   }
-  if (savedView && ['login', 'signup', 'verify-email', 'home'].includes(savedView)) {
-    return savedView
+  if (savedView) {
+    const viewToPath = {
+      login: '/login',
+      signup: '/signup',
+      'verify-email': '/verify-email',
+      'complete-profile': '/complete-profile',
+      'find-tutor': '/tutor',
+      tutor: '/tutor',
+      marketplace: '/market',
+      market: '/market',
+      home: '/',
+    }
+    if (viewToPath[savedView]) return viewToPath[savedView]
   }
-  return 'home'
+  return '/'
 }
 
-function App() {
+export function AppRoutes() {
+  const navigate = useNavigate()
+  const location = useLocation()
   const [currentUser, setCurrentUser] = useState(() => loadSessionUser())
-  const [view, setView] = useState(() => getInitialView(loadSessionUser()))
   const [pendingUser, setPendingUser] = useState(null)
   const [pendingEmail, setPendingEmail] = useState('')
 
-  const navigate = (targetView) => {
-    setView(targetView)
+  useEffect(() => {
+    const initialPath = getInitialPath()
+    if (initialPath !== location.pathname && location.pathname === '/') {
+      navigate(initialPath, { replace: true })
+    }
+  }, [])
+
+  const handleNavigate = (targetView) => {
+    const routeMap = {
+      home: '/',
+      login: '/login',
+      signup: '/signup',
+      'verify-email': '/verify-email',
+      'complete-profile': '/complete-profile',
+      'find-tutor': '/tutor',
+      tutor: '/tutor',
+      marketplace: '/market',
+      market: '/market',
+    }
+    const path = routeMap[targetView] || (typeof targetView === 'string' && targetView.startsWith('/') ? targetView : '/')
     saveSessionView(targetView)
+    navigate(path)
   }
 
-  if (view === 'login') {
-    return (
-      <LoginForm
-        onSwitchToSignup={() => navigate('signup')}
-        onLoginSuccess={(user) => {
-          saveSessionUser(user)
-          setCurrentUser(user)
-          // Existing users skip onboarding and go straight to the marketplace
-          navigate('find-tutor')
-        }}
+  const handleLogout = () => {
+    clearSession()
+    setCurrentUser(null)
+    setPendingUser(null)
+    handleNavigate('home')
+  }
+
+  return (
+    <Routes>
+      <Route path="/" element={<HomeScreen onNavigate={handleNavigate} />} />
+      <Route
+        path="/login"
+        element={
+          <LoginScreen
+            onSwitchToSignup={() => handleNavigate('signup')}
+            onLoginSuccess={(user) => {
+              saveSessionUser(user)
+              setCurrentUser(user)
+              handleNavigate('tutor')
+            }}
+          />
+        }
       />
-    )
-  }
-
-  if (view === 'signup') {
-    return (
-      <SignupForm
-        onSwitchToLogin={() => navigate('login')}
-        onSignupSuccess={(user) => {
-          setPendingUser(user)
-          setPendingEmail(user.email)
-          navigate('verify-email')
-        }}
+      <Route
+        path="/signup"
+        element={
+          <SignupScreen
+            onSwitchToLogin={() => handleNavigate('login')}
+            onSignupSuccess={(user) => {
+              setPendingUser(user)
+              setPendingEmail(user.email)
+              handleNavigate('verify-email')
+            }}
+          />
+        }
       />
-    )
-  }
-
-  if (view === 'verify-email') {
-    return (
-      <VerifyEmailPage
-        email={pendingEmail || currentUser?.email || 'student@campus.edu.et'}
-        onBackToLogin={() => navigate('login')}
-        onContinue={() => {
-          const activeUser = pendingUser || currentUser
-          if (activeUser) {
-            setCurrentUser(activeUser)
-            saveSessionUser(activeUser)
-          }
-          // New signups proceed to complete profile
-          navigate('complete-profile')
-        }}
+      <Route
+        path="/verify-email"
+        element={
+          <VerifyEmailScreen
+            email={pendingEmail || currentUser?.email || 'student@campus.edu.et'}
+            onBackToLogin={() => handleNavigate('login')}
+            onContinue={() => {
+              const activeUser = pendingUser || currentUser
+              if (activeUser) {
+                setCurrentUser(activeUser)
+                saveSessionUser(activeUser)
+              }
+              handleNavigate('complete-profile')
+            }}
+          />
+        }
       />
-    )
-  }
-
-  if (view === 'complete-profile') {
-    return (
-      <CompleteProfilePage
-        user={currentUser || pendingUser}
-        onFinish={(form) => {
-          const profile = profileFromForm(form)
-          const active = currentUser || pendingUser || {}
-          const updated = { ...active, ...profile }
-          setCurrentUser(updated)
-          saveSessionUser(updated)
-          navigate('find-tutor')
-          mockUpdateProfile(updated.email, profile).catch(() => {})
-        }}
+      <Route
+        path="/complete-profile"
+        element={
+          <CompleteProfileScreen
+            user={currentUser || pendingUser}
+            onFinish={(form) => {
+              const profile = profileFromForm(form)
+              const active = currentUser || pendingUser || {}
+              const updated = { ...active, ...profile }
+              setCurrentUser(updated)
+              saveSessionUser(updated)
+              handleNavigate('tutor')
+              mockUpdateProfile(updated.email, profile).catch(() => {})
+            }}
+          />
+        }
       />
-    )
-  }
-
-  if (view === 'find-tutor') {
-    return (
-      <FindTutorPage
-        user={currentUser}
-        onLogout={() => {
-          clearSession()
-          setCurrentUser(null)
-          setPendingUser(null)
-          navigate('home')
-        }}
-        onNavigate={navigate}
+      <Route
+        path="/tutor"
+        element={
+          <FindTutorScreen
+            user={currentUser}
+            onLogout={handleLogout}
+            onNavigate={handleNavigate}
+          />
+        }
       />
-    )
-  }
-
-  return <HomePage onNavigate={navigate} />
+      <Route
+        path="/market"
+        element={
+          <MarketplaceScreen
+            user={currentUser}
+            onLogout={handleLogout}
+            onNavigate={handleNavigate}
+          />
+        }
+      />
+      <Route path="*" element={<Navigate to="/" replace />} />
+    </Routes>
+  )
 }
 
-export default App
+export default function App() {
+  return (
+    <BrowserRouter>
+      <AppRoutes />
+    </BrowserRouter>
+  )
+}
+
+

@@ -1,4 +1,5 @@
-import React from 'react';
+import React from 'react'
+import { IconCircleCheckFilled } from '@tabler/icons-react'
 
 const AuthNoteCard = ({
   coverImage,
@@ -7,54 +8,62 @@ const AuthNoteCard = ({
   title,
   course,
   authorAvatar,
-  authorName
+  authorName,
 }) => {
   return (
-    <div className="flex w-full max-w-sm flex-col overflow-hidden rounded-2xl border border-gray-200 bg-white shadow-sm transition-all duration-200 hover:shadow-md">
-      
+    <div className="group relative flex w-full flex-col overflow-hidden rounded-xl border border-surface-variant bg-surface-lowest shadow-level-1 transition-all duration-300 hover:-translate-y-1 hover:border-primary/40 hover:shadow-level-2">
       {/* Top Image Area */}
-      <div className="relative h-44 w-full bg-gray-100">
-        <img 
-          src={coverImage || "/api/placeholder/400/250"} 
-          alt={title || "Note Cover"}
-          className="h-full w-full object-cover"
+      <div className="relative h-44 w-full overflow-hidden bg-surface-low">
+        <img
+          src={coverImage || '/api/placeholder/400/250'}
+          alt={title || 'Note Cover'}
+          className="h-full w-full object-cover transition-transform duration-500 group-hover:scale-105"
         />
+        <div className="absolute top-3 left-3">
+          <span className="rounded-full bg-surface-lowest/90 px-3 py-1 text-[11px] font-bold uppercase tracking-wider text-primary shadow-sm backdrop-blur-md">
+            {contentType || 'NOTE'}
+          </span>
+        </div>
+        <div className="absolute top-3 right-3">
+          <span className="rounded-xl bg-secondary-container px-3 py-1 text-sm font-black text-on-secondary-container shadow-sm font-display">
+            {price || 'Free'}
+          </span>
+        </div>
       </div>
 
       {/* Bottom Content Area */}
-      <div className="flex flex-col gap-3 p-5">
-        
-        <div className="flex items-center justify-between gap-2">
-          <span className="rounded bg-gray-100 px-2 py-1 text-[10px] font-bold uppercase tracking-wider text-gray-700">
-            {contentType || "NOTE"}
-          </span>
-          <span className="text-lg font-extrabold text-amber-500">
-            {price || "Free"}
-          </span>
+      <div className="flex flex-1 flex-col justify-between p-5">
+        <div>
+          <div className="mb-2 inline-flex items-center gap-1 rounded-md bg-surface-high px-2.5 py-1 text-xs font-semibold text-on-surface-variant">
+            {course || 'General Academic'}
+          </div>
+
+          <h3 className="line-clamp-2 font-display text-base font-bold leading-snug text-primary transition-colors group-hover:text-primary-container">
+            {title || 'Untitled Note'}
+          </h3>
         </div>
 
-        <h3 className="line-clamp-2 min-h-[3rem] text-lg font-bold leading-tight text-gray-900">
-          {title || "Untitled Note"}
-        </h3>
-        
-        {/* Course Label */}
-        <div className="text-xs font-semibold text-gray-700 bg-gray-100 w-fit px-2 py-1 rounded">
-          {course || "General Academic"}
-        </div>
+        <div className="mt-4 flex items-center justify-between border-t border-surface-variant/60 pt-3">
+          <div className="flex items-center gap-2">
+            <img
+              src={authorAvatar || 'https://i.pravatar.cc/150'}
+              alt={authorName || 'Author'}
+              className="size-6 rounded-full border border-surface object-cover shadow-sm"
+            />
+            <span className="truncate text-xs font-medium text-on-surface-variant">
+              {authorName || 'Verified Contributor'}
+            </span>
+          </div>
 
-        <div className="mt-2 flex items-center gap-2">
-          <img
-            src={authorAvatar || "/api/placeholder/24/24"}
-            alt={authorName || "Author"}
-            className="h-6 w-6 rounded-full object-cover"
+          <IconCircleCheckFilled
+            size={16}
+            className="text-tertiary-container shrink-0"
+            title="Verified Contributor"
           />
-          <span className="text-sm font-medium text-gray-600 break-words">
-            {authorName || "Unknown Author"}
-          </span>
         </div>
       </div>
     </div>
-  );
-};
+  )
+}
 
-export default AuthNoteCard;
+export default AuthNoteCard

@@ -35,7 +35,7 @@ export default function Footer({ onNavigate }) {
   }
 
   return (
-    <footer className="relative overflow-hidden border-t border-white/10 bg-ink-950 text-ink-100">
+    <footer className="relative overflow-hidden border-t border-surface-variant bg-surface-lowest text-on-surface">
       <div className="mx-auto max-w-6xl px-4 pt-16 sm:px-6 lg:px-8">
         <div className="grid grid-cols-1 gap-10 pb-14 md:grid-cols-12">
           <div className="md:col-span-6">
@@ -49,13 +49,13 @@ export default function Footer({ onNavigate }) {
                 alt="CampusHustle logo"
                 width="32"
                 height="32"
-                className="size-8 rounded-xl border border-white/10 object-cover"
+                className="size-8 rounded-xl border border-surface-variant object-cover"
               />
-              <span className="font-display text-[17px] font-semibold tracking-tight text-ink-50">
+              <span className="font-display text-[17px] font-semibold tracking-tight text-primary">
                 Campus Hustle
               </span>
             </a>
-            <p className="mt-4 max-w-sm text-sm leading-relaxed text-ink-300">
+            <p className="mt-4 max-w-sm text-sm leading-relaxed text-on-surface-variant">
               Learn. Teach. Earn. The peer-to-peer academic marketplace where
               verified students tutor, sell notes, and turn knowledge into
               income.
@@ -63,7 +63,7 @@ export default function Footer({ onNavigate }) {
             <a
               href="#"
               onClick={handleNav('signup')}
-              className="group mt-6 inline-flex items-center gap-2 rounded-full bg-hustle-500 px-5 py-2.5 text-sm font-semibold text-ink-contrast transition-[background-color] duration-200 hover:bg-hustle-400"
+              className="group mt-6 inline-flex items-center gap-2 rounded-full bg-primary px-5 py-2.5 text-sm font-semibold text-on-primary shadow-level-1 transition-[background-color] duration-200 hover:bg-primary-container hover:text-on-primary-container"
             >
               Start hustling
               <IconArrowRight
@@ -75,10 +75,10 @@ export default function Footer({ onNavigate }) {
 
           <div className="grid grid-cols-2 gap-8 sm:gap-12 md:col-span-6">
             <div>
-              <h4 className="font-display text-sm font-semibold text-ink-100">
+              <h4 className="font-display text-sm font-semibold text-primary">
                 Product
               </h4>
-              <ul className="mt-4 space-y-2.5 text-sm text-ink-300">
+              <ul className="mt-4 space-y-2.5 text-sm text-on-surface-variant">
                 {productLinks.map((link) => (
                   <li key={link.label}>
                     <a
@@ -88,7 +88,7 @@ export default function Footer({ onNavigate }) {
                           ? handleNav(link.view, link.href.startsWith('#') ? link.href : null)
                           : undefined
                       }
-                      className="transition-colors hover:text-ink-50"
+                      className="transition-colors hover:text-primary"
                     >
                       {link.label}
                     </a>
@@ -97,15 +97,15 @@ export default function Footer({ onNavigate }) {
               </ul>
             </div>
             <div>
-              <h4 className="font-display text-sm font-semibold text-ink-100">
+              <h4 className="font-display text-sm font-semibold text-primary">
                 Resources
               </h4>
-              <ul className="mt-4 space-y-2.5 text-sm text-ink-300">
+              <ul className="mt-4 space-y-2.5 text-sm text-on-surface-variant">
                 {resourceLinks.map((link) => (
                   <li key={link.label}>
                     <a
                       href={link.href}
-                      className="transition-colors hover:text-ink-50"
+                      className="transition-colors hover:text-primary"
                     >
                       {link.label}
                     </a>
@@ -125,24 +125,24 @@ export default function Footer({ onNavigate }) {
         className="w-full select-none overflow-hidden px-2 pb-8 text-center"
       >
         <span className="block whitespace-nowrap font-display text-[clamp(3.5rem,12vw,10.5rem)] font-bold leading-none tracking-tighter">
-          <span className="text-ink-800 light:text-ink-200">Campus</span>{' '}
-          <span className="text-transparent [-webkit-text-stroke:1px_var(--color-ink-600)] light:[-webkit-text-stroke:1px_var(--color-ink-400)]">
+          <span className="text-surface-container-high">Campus</span>{' '}
+          <span className="text-transparent [-webkit-text-stroke:1px_var(--color-outline-variant)]">
             Hustle
           </span>
         </span>
       </motion.div>
 
       <div className="mx-auto max-w-6xl px-4 pb-8 sm:px-6 lg:px-8">
-        <div className="flex flex-col items-center justify-between gap-4 border-t border-white/5 pt-6 text-xs text-ink-400 sm:flex-row">
+        <div className="flex flex-col items-center justify-between gap-4 border-t border-surface-variant pt-6 text-xs text-on-surface-variant sm:flex-row">
           <p>© {new Date().getFullYear()} CampusHustle Inc.</p>
           <div className="flex flex-wrap gap-6">
-            <a href="#" className="transition-colors hover:text-ink-100">
+            <a href="#" className="transition-colors hover:text-primary">
               About
             </a>
-            <a href="#" className="transition-colors hover:text-ink-100">
+            <a href="#" className="transition-colors hover:text-primary">
               Privacy Policy
             </a>
-            <a href="#" className="transition-colors hover:text-ink-100">
+            <a href="#" className="transition-colors hover:text-primary">
               Terms of Service
             </a>
           </div>

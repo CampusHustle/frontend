@@ -7,6 +7,7 @@ import { saveSessionUser, saveSessionView } from '../utils/session.js'
 describe('App navigation and session persistence', () => {
   beforeEach(() => {
     localStorage.clear()
+    window.history.pushState({}, '', '/')
   })
 
   it('renders landing page by default when not logged in', () => {
@@ -27,6 +28,7 @@ describe('App navigation and session persistence', () => {
     }
     saveSessionUser(user)
     saveSessionView('find-tutor')
+    window.history.pushState({}, '', '/tutor')
 
     render(<App />)
 
@@ -36,6 +38,7 @@ describe('App navigation and session persistence', () => {
   it('routes existing user straight to find-tutor after login without showing complete profile', async () => {
     const user = userEvent.setup()
     saveSessionView('login')
+    window.history.pushState({}, '', '/login')
 
     render(<App />)
 
@@ -53,6 +56,7 @@ describe('App navigation and session persistence', () => {
   it('routes new signups through verify-email to complete-profile', async () => {
     const user = userEvent.setup()
     saveSessionView('signup')
+    window.history.pushState({}, '', '/signup')
 
     render(<App />)
 
@@ -83,6 +87,7 @@ describe('App navigation and session persistence', () => {
     }
     saveSessionUser(user)
     saveSessionView('find-tutor')
+    window.history.pushState({}, '', '/tutor')
 
     render(<App />)
 
