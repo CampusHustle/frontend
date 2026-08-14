@@ -22,7 +22,7 @@ describe('LoginForm', () => {
   it('shows a loading state then a success toast for valid credentials', async () => {
     const user = setup()
 
-    await user.type(screen.getByLabelText('Email'), 'student@campus.edu')
+    await user.type(screen.getByLabelText('Email'), 'student@campus.edu.et')
     await user.type(screen.getByLabelText('Password'), 'password123')
     await user.click(screen.getByRole('button', { name: 'Log in' }))
 
@@ -34,7 +34,7 @@ describe('LoginForm', () => {
   it('shows a loading state then an error toast when the email contains "fail"', async () => {
     const user = setup()
 
-    await user.type(screen.getByLabelText('Email'), 'fail@campus.edu')
+    await user.type(screen.getByLabelText('Email'), 'fail@campus.edu.et')
     await user.type(screen.getByLabelText('Password'), 'password123')
     await user.click(screen.getByRole('button', { name: 'Log in' }))
 

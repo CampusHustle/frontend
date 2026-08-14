@@ -1,11 +1,12 @@
 import { useState } from 'react'
+import { IconArrowRight, IconLock, IconMail } from '@tabler/icons-react'
 import AuthTextField from '../components/AuthTextField.jsx'
 import PrimaryButton from '../components/PrimaryButton.jsx'
 import Toast from '../components/Toast.jsx'
 import { mockLogin } from '../api/mockAuthApi.js'
 import { validateEmail, validatePassword } from '../utils/validators.js'
 
-export default function LoginForm({ onSwitchToSignup }) {
+export default function LoginForm({ onSwitchToSignup, onLoginSuccess }) {
   const [values, setValues] = useState({ email: '', password: '' })
   const [errors, setErrors] = useState({})
   const [status, setStatus] = useState('idle')
@@ -31,8 +32,9 @@ export default function LoginForm({ onSwitchToSignup }) {
 
     setStatus('loading')
     try {
-      await mockLogin(values)
+      const { user } = await mockLogin(values)
       setStatus('success')
+      onLoginSuccess?.(user)
     } catch (err) {
       setStatus('error')
       setErrors((prev) => ({
@@ -43,48 +45,70 @@ export default function LoginForm({ onSwitchToSignup }) {
   }
 
   return (
-    <div className="mx-auto w-full max-w-md rounded-2xl border border-white/10 bg-ink-900/70 p-8 shadow-2xl backdrop-blur">
-      <div className="mb-8 text-center">
-        <h1 className="font-display text-2xl font-semibold tracking-tight text-ink-50">
-          Welcome back
-        </h1>
-        <p className="mt-1.5 text-sm text-ink-300">Log in to keep the hustle going</p>
-      </div>
+    <div className="mesh-bg flex min-h-screen flex-col items-center justify-center px-4 py-12 antialiased md:px-8">
+      <main className="mx-auto w-full max-w-md">
+        <div className="mb-10 text-center">
+          <h1 className="font-display text-3xl font-bold tracking-tight text-primary">
+            CampusHustle
+          </h1>
+          <p className="mt-1 text-base text-on-surface-variant">Welcome back to the hustle.</p>
+        </div>
 
-      <form onSubmit={handleSubmit} className="flex flex-col gap-5" noValidate>
-        <AuthTextField
-          label="Email"
-          type="email"
-          value={values.email}
-          onChange={handleChange('email')}
-          error={errors.email}
-          autoComplete="email"
-        />
-        <AuthTextField
-          label="Password"
-          type="password"
-          value={values.password}
-          onChange={handleChange('password')}
-          error={errors.password}
-          autoComplete="current-password"
-        />
+        <div className="glass-card relative overflow-hidden rounded-xl p-6 md:p-8">
+          <div
+            aria-hidden="true"
+            className="pointer-events-none absolute -right-10 -top-10 size-32 rounded-full bg-secondary-container/20 blur-xl"
+          />
 
-        {errors.form && <Toast type="error" message={errors.form} />}
-        {status === 'success' && <Toast type="success" message="Logged in successfully" />}
+          <form onSubmit={handleSubmit} className="relative z-10 flex flex-col gap-5" noValidate>
+            <AuthTextField
+              label="Email"
+              type="email"
+              icon={IconMail}
+              value={values.email}
+              onChange={handleChange('email')}
+              error={errors.email}
+              placeholder="schoolid@university.edu.et"
+              autoComplete="email"
+            />
+            <AuthTextField
+              label="Password"
+              type="password"
+              icon={IconLock}
+              value={values.password}
+              onChange={handleChange('password')}
+              error={errors.password}
+              placeholder="••••••••"
+              autoComplete="current-password"
+            />
 
-        <PrimaryButton loading={status === 'loading'}>Log in</PrimaryButton>
-      </form>
+            {errors.form && <Toast type="error" message={errors.form} />}
+            {status === 'success' && (
+              <Toast type="success" message="Logged in successfully" />
+            )}
 
-      <p className="mt-6 text-center text-sm text-ink-300">
-        Don&apos;t have an account?{' '}
-        <button
-          type="button"
-          onClick={onSwitchToSignup}
-          className="font-semibold text-hustle-500 transition-colors hover:text-hustle-400"
-        >
-          Sign up
-        </button>
-      </p>
+            <PrimaryButton loading={status === 'loading'} className="mt-1">
+              Log in
+              <IconArrowRight size={18} aria-hidden="true" />
+            </PrimaryButton>
+          </form>
+
+          <p className="mt-4 text-center text-xs text-on-surface-variant">
+            Demo account: student@campus.edu.et / password123
+          </p>
+        </div>
+
+        <p className="mt-6 text-center text-base text-on-surface-variant">
+          Don&apos;t have an account?{' '}
+          <button
+            type="button"
+            onClick={onSwitchToSignup}
+            className="ml-1 text-sm font-semibold text-primary transition-colors hover:text-secondary"
+          >
+            Sign up
+          </button>
+        </p>
+      </main>
     </div>
   )
 }
