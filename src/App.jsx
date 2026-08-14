@@ -2,55 +2,122 @@ import { useState } from 'react'
 import HomePage from './pages/HomePage.jsx'
 import LoginForm from './pages/LoginForm.jsx'
 import SignupForm from './pages/SignupForm.jsx'
+import VerifyEmailPage from './pages/VerifyEmailPage.jsx'
+import CompleteProfilePage from './pages/CompleteProfilePage.jsx'
+import FindTutorPage from './pages/FindTutorPage.jsx'
+import { mockUpdateProfile } from './api/mockAuthApi.js'
+import {
+  clearSession,
+  loadSessionUser,
+  saveSessionUser,
+  loadSessionView,
+  saveSessionView,
+} from './utils/session.js'
+import { profileFromForm } from './utils/user.js'
+
+function getInitialView(user) {
+  const savedView = loadSessionView()
+  if (user) {
+    // If logged-in user was in the middle of completing profile, preserve it,
+    // otherwise default to find-tutor so existing users never see onboarding.
+    if (savedView === 'complete-profile') return 'complete-profile'
+    return 'find-tutor'
+  }
+  if (savedView && ['login', 'signup', 'verify-email', 'home'].includes(savedView)) {
+    return savedView
+  }
+  return 'home'
+}
 
 function App() {
-  const [view, setView] = useState('home')
+  const [currentUser, setCurrentUser] = useState(() => loadSessionUser())
+  const [view, setView] = useState(() => getInitialView(loadSessionUser()))
+  const [pendingUser, setPendingUser] = useState(null)
+  const [pendingEmail, setPendingEmail] = useState('')
+
+  const navigate = (targetView) => {
+    setView(targetView)
+    saveSessionView(targetView)
+  }
 
   if (view === 'login') {
     return (
-      <div className="relative flex min-h-screen items-center justify-center overflow-hidden bg-ink-950 px-4 py-12">
-        <div
-          aria-hidden="true"
-          className="pointer-events-none absolute inset-0 bg-[radial-gradient(50%_50%_at_50%_0%,rgba(255,175,43,0.14),transparent_65%)]"
-        />
-        <div className="relative w-full max-w-md">
-          <div className="mb-4">
-            <button
-              onClick={() => setView('home')}
-              className="text-label-md text-ink-300 hover:text-white transition-colors flex items-center gap-1.5 cursor-pointer mb-2"
-            >
-              ← Back to Home
-            </button>
-          </div>
-          <LoginForm onSwitchToSignup={() => setView('signup')} />
-        </div>
-      </div>
+      <LoginForm
+        onSwitchToSignup={() => navigate('signup')}
+        onLoginSuccess={(user) => {
+          saveSessionUser(user)
+          setCurrentUser(user)
+          // Existing users skip onboarding and go straight to the marketplace
+          navigate('find-tutor')
+        }}
+      />
     )
   }
 
   if (view === 'signup') {
     return (
-      <div className="relative flex min-h-screen items-center justify-center overflow-hidden bg-ink-950 px-4 py-12">
-        <div
-          aria-hidden="true"
-          className="pointer-events-none absolute inset-0 bg-[radial-gradient(50%_50%_at_50%_0%,rgba(255,175,43,0.14),transparent_65%)]"
-        />
-        <div className="relative w-full max-w-md">
-          <div className="mb-4">
-            <button
-              onClick={() => setView('home')}
-              className="text-label-md text-ink-300 hover:text-white transition-colors flex items-center gap-1.5 cursor-pointer mb-2"
-            >
-              ← Back to Home
-            </button>
-          </div>
-          <SignupForm onSwitchToLogin={() => setView('login')} />
-        </div>
-      </div>
+      <SignupForm
+        onSwitchToLogin={() => navigate('login')}
+        onSignupSuccess={(user) => {
+          setPendingUser(user)
+          setPendingEmail(user.email)
+          navigate('verify-email')
+        }}
+      />
     )
   }
 
-  return <HomePage onNavigate={(targetView) => setView(targetView)} />
+  if (view === 'verify-email') {
+    return (
+      <VerifyEmailPage
+        email={pendingEmail || currentUser?.email || 'student@campus.edu.et'}
+        onBackToLogin={() => navigate('login')}
+        onContinue={() => {
+          const activeUser = pendingUser || currentUser
+          if (activeUser) {
+            setCurrentUser(activeUser)
+            saveSessionUser(activeUser)
+          }
+          // New signups proceed to complete profile
+          navigate('complete-profile')
+        }}
+      />
+    )
+  }
+
+  if (view === 'complete-profile') {
+    return (
+      <CompleteProfilePage
+        user={currentUser || pendingUser}
+        onFinish={(form) => {
+          const profile = profileFromForm(form)
+          const active = currentUser || pendingUser || {}
+          const updated = { ...active, ...profile }
+          setCurrentUser(updated)
+          saveSessionUser(updated)
+          navigate('find-tutor')
+          mockUpdateProfile(updated.email, profile).catch(() => {})
+        }}
+      />
+    )
+  }
+
+  if (view === 'find-tutor') {
+    return (
+      <FindTutorPage
+        user={currentUser}
+        onLogout={() => {
+          clearSession()
+          setCurrentUser(null)
+          setPendingUser(null)
+          navigate('home')
+        }}
+        onNavigate={navigate}
+      />
+    )
+  }
+
+  return <HomePage onNavigate={navigate} />
 }
 
 export default App
