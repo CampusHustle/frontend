@@ -1,4 +1,4 @@
-const EMAIL_REGEX = /^[^\s@]+@[^\s@]+\.[^\s@]+$/
+const EDU_ET_REGEX = /^[^\s@]+@[^\s@]+\.edu\.et$/
 
 export function validateUsername(username) {
   if (!username || username.trim() === '') {
@@ -11,8 +11,8 @@ export function validateEduEmail(email) {
   if (!email || email.trim() === '') {
     return 'Email is required'
   }
-  if (!EMAIL_REGEX.test(email)) {
-    return 'Enter a valid email address'
+  if (!EDU_ET_REGEX.test(email.trim())) {
+    return 'Email must end with .edu.et'
   }
   if (!email.trim().toLowerCase().endsWith('.edu')) {
     return 'Email must end in .edu'

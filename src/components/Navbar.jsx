@@ -15,7 +15,7 @@ function toggleTheme() {
   root.classList.add(next)
   try {
     localStorage.setItem('campus-theme', next)
-  } catch (e) {
+  } catch {
     /* ignore quota / privacy-mode failures */
   }
 }

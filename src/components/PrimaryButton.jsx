@@ -1,9 +1,15 @@
-export default function PrimaryButton({ children, loading = false, disabled = false, ...rest }) {
+export default function PrimaryButton({
+  children,
+  loading = false,
+  disabled = false,
+  className = '',
+  ...rest
+}) {
   return (
     <button
       type="submit"
       disabled={loading || disabled}
-      className="inline-flex w-full items-center justify-center gap-2 rounded-lg bg-secondary-container px-6 py-3.5 text-base font-semibold text-on-secondary-container shadow-md shadow-secondary-container/30 transition-[filter,transform,opacity] duration-200 hover:brightness-105 active:scale-[0.99] disabled:cursor-not-allowed disabled:opacity-60 disabled:hover:brightness-100"
+      className={`inline-flex w-full items-center justify-center gap-2 rounded-lg bg-secondary-container px-6 py-3 text-sm font-semibold text-on-secondary-container shadow-level-1 transition-all duration-200 hover:bg-secondary hover:text-on-secondary hover:shadow-level-2 active:scale-[0.98] disabled:cursor-not-allowed disabled:opacity-60 disabled:hover:bg-secondary-container disabled:hover:text-on-secondary-container ${className}`}
       {...rest}
     >
       {loading && (

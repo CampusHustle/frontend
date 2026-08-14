@@ -1,52 +1,33 @@
 import { describe, it, expect } from 'vitest'
 import { render, screen } from '@testing-library/react'
 import userEvent from '@testing-library/user-event'
-import SignUpForm from '../pages/SignupForm.jsx'
+import SignupForm from '../pages/SignupForm.jsx'
 
 const setup = () => {
   const user = userEvent.setup()
-  render(<SignUpForm onSwitchToSignIn={() => {}} />)
+  render(<SignupForm onSwitchToLogin={() => {}} />)
   return user
 }
 
-const fillValidFields = async (user) => {
-  await user.type(screen.getByLabelText('Username'), 'janedoe')
-  await user.type(screen.getByLabelText('Student Email (.edu)'), 'student@university.edu')
-  await user.type(screen.getByLabelText('Password'), 'password123')
-  await user.type(screen.getByLabelText('Confirm Password'), 'password123')
-}
-
-describe('SignUpForm', () => {
-  it('shows all inline errors when submitting with empty fields', async () => {
+describe('SignupForm', () => {
+  it('shows inline errors when submitting with empty fields', async () => {
     const user = setup()
 
     await user.click(screen.getByRole('button', { name: 'Create Account' }))
 
-    expect(screen.getByText('Username is required')).toBeInTheDocument()
+    expect(screen.getByText('Name is required')).toBeInTheDocument()
     expect(screen.getByText('Email is required')).toBeInTheDocument()
     expect(screen.getByText('Password is required')).toBeInTheDocument()
     expect(screen.getByText('Please confirm your password')).toBeInTheDocument()
-    expect(screen.getByText('You must agree to the terms to continue')).toBeInTheDocument()
   })
 
-  it('shows the specific .edu error for a non-edu email', async () => {
+  it('shows a loading state then a success toast for valid credentials', async () => {
     const user = setup()
 
-    await user.type(screen.getByLabelText('Username'), 'janedoe')
-    await user.type(screen.getByLabelText('Student Email (.edu)'), 'student@university.com')
+    await user.type(screen.getByLabelText('Full Name'), 'Test User')
+    await user.type(screen.getByLabelText('University Email'), 'new.student@campus.edu.et')
     await user.type(screen.getByLabelText('Password'), 'password123')
     await user.type(screen.getByLabelText('Confirm Password'), 'password123')
-    await user.click(screen.getByRole('checkbox'))
-    await user.click(screen.getByRole('button', { name: 'Create Account' }))
-
-    expect(screen.getByText('Email must end in .edu')).toBeInTheDocument()
-  })
-
-  it('shows a loading state then a success toast for valid input', async () => {
-    const user = setup()
-
-    await fillValidFields(user)
-    await user.click(screen.getByRole('checkbox'))
     await user.click(screen.getByRole('button', { name: 'Create Account' }))
 
     expect(screen.getByRole('button', { name: 'Create Account' })).toBeDisabled()
@@ -56,14 +37,13 @@ describe('SignUpForm', () => {
     )
   })
 
-  it('shows a loading state then an error toast when the email contains "fail"', async () => {
+  it('shows a loading state then an error toast for an already-registered email', async () => {
     const user = setup()
 
-    await user.type(screen.getByLabelText('Username'), 'janedoe')
-    await user.type(screen.getByLabelText('Student Email (.edu)'), 'fail@university.edu')
+    await user.type(screen.getByLabelText('Full Name'), 'Test User')
+    await user.type(screen.getByLabelText('University Email'), 'student@campus.edu.et')
     await user.type(screen.getByLabelText('Password'), 'password123')
     await user.type(screen.getByLabelText('Confirm Password'), 'password123')
-    await user.click(screen.getByRole('checkbox'))
     await user.click(screen.getByRole('button', { name: 'Create Account' }))
 
     expect(screen.getByRole('button', { name: 'Create Account' })).toBeDisabled()
@@ -71,5 +51,29 @@ describe('SignUpForm', () => {
     expect(await screen.findByTestId('toast-error')).toHaveTextContent(
       'That email is already registered',
     )
+  })
+
+  it('rejects emails that do not end in .edu.et', async () => {
+    const user = setup()
+
+    await user.type(screen.getByLabelText('Full Name'), 'Test User')
+    await user.type(screen.getByLabelText('University Email'), 'student@gmail.com')
+    await user.type(screen.getByLabelText('Password'), 'password123')
+    await user.type(screen.getByLabelText('Confirm Password'), 'password123')
+    await user.click(screen.getByRole('button', { name: 'Create Account' }))
+
+    expect(screen.getByText('Email must end with .edu.et')).toBeInTheDocument()
+  })
+
+  it('shows an error when the passwords do not match', async () => {
+    const user = setup()
+
+    await user.type(screen.getByLabelText('Full Name'), 'Test User')
+    await user.type(screen.getByLabelText('University Email'), 'new.student@campus.edu.et')
+    await user.type(screen.getByLabelText('Password'), 'password123')
+    await user.type(screen.getByLabelText('Confirm Password'), 'password124')
+    await user.click(screen.getByRole('button', { name: 'Create Account' }))
+
+    expect(screen.getByText('Passwords do not match')).toBeInTheDocument()
   })
 })

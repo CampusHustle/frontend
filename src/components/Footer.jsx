@@ -2,10 +2,10 @@ import { motion, useReducedMotion } from 'motion/react'
 import { IconArrowRight } from '@tabler/icons-react'
 
 const productLinks = [
-  { label: 'Gigs', href: '#gigs' },
-  { label: 'How it works', href: '#how-it-works' },
-  { label: 'Community', href: '#community' },
-  { label: 'Find tutors', href: '#how-it-works' },
+  { label: 'Gigs', href: '#gigs', view: 'home' },
+  { label: 'How it works', href: '#how-it-works', view: 'home' },
+  { label: 'Community', href: '#community', view: 'home' },
+  { label: 'Find tutors', href: '#', view: 'find-tutor' },
 ]
 
 const resourceLinks = [
@@ -18,17 +18,32 @@ const resourceLinks = [
 export default function Footer({ onNavigate }) {
   const reduce = useReducedMotion()
 
-  const handleNav = (targetView) => (e) => {
+  const handleNav = (targetView, hash) => (e) => {
     e.preventDefault()
-    if (onNavigate) onNavigate(targetView)
+    if (onNavigate) {
+      onNavigate(targetView)
+      if (hash) {
+        setTimeout(() => {
+          const el = document.querySelector(hash)
+          if (el) el.scrollIntoView({ behavior: 'smooth' })
+        }, 50)
+      }
+    } else if (hash) {
+      const el = document.querySelector(hash)
+      if (el) el.scrollIntoView({ behavior: 'smooth' })
+    }
   }
 
   return (
-    <footer className="relative overflow-hidden border-t border-white/5 bg-ink-900/40">
+    <footer className="relative overflow-hidden border-t border-white/10 bg-ink-950 text-ink-100">
       <div className="mx-auto max-w-6xl px-4 pt-16 sm:px-6 lg:px-8">
         <div className="grid grid-cols-1 gap-10 pb-14 md:grid-cols-12">
           <div className="md:col-span-6">
-            <a href="#top" className="flex items-center gap-2.5">
+            <a
+              href="#top"
+              onClick={handleNav('home', '#top')}
+              className="flex items-center gap-2.5"
+            >
               <img
                 src="/assets/campushustle.jpg"
                 alt="CampusHustle logo"
@@ -68,6 +83,11 @@ export default function Footer({ onNavigate }) {
                   <li key={link.label}>
                     <a
                       href={link.href}
+                      onClick={
+                        link.view
+                          ? handleNav(link.view, link.href.startsWith('#') ? link.href : null)
+                          : undefined
+                      }
                       className="transition-colors hover:text-ink-50"
                     >
                       {link.label}
