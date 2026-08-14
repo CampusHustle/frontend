@@ -1,6 +1,6 @@
 const styles = {
-  success: 'border-emerald-500/40 bg-emerald-500/15 text-emerald-300',
-  error: 'border-red-500/40 bg-red-500/15 text-red-300',
+  success: 'border-emerald-600/30 bg-emerald-50 text-emerald-700',
+  error: 'border-error/30 bg-error-container/60 text-on-error-container',
 }
 
 export default function Toast({ type, message }) {

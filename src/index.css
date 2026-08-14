@@ -21,6 +21,38 @@
 
   --color-ink-contrast: #1a1200;
 
+  /* Academic Momentum (light) design tokens — mirror of the Stitch design system */
+  --color-primary: #041534;
+  --color-primary-container: #1b2a4a;
+  --color-on-primary: #ffffff;
+  --color-on-primary-container: #8392b7;
+  --color-primary-fixed: #d9e2ff;
+  --color-primary-fixed-dim: #b7c6ee;
+  --color-secondary: #835500;
+  --color-secondary-container: #feae2c;
+  --color-on-secondary: #ffffff;
+  --color-on-secondary-container: #6b4500;
+  --color-tertiary-container: #002b53;
+  --color-surface: #f8f9fa;
+  --color-surface-lowest: #ffffff;
+  --color-surface-low: #f3f4f5;
+  --color-surface-container: #edeeef;
+  --color-surface-high: #e7e8e9;
+  --color-surface-highest: #e1e3e4;
+  --color-surface-variant: #e1e3e4;
+  --color-on-surface: #191c1d;
+  --color-on-surface-variant: #45464e;
+  --color-outline: #75777f;
+  --color-outline-variant: #c5c6cf;
+  --color-error: #ba1a1a;
+  --color-error-container: #ffdad6;
+  --color-on-error: #ffffff;
+  --color-on-error-container: #93000a;
+
+  --shadow-level-1: 0px 2px 4px rgba(27, 42, 74, 0.05);
+  --shadow-level-2: 0px 4px 12px rgba(27, 42, 74, 0.1);
+  --shadow-level-3: 0px 8px 24px rgba(27, 42, 74, 0.15);
+
   --font-display: "Montserrat Variable", "Montserrat", sans-serif;
   --font-body: "Inter Variable", "Inter", sans-serif;
 
@@ -50,6 +82,22 @@
 
 @utility font-display {
   font-family: var(--font-display);
+}
+
+@utility mesh-bg {
+  background-color: var(--color-surface);
+  background-image:
+    radial-gradient(at 0% 0%, hsla(217, 85%, 11%, 0.1) 0px, transparent 50%),
+    radial-gradient(at 100% 100%, hsla(37, 99%, 58%, 0.15) 0px, transparent 50%),
+    radial-gradient(at 100% 0%, hsla(217, 85%, 11%, 0.05) 0px, transparent 50%);
+}
+
+@utility glass-card {
+  background: rgba(255, 255, 255, 0.85);
+  backdrop-filter: blur(16px);
+  -webkit-backdrop-filter: blur(16px);
+  border: 1px solid rgba(255, 255, 255, 0.5);
+  box-shadow: 0 8px 32px 0 rgba(4, 21, 52, 0.05);
 }
 
 @variant light (&:where(.light, .light *));
