@@ -56,7 +56,7 @@ export default function AuthNotesMarketplace() {
 
             {/* Load More Button */}
             <div className="mt-10 flex justify-center">
-                <button className="px-6 py-2.5 bg-gray-800 text-yellow-500 font-bold rounded-lg hover:bg-gray-700 transition-colors border border-gray-700 shadow-sm">
+                <button className="px-6 py-2.5 bg-amber-500 text-gray-900 font-bold rounded-lg hover:bg-amber-600 transition-colors shadow-sm">
                     Load More Resources
                 </button>
             </div>

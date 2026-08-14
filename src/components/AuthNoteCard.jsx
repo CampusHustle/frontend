@@ -10,7 +10,7 @@ const AuthNoteCard = ({
   authorName
 }) => {
   return (
-    <div className="flex w-full max-w-sm flex-col overflow-hidden rounded-2xl border border-gray-100 bg-white shadow-sm transition-all duration-200 hover:shadow-md">
+    <div className="flex w-full max-w-sm flex-col overflow-hidden rounded-2xl border border-gray-200 bg-white shadow-sm transition-all duration-200 hover:shadow-md">
       
       {/* Top Image Area */}
       <div className="relative h-44 w-full bg-gray-100">
@@ -28,7 +28,7 @@ const AuthNoteCard = ({
           <span className="rounded bg-gray-100 px-2 py-1 text-[10px] font-bold uppercase tracking-wider text-gray-700">
             {contentType || "NOTE"}
           </span>
-          <span className="text-lg font-extrabold text-gray-900">
+          <span className="text-lg font-extrabold text-amber-500">
             {price || "Free"}
           </span>
         </div>
@@ -38,7 +38,7 @@ const AuthNoteCard = ({
         </h3>
         
         {/* Course Label */}
-        <div className="text-xs font-semibold text-blue-900 bg-blue-50 w-fit px-2 py-1 rounded">
+        <div className="text-xs font-semibold text-gray-700 bg-gray-100 w-fit px-2 py-1 rounded">
           {course || "General Academic"}
         </div>
 

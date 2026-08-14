@@ -8,7 +8,7 @@ export default function AuthMarketplacePage() {
 
             {/* Top Header Section */}
             <div className="mb-10 text-center md:text-left">
-                <h1 className="text-4xl font-extrabold text-yellow-600 tracking-tight">
+                <h1 className="text-4xl font-extrabold text-gray-900 tracking-tight">
                     Browse the Marketplace
                 </h1>
                 <p className="text-gray-600 mt-3 text-lg max-w-2xl">
@@ -26,11 +26,11 @@ export default function AuthMarketplacePage() {
 
                     {/* Results Count & Sort Dropdown */}
                     <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center mb-6">
-                        <span className="text-gray-700 font-medium mb-4 sm:mb-0">Showing 24 results</span>
+                        <span className="text-gray-600 font-medium mb-4 sm:mb-0">Showing 24 results</span>
 
                         <div className="flex items-center gap-2 w-full sm:w-auto">
                             <span className="text-sm text-gray-500">Sort by:</span>
-                            <select className="border border-gray-200 rounded-lg py-2 px-3 text-sm text-gray-700 focus:outline-none focus:ring-2 focus:ring-blue-900 bg-white shadow-sm font-medium w-full sm:w-auto min-w-0">
+                            <select className="border border-gray-200 rounded-lg py-2 px-3 text-sm text-gray-700 focus:outline-none focus:ring-2 focus:ring-amber-500 bg-white shadow-sm font-medium w-full sm:w-auto min-w-0">
                                 <option>Recommended</option>
                                 <option>Newest</option>
                             </select>
