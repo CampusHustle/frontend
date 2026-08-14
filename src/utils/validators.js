@@ -7,6 +7,13 @@ export function validateUsername(username) {
   return null
 }
 
+export function validateName(name) {
+  if (!name || name.trim() === '') {
+    return 'Name is required'
+  }
+  return null
+}
+
 export function validateEduEmail(email) {
   if (!email || email.trim() === '') {
     return 'Email is required'
@@ -14,10 +21,11 @@ export function validateEduEmail(email) {
   if (!EDU_ET_REGEX.test(email.trim())) {
     return 'Email must end with .edu.et'
   }
-  if (!email.trim().toLowerCase().endsWith('.edu')) {
-    return 'Email must end in .edu'
-  }
   return null
+}
+
+export function validateEmail(email) {
+  return validateEduEmail(email)
 }
 
 export function validatePassword(password) {
@@ -46,3 +54,4 @@ export function validateTerms(checked) {
   }
   return null
 }
+
