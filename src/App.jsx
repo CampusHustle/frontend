@@ -7,6 +7,7 @@ import VerifyEmailScreen from './screens/VerifyEmailScreen.jsx'
 import CompleteProfileScreen from './screens/CompleteProfileScreen.jsx'
 import FindTutorScreen from './screens/FindTutorScreen.jsx'
 import MarketplaceScreen from './screens/MarketplaceScreen.jsx'
+import ProfileScreen from './screens/ProfileScreen.jsx'
 import { mockUpdateProfile } from './api/mockAuthApi.js'
 import {
   clearSession,
@@ -23,6 +24,7 @@ function getInitialPath() {
   if (user) {
     if (savedView === 'complete-profile') return '/complete-profile'
     if (savedView === 'marketplace' || savedView === 'market') return '/market'
+    if (savedView === 'profile') return '/profile'
     return '/tutor'
   }
   if (savedView) {
@@ -67,6 +69,7 @@ export function AppRoutes() {
       tutor: '/tutor',
       marketplace: '/market',
       market: '/market',
+      profile: '/profile',
     }
     const path = routeMap[targetView] || (typeof targetView === 'string' && targetView.startsWith('/') ? targetView : '/')
     saveSessionView(targetView)
@@ -161,6 +164,20 @@ export function AppRoutes() {
             onLogout={handleLogout}
             onNavigate={handleNavigate}
           />
+        }
+      />
+      <Route
+        path="/profile"
+        element={
+          currentUser ? (
+            <ProfileScreen
+              user={currentUser}
+              onLogout={handleLogout}
+              onNavigate={handleNavigate}
+            />
+          ) : (
+            <Navigate to="/" replace />
+          )
         }
       />
       <Route path="*" element={<Navigate to="/" replace />} />

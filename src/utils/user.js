@@ -3,12 +3,9 @@ export function hasCompletedProfile(user) {
 }
 
 export function profileFromForm(form) {
-  const name = [form.firstName, form.lastName].filter(Boolean).join(' ').trim()
   return {
-    ...(name ? { name } : {}),
     bio: form.bio,
-    university: form.university,
-    department: form.major,
+    department: form.department,
     year: form.year,
     skillsLearning: form.skills,
     skillsTeaching: form.subjects,

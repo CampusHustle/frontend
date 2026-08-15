@@ -50,7 +50,30 @@ describe('App navigation and session persistence', () => {
     await user.click(screen.getByRole('button', { name: 'Log in' }))
 
     expect(await screen.findByRole('heading', { name: 'Find Tutors' })).toBeInTheDocument()
-    expect(screen.queryByText('Complete Your Profile')).not.toBeInTheDocument()
+    expect(screen.queryByText('Set Up Your Profile')).not.toBeInTheDocument()
+  })
+
+  it('navigates to My Profile when the profile icon is clicked', async () => {
+    const user = userEvent.setup()
+    saveSessionView('login')
+    window.history.pushState({}, '', '/login')
+
+    render(<App />)
+
+    await user.type(screen.getByLabelText('Email'), 'student@campus.edu.et')
+    await user.type(screen.getByLabelText('Password'), 'password123')
+    await user.click(screen.getByRole('button', { name: 'Log in' }))
+
+    expect(await screen.findByRole('heading', { name: 'Find Tutors' })).toBeInTheDocument()
+
+    await user.click(screen.getByRole('button', { name: 'View my profile' }))
+
+    expect(await screen.findByRole('heading', { name: 'My Profile' })).toBeInTheDocument()
+    expect(screen.getByText('Demo Student')).toBeInTheDocument()
+    expect(screen.getByText('General Studies • Campus University • sophomore')).toBeInTheDocument()
+    expect(
+      screen.getByText('Demo account used to walk through the CampusHustle flow.'),
+    ).toBeInTheDocument()
   })
 
   it('routes new signups through verify-email to complete-profile', async () => {
@@ -74,7 +97,7 @@ describe('App navigation and session persistence', () => {
     // Click verify & set up profile
     await user.click(screen.getByRole('button', { name: /Verify & Set Up Profile/i }))
 
-    expect(await screen.findByRole('heading', { name: 'Complete Your Profile' })).toBeInTheDocument()
+    expect(await screen.findByRole('heading', { name: 'Set Up Your Profile' })).toBeInTheDocument()
   })
 
   it('renders footer on FindTutorPage with same brand branding and links', () => {
