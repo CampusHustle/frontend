@@ -121,7 +121,11 @@ export default function AppNavbar({
           {/* Post Listing CTA Button */}
           <button
             type="button"
-            onClick={() => onPostListing?.()}
+            onClick={() =>
+              onPostListing
+                ? onPostListing()
+                : onNavigate?.('post-listing')
+            }
             className="inline-flex items-center gap-1.5 rounded-lg bg-secondary-container px-3.5 py-1.5 text-xs font-bold text-on-secondary-container shadow-sm transition-all hover:brightness-105 active:scale-95 sm:text-sm"
           >
             <IconPlus size={16} stroke={2.5} aria-hidden="true" />

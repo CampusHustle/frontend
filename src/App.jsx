@@ -9,6 +9,7 @@ import FindTutorScreen from './screens/FindTutorScreen.jsx'
 import MarketplaceScreen from './screens/MarketplaceScreen.jsx'
 import ProfileScreen from './screens/ProfileScreen.jsx'
 import TutorDetailScreen from './screens/TutorDetailScreen.jsx'
+import PostListingScreen from './screens/PostListingScreen.jsx'
 import { mockUpdateProfile } from './api/mockAuthApi.js'
 import {
   clearSession,
@@ -26,6 +27,7 @@ function getInitialPath() {
     if (savedView === 'complete-profile') return '/complete-profile'
     if (savedView === 'marketplace' || savedView === 'market') return '/market'
     if (savedView === 'profile') return '/profile'
+    if (savedView === 'post-listing') return '/post-listing'
     return '/tutor'
   }
   if (savedView) {
@@ -57,6 +59,7 @@ export function AppRoutes() {
     if (initialPath !== location.pathname && location.pathname === '/') {
       navigate(initialPath, { replace: true })
     }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [])
 
   const handleNavigate = (targetView) => {
@@ -71,6 +74,7 @@ export function AppRoutes() {
       marketplace: '/market',
       market: '/market',
       profile: '/profile',
+      'post-listing': '/post-listing',
     }
     const path = routeMap[targetView] || (typeof targetView === 'string' && targetView.startsWith('/') ? targetView : '/')
     saveSessionView(targetView)
@@ -181,6 +185,16 @@ export function AppRoutes() {
           ) : (
             <Navigate to="/" replace />
           )
+        }
+      />
+      <Route
+        path="/post-listing"
+        element={
+          <PostListingScreen
+            user={currentUser}
+            onLogout={handleLogout}
+            onNavigate={handleNavigate}
+          />
         }
       />
       <Route path="*" element={<Navigate to="/" replace />} />
