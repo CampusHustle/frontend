@@ -1,5 +1,3 @@
-import React from 'react';
-
 export default function PurchaseCard({ note }) {
   const { title, course, description, price, purchaseCount, tutorName } = note;
 

@@ -1,6 +1,6 @@
-import React from 'react'
 import AuthNoteCard from './AuthNoteCard'
 
+// eslint-disable-next-line react-refresh/only-export-components
 export const dummyNotes = [
   {
     id: 1,

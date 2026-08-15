@@ -1,4 +1,3 @@
-import React from 'react'
 import { IconCircleCheckFilled } from '@tabler/icons-react'
 
 const AuthNoteCard = ({
