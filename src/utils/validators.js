@@ -55,38 +55,3 @@ export function validateTerms(checked) {
   return null
 }
 
-export function validateDepartment(department) {
-  if (!department || department.trim() === '') {
-    return 'Select your department'
-  }
-  return null
-}
-
-export function validateYear(year) {
-  if (!year || year.trim() === '') {
-    return 'Select your academic year'
-  }
-  return null
-}
-
-export function validateBio(bio) {
-  if (!bio || bio.trim() === '') {
-    return 'Tell peers a bit about yourself'
-  }
-  return null
-}
-
-export function validateSkills(skills) {
-  if (!Array.isArray(skills) || skills.length === 0) {
-    return 'Add at least one skill'
-  }
-  return null
-}
-
-export function validateSubjects(subjects) {
-  if (!Array.isArray(subjects) || subjects.length === 0) {
-    return 'Add at least one subject'
-  }
-  return null
-}
-

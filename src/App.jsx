@@ -119,14 +119,6 @@ export function AppRoutes() {
           <VerifyEmailScreen
             email={pendingEmail || currentUser?.email || 'student@campus.edu.et'}
             onBackToLogin={() => handleNavigate('login')}
-            onContinue={() => {
-              const activeUser = pendingUser || currentUser
-              if (activeUser) {
-                setCurrentUser(activeUser)
-                saveSessionUser(activeUser)
-              }
-              handleNavigate('complete-profile')
-            }}
           />
         }
       />

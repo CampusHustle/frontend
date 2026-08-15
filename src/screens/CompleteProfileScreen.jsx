@@ -1,103 +1,84 @@
-import { Fragment, useState } from 'react'
-import { IconCheck, IconChevronDown } from '@tabler/icons-react'
-import AvatarUploader from '../components/AvatarUploader.jsx'
-import PrimaryButton from '../components/PrimaryButton.jsx'
-import TagInput from '../components/TagInput.jsx'
-import {
-  validateBio,
-  validateDepartment,
-  validateSkills,
-  validateSubjects,
-  validateYear,
-} from '../utils/validators.js'
+import { useState } from 'react'
+import { IconCamera, IconChevronDown, IconSchool, IconUser, IconX } from '@tabler/icons-react'
 
-const DEPARTMENTS = [
-  'Computer Science',
-  'Engineering',
-  'Business',
-  'Arts & Humanities',
-  'Sciences',
-]
+function TagInput({ id, placeholder, tags, onChange }) {
+  const [draft, setDraft] = useState('')
 
-const YEARS = ['Freshman', 'Sophomore', 'Junior', 'Senior', 'Graduate']
+  const addTag = () => {
+    const value = draft.trim()
+    if (value && !tags.includes(value)) {
+      onChange([...tags, value])
+    }
+    setDraft('')
+  }
 
-const SKILL_SUGGESTIONS = [
-  'Essay Writing',
-  'Presentation',
-  'Public Speaking',
-  'Note-taking',
-  'Time Management',
-  'Research',
-]
+  const handleKeyDown = (e) => {
+    if (e.key === 'Enter') {
+      e.preventDefault()
+      addTag()
+    } else if (e.key === 'Backspace' && !draft && tags.length > 0) {
+      onChange(tags.slice(0, -1))
+    }
+  }
 
-const SUBJECT_SUGGESTIONS = [
-  'Calculus',
-  'Linear Algebra',
-  'Data Structures',
-  'Algorithms',
-  'Physics',
-  'Chemistry',
-]
-
-const STEPS = ['About You', 'Skills & Tutoring']
-
-const fieldClass =
-  'w-full rounded-lg border border-surface-variant bg-surface-low px-4 py-3 text-base text-on-surface transition-colors placeholder-outline focus:border-primary focus:outline-none focus:ring-1 focus:ring-primary'
-
-const errorFieldClass = 'border-error focus:border-error focus:ring-error'
-const errorClass = 'text-sm text-error'
-
-const blurValidators = {
-  department: validateDepartment,
-  year: validateYear,
-  bio: validateBio,
+  return (
+    <div className="flex min-h-[48px] flex-wrap items-center gap-2 rounded-lg border border-surface-highest bg-surface-bright p-2">
+      {tags.map((tag) => (
+        <span
+          key={tag}
+          className="inline-flex items-center gap-1 rounded-full bg-surface-highest px-3 py-1 text-xs font-medium text-on-surface"
+        >
+          {tag}
+          <button
+            type="button"
+            aria-label={`Remove ${tag}`}
+            onClick={() => onChange(tags.filter((t) => t !== tag))}
+            className="text-on-surface-variant transition-colors hover:text-error"
+          >
+            <IconX size={14} aria-hidden="true" />
+          </button>
+        </span>
+      ))}
+      <input
+        id={id}
+        type="text"
+        value={draft}
+        onChange={(e) => setDraft(e.target.value)}
+        onKeyDown={handleKeyDown}
+        onBlur={addTag}
+        placeholder={tags.length === 0 ? placeholder : ''}
+        className="flex-grow bg-transparent p-0 text-sm text-on-surface placeholder-outline focus:outline-none focus:ring-0"
+      />
+    </div>
+  )
 }
 
+const fieldClass =
+  'w-full rounded-lg border border-surface-highest bg-surface-bright px-4 py-2 text-base text-on-surface transition-colors placeholder-outline focus:border-primary focus:outline-none focus:ring-1 focus:ring-primary'
+
+const sectionClass = 'border-b border-surface-highest py-6'
+const labelClass = 'text-sm font-semibold text-on-surface'
+const headingClass = 'font-display mb-4 text-xl font-semibold text-primary'
+
 export default function CompleteProfileScreen({ user, onFinish }) {
-  const [step, setStep] = useState(1)
   const [form, setForm] = useState({
-    department: '',
-    year: '',
+    firstName: '',
+    lastName: '',
     bio: '',
+    university: '',
+    major: '',
+    year: '',
     skills: [],
     subjects: [],
     hourlyRate: '',
   })
-  const [errors, setErrors] = useState({})
-  const [avatarFile, setAvatarFile] = useState(null)
 
-  const setField = (field) => (e) => setForm((f) => ({ ...f, [field]: e.target.value }))
+  const set = (field) => (e) => setForm((f) => ({ ...f, [field]: e.target.value }))
   const setTags = (field) => (tags) => setForm((f) => ({ ...f, [field]: tags }))
-
-  const validateStep = (stepToValidate) => {
-    const validators = {
-      1: { department: validateDepartment, year: validateYear, bio: validateBio },
-      2: { skills: validateSkills, subjects: validateSubjects },
-    }[stepToValidate]
-
-    const nextErrors = {}
-    Object.entries(validators).forEach(([field, validate]) => {
-      const error = validate(form[field])
-      if (error) nextErrors[field] = error
-    })
-    setErrors(nextErrors)
-    return Object.keys(nextErrors).length === 0
-  }
-
-  const handleBlur = (field) => () => {
-    const validate = blurValidators[field]
-    if (!validate) return
-    const error = validate(form[field])
-    setErrors((prev) => ({ ...prev, [field]: error }))
-  }
 
   const handleSubmit = (e) => {
     e.preventDefault()
-    if (step === 1) {
-      if (validateStep(1)) setStep(2)
-      return
-    }
-    if (validateStep(2)) onFinish({ ...form, avatarFile })
+    onFinish(form)
   }
 
   return (
@@ -105,248 +86,208 @@ export default function CompleteProfileScreen({ user, onFinish }) {
       <main className="mx-auto w-full max-w-2xl">
         <div className="mb-10 text-center">
           <h1 className="font-display text-2xl font-bold tracking-tight text-primary md:text-3xl">
-            Set Up Your Profile
+            Complete Your Profile
           </h1>
           <p className="mt-1 text-lg text-on-surface-variant">
-            {user ? `Welcome, ${user.name}. ` : ''}Let's get you set up to hustle on CampusHustle.
+            {user ? `Welcome, ${user.name}. ` : ''}Set up your CampusHustle account to start
+            offering services.
           </p>
         </div>
 
-        <div className="space-y-6 rounded-xl border border-surface-variant bg-surface-lowest p-6 shadow-level-1 md:p-8">
-          <div className="flex items-center" role="group" aria-label="Progress">
-            {STEPS.map((label, i) => {
-              const n = i + 1
-              const isCurrent = n === step
-              const isDone = n < step
-              return (
-                <Fragment key={label}>
-                  {i > 0 && (
-                    <span
-                      className={`h-1 flex-1 rounded-full transition-colors ${
-                        isDone ? 'bg-secondary-container' : 'bg-surface-highest'
-                      }`}
-                    />
-                  )}
-                  <div className="flex flex-col items-center gap-1.5 px-2">
-                    <span
-                      className={`flex size-8 items-center justify-center rounded-full text-sm font-bold transition-colors ${
-                        isDone
-                          ? 'bg-secondary-container text-on-secondary-container'
-                          : isCurrent
-                            ? 'bg-primary text-on-primary'
-                            : 'bg-surface-high text-on-surface-variant'
-                      }`}
-                    >
-                      {isDone ? <IconCheck size={16} aria-hidden="true" /> : n}
-                    </span>
-                    <span
-                      className={`text-xs font-medium ${
-                        isCurrent ? 'text-primary' : 'text-on-surface-variant'
-                      }`}
-                    >
-                      {label}
-                    </span>
-                  </div>
-                </Fragment>
-              )
-            })}
-          </div>
-
-          <form onSubmit={handleSubmit} noValidate>
-            {step === 1 ? (
-              <>
-                <section className="flex flex-col items-center py-6">
-                  <AvatarUploader user={user} onChange={setAvatarFile} />
-                </section>
-
-                <section className="space-y-4 border-t border-surface-variant py-6">
-                  <h2 className="font-display mb-2 text-xl font-semibold text-primary">
-                    About You
-                  </h2>
-                  <div className="grid grid-cols-1 gap-4 md:grid-cols-2">
-                    <div className="flex flex-col gap-1">
-                      <label className="text-sm font-semibold text-on-surface" htmlFor="department">
-                        Department
-                      </label>
-                      <div className="relative">
-                        <select
-                          id="department"
-                          data-testid="department"
-                          className={`${fieldClass} appearance-none pr-10 ${
-                            errors.department ? errorFieldClass : ''
-                          }`}
-                          value={form.department}
-                          onChange={setField('department')}
-                          onBlur={handleBlur('department')}
-                        >
-                          <option value="" disabled>
-                            Select department
-                          </option>
-                          {DEPARTMENTS.map((d) => (
-                            <option key={d} value={d}>
-                              {d}
-                            </option>
-                          ))}
-                        </select>
-                        <IconChevronDown
-                          size={18}
-                          className="pointer-events-none absolute right-3 top-1/2 -translate-y-1/2 text-outline"
-                          aria-hidden="true"
-                        />
-                      </div>
-                      {errors.department && (
-                        <p className={errorClass} data-testid="department-error">
-                          {errors.department}
-                        </p>
-                      )}
-                    </div>
-
-                    <div className="flex flex-col gap-1">
-                      <label className="text-sm font-semibold text-on-surface" htmlFor="year">
-                        Year of Study
-                      </label>
-                      <div className="relative">
-                        <select
-                          id="year"
-                          data-testid="year"
-                          className={`${fieldClass} appearance-none pr-10 ${
-                            errors.year ? errorFieldClass : ''
-                          }`}
-                          value={form.year}
-                          onChange={setField('year')}
-                          onBlur={handleBlur('year')}
-                        >
-                          <option value="" disabled>
-                            Select year
-                          </option>
-                          {YEARS.map((y) => (
-                            <option key={y} value={y}>
-                              {y}
-                            </option>
-                          ))}
-                        </select>
-                        <IconChevronDown
-                          size={18}
-                          className="pointer-events-none absolute right-3 top-1/2 -translate-y-1/2 text-outline"
-                          aria-hidden="true"
-                        />
-                      </div>
-                      {errors.year && (
-                        <p className={errorClass} data-testid="year-error">
-                          {errors.year}
-                        </p>
-                      )}
-                    </div>
-                  </div>
-
-                  <div className="flex flex-col gap-1">
-                    <label className="text-sm font-semibold text-on-surface" htmlFor="bio">
-                      Bio
-                    </label>
-                    <textarea
-                      id="bio"
-                      data-testid="bio"
-                      rows={3}
-                      maxLength={150}
-                      className={`${fieldClass} resize-none ${errors.bio ? errorFieldClass : ''}`}
-                      placeholder="Tell peers about yourself — your major, interests, and what you're passionate about..."
-                      value={form.bio}
-                      onChange={setField('bio')}
-                      onBlur={handleBlur('bio')}
-                    />
-                    <div className="flex items-center justify-between">
-                      {errors.bio ? (
-                        <p className={errorClass} data-testid="bio-error">
-                          {errors.bio}
-                        </p>
-                      ) : (
-                        <p className="text-xs font-medium text-on-surface-variant">
-                          A short bio helps peers get to know you.
-                        </p>
-                      )}
-                      <span className="text-xs font-medium text-on-surface-variant">
-                        {form.bio.length}/150
-                      </span>
-                    </div>
-                  </div>
-                </section>
-              </>
-            ) : (
-              <>
-                <section className="space-y-4 border-t border-surface-variant py-6">
-                  <h2 className="font-display mb-2 text-xl font-semibold text-primary">
-                    Skills & Tutoring
-                  </h2>
-                  <TagInput
-                    label="Skills I Can Offer"
-                    hint="Press enter to add a skill."
-                    placeholder="e.g. Essay Writing"
-                    suggestions={SKILL_SUGGESTIONS}
-                    value={form.skills}
-                    onChange={setTags('skills')}
-                    error={errors.skills}
-                  />
-                  <TagInput
-                    label="Subjects I Want to Learn"
-                    hint="Press enter to add a subject."
-                    placeholder="e.g. Calculus 101"
-                    suggestions={SUBJECT_SUGGESTIONS}
-                    value={form.subjects}
-                    onChange={setTags('subjects')}
-                    error={errors.subjects}
-                  />
-                </section>
-
-                <section className="space-y-4 border-t border-surface-variant py-6">
-                  <div className="mb-2 flex items-center justify-between">
-                    <h2 className="font-display text-xl font-semibold text-primary">
-                      Tutoring Rate
-                    </h2>
-                    <span className="rounded-full bg-surface-container px-2 py-1 text-xs font-medium text-on-surface-variant">
-                      Optional
-                    </span>
-                  </div>
-                  <div className="flex max-w-[200px] flex-col gap-1">
-                    <label className="text-sm font-semibold text-on-surface" htmlFor="rate">
-                      Hourly Rate ($)
-                    </label>
-                    <div className="relative">
-                      <span className="absolute left-3 top-1/2 -translate-y-1/2 text-base text-outline">
-                        $
-                      </span>
-                      <input
-                        id="rate"
-                        data-testid="rate"
-                        type="number"
-                        min="0"
-                        step="5"
-                        className={`${fieldClass} pl-8`}
-                        placeholder="25"
-                        value={form.hourlyRate}
-                        onChange={setField('hourlyRate')}
-                      />
-                    </div>
-                    <p className="mt-1 text-xs font-medium text-on-surface-variant">
-                      Leave blank if you are only buying.
-                    </p>
-                  </div>
-                </section>
-              </>
-            )}
-
-            <div className="flex items-center gap-4 border-t border-surface-variant pt-6">
-              {step === 2 && (
+        <div className="space-y-6 rounded-xl border border-surface-highest bg-surface-lowest p-6 shadow-level-1 md:p-8">
+          <form onSubmit={handleSubmit}>
+            <section className={`${sectionClass} flex flex-col items-center`}>
+              <div className="relative mb-4 size-32">
+                <div className="flex size-full items-center justify-center rounded-full border-2 border-dashed border-outline-variant bg-surface-low text-outline">
+                  <IconUser size={40} aria-hidden="true" />
+                </div>
                 <button
                   type="button"
-                  onClick={() => setStep(1)}
-                  className="rounded-lg border border-outline-variant px-6 py-3 text-sm font-semibold text-on-surface-variant transition-colors hover:text-primary"
+                  aria-label="Upload Photo"
+                  className="absolute bottom-0 right-0 rounded-full bg-primary p-2 text-on-primary shadow-level-2 transition-colors hover:bg-tertiary-container"
                 >
-                  Back
+                  <IconCamera size={16} aria-hidden="true" />
                 </button>
-              )}
-              <PrimaryButton className={step === 2 ? 'flex-1' : ''}>
-                {step === 1 ? 'Continue' : 'Finish Setup'}
-              </PrimaryButton>
+              </div>
+              <p className="max-w-xs text-center text-xs font-medium text-on-surface-variant">
+                Upload a clear, professional headshot. High-quality photos increase trust with
+                peers.
+              </p>
+            </section>
+
+            <section className={`${sectionClass} space-y-4`}>
+              <h2 className={headingClass}>Personal Information</h2>
+              <div className="grid grid-cols-1 gap-4 md:grid-cols-2">
+                <div className="flex flex-col gap-1">
+                  <label className={labelClass} htmlFor="firstName">
+                    First Name
+                  </label>
+                  <input
+                    id="firstName"
+                    className={fieldClass}
+                    placeholder="Jane"
+                    value={form.firstName}
+                    onChange={set('firstName')}
+                  />
+                </div>
+                <div className="flex flex-col gap-1">
+                  <label className={labelClass} htmlFor="lastName">
+                    Last Name
+                  </label>
+                  <input
+                    id="lastName"
+                    className={fieldClass}
+                    placeholder="Doe"
+                    value={form.lastName}
+                    onChange={set('lastName')}
+                  />
+                </div>
+              </div>
+              <div className="flex flex-col gap-1">
+                <label className={labelClass} htmlFor="bio">
+                  Bio
+                </label>
+                <textarea
+                  id="bio"
+                  rows="4"
+                  className={`${fieldClass} resize-none`}
+                  placeholder="Tell your peers a little about yourself, your academic background, and what you're passionate about..."
+                  value={form.bio}
+                  onChange={set('bio')}
+                />
+              </div>
+            </section>
+
+            <section className={`${sectionClass} space-y-4`}>
+              <h2 className={headingClass}>Academic Background</h2>
+              <div className="flex flex-col gap-1">
+                <label className={labelClass} htmlFor="university">
+                  University
+                </label>
+                <div className="relative">
+                  <IconSchool
+                    size={18}
+                    className="pointer-events-none absolute left-3 top-1/2 -translate-y-1/2 text-outline"
+                    aria-hidden="true"
+                  />
+                  <input
+                    id="university"
+                    className={`${fieldClass} pl-10`}
+                    placeholder="Search for your university..."
+                    value={form.university}
+                    onChange={set('university')}
+                  />
+                </div>
+              </div>
+              <div className="grid grid-cols-1 gap-4 md:grid-cols-2">
+                <div className="flex flex-col gap-1">
+                  <label className={labelClass} htmlFor="major">
+                    Major
+                  </label>
+                  <input
+                    id="major"
+                    className={fieldClass}
+                    placeholder="e.g. Computer Science"
+                    value={form.major}
+                    onChange={set('major')}
+                  />
+                </div>
+                <div className="flex flex-col gap-1">
+                  <label className={labelClass} htmlFor="year">
+                    Year of Study
+                  </label>
+                  <div className="relative">
+                    <select
+                      id="year"
+                      className={`${fieldClass} appearance-none pr-8`}
+                      value={form.year}
+                      onChange={set('year')}
+                    >
+                      <option value="" disabled>
+                        Select Year
+                      </option>
+                      <option value="freshman">Freshman</option>
+                      <option value="sophomore">Sophomore</option>
+                      <option value="junior">Junior</option>
+                      <option value="senior">Senior</option>
+                      <option value="grad">Graduate Student</option>
+                    </select>
+                    <IconChevronDown
+                      size={18}
+                      className="pointer-events-none absolute right-3 top-1/2 -translate-y-1/2 text-outline"
+                      aria-hidden="true"
+                    />
+                  </div>
+                </div>
+              </div>
+            </section>
+
+            <section className={`${sectionClass} space-y-4`}>
+              <h2 className={headingClass}>Expertise</h2>
+              <div className="flex flex-col gap-1">
+                <label className={labelClass} htmlFor="skills">
+                  Academic Skills
+                </label>
+                <p className="mb-1 text-sm text-on-surface-variant">Press enter to add tags.</p>
+                <TagInput
+                  id="skills"
+                  placeholder="e.g. Essay Writing..."
+                  tags={form.skills}
+                  onChange={setTags('skills')}
+                />
+              </div>
+              <div className="flex flex-col gap-1">
+                <label className={labelClass} htmlFor="subjects">
+                  Subjects I Can Teach
+                </label>
+                <TagInput
+                  id="subjects"
+                  placeholder="e.g. Calculus 101..."
+                  tags={form.subjects}
+                  onChange={setTags('subjects')}
+                />
+              </div>
+            </section>
+
+            <section className="space-y-4 pt-6 pb-2">
+              <div className="mb-4 flex items-center justify-between">
+                <h2 className={headingClass}>Tutoring Rate</h2>
+                <span className="rounded-full bg-surface-container px-2 py-1 text-xs font-medium text-on-surface-variant">
+                  Optional
+                </span>
+              </div>
+              <div className="flex max-w-[200px] flex-col gap-1">
+                <label className={labelClass} htmlFor="rate">
+                  Hourly Rate ($)
+                </label>
+                <div className="relative">
+                  <span className="absolute left-3 top-1/2 -translate-y-1/2 text-base text-outline">
+                    $
+                  </span>
+                  <input
+                    id="rate"
+                    type="number"
+                    min="0"
+                    step="5"
+                    className={`${fieldClass} pl-8`}
+                    placeholder="25"
+                    value={form.hourlyRate}
+                    onChange={set('hourlyRate')}
+                  />
+                </div>
+                <p className="mt-1 text-sm text-on-surface-variant">
+                  Leave blank if you are only buying.
+                </p>
+              </div>
+            </section>
+
+            <div className="mt-6 flex justify-end border-t border-surface-highest pt-6">
+              <button
+                type="submit"
+                className="rounded-lg bg-secondary-container px-8 py-3 text-sm font-semibold text-on-secondary-container shadow-level-1 transition-all duration-200 hover:bg-secondary hover:text-on-secondary hover:shadow-level-2"
+              >
+                Finish Setup
+              </button>
             </div>
           </form>
         </div>

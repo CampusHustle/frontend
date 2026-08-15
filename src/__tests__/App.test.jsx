@@ -50,7 +50,7 @@ describe('App navigation and session persistence', () => {
     await user.click(screen.getByRole('button', { name: 'Log in' }))
 
     expect(await screen.findByRole('heading', { name: 'Find Tutors' })).toBeInTheDocument()
-    expect(screen.queryByText('Set Up Your Profile')).not.toBeInTheDocument()
+    expect(screen.queryByText('Complete Your Profile')).not.toBeInTheDocument()
   })
 
   it('navigates to My Profile when the profile icon is clicked', async () => {
@@ -76,7 +76,7 @@ describe('App navigation and session persistence', () => {
     ).toBeInTheDocument()
   })
 
-  it('routes new signups through verify-email to complete-profile', async () => {
+  it('routes new signups through verify-email', async () => {
     const user = userEvent.setup()
     saveSessionView('signup')
     window.history.pushState({}, '', '/signup')
@@ -93,11 +93,7 @@ describe('App navigation and session persistence', () => {
     await user.click(screen.getByRole('button', { name: 'Create Account' }))
 
     expect(await screen.findByRole('heading', { name: 'Check your inbox!' })).toBeInTheDocument()
-
-    // Click verify & set up profile
-    await user.click(screen.getByRole('button', { name: /Verify & Set Up Profile/i }))
-
-    expect(await screen.findByRole('heading', { name: 'Set Up Your Profile' })).toBeInTheDocument()
+    expect(screen.queryByRole('button', { name: 'Verify & Set Up Profile' })).not.toBeInTheDocument()
   })
 
   it('navigates to a tutor detail page when a tutor card is clicked', async () => {
