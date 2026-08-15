@@ -13,13 +13,13 @@ export default function Testimonial() {
         >
           &ldquo;
         </span>
-        <blockquote className="-mt-6 font-display text-2xl font-medium leading-snug tracking-tight text-ink-50 sm:text-3xl lg:text-4xl">
+        <blockquote className="-mt-6 font-display text-2xl font-medium leading-snug tracking-tight text-primary sm:text-3xl lg:text-4xl">
           I made more in one semester of hustling than two summer internships.
           My tutoring side-gig basically pays my rent.
         </blockquote>
         <footer className="mt-8">
-          <p className="font-semibold text-ink-100">Maya O.</p>
-          <p className="mt-1 text-sm text-ink-400">
+          <p className="font-semibold text-primary">Maya O.</p>
+          <p className="mt-1 text-sm text-on-surface-variant">
             Design student · Eastside campus
           </p>
         </footer>

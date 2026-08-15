@@ -17,21 +17,21 @@ function fade(reduce, delay) {
 
 function GigCard() {
   return (
-    <div className="w-56 rounded-2xl border border-white/10 bg-ink-900/90 p-4 shadow-[0_20px_50px_-12px_rgba(0,0,0,0.55)] backdrop-blur-md sm:w-64">
+    <div className="w-56 rounded-2xl border border-surface-variant bg-surface-lowest/95 p-4 shadow-level-2 backdrop-blur-md sm:w-64">
       <div className="flex items-center justify-between">
-        <span className="rounded-full bg-white/5 px-2.5 py-1 text-[11px] font-semibold uppercase tracking-wider text-ink-300">
+        <span className="rounded-full bg-surface-container px-2.5 py-1 text-[11px] font-semibold uppercase tracking-wider text-on-surface-variant">
           Design
         </span>
-        <span className="text-[11px] text-ink-400">posted 2h ago</span>
+        <span className="text-[11px] text-outline">posted 2h ago</span>
       </div>
-      <p className="mt-3 text-sm font-semibold leading-snug text-ink-50">
+      <p className="mt-3 text-sm font-semibold leading-snug text-primary">
         Design a club flyer for Spring Fest
       </p>
       <div className="mt-3 flex items-baseline justify-between">
-        <span className="font-display text-2xl font-semibold text-hustle-500">
+        <span className="font-display text-2xl font-semibold text-hustle-600">
           $45
         </span>
-        <span className="text-xs text-ink-400">3 bids · near you</span>
+        <span className="text-xs text-outline">3 bids · near you</span>
       </div>
     </div>
   )
@@ -39,13 +39,13 @@ function GigCard() {
 
 function PaymentChip() {
   return (
-    <div className="flex items-center gap-2.5 rounded-full border border-white/10 bg-ink-900/90 py-2.5 pl-3 pr-4 shadow-[0_12px_30px_-8px_rgba(0,0,0,0.5)] backdrop-blur-md">
-      <span className="flex size-6 items-center justify-center rounded-full bg-emerald-500/20">
-        <IconCheck size={14} className="text-emerald-400 light:text-emerald-600" />
+    <div className="flex items-center gap-2.5 rounded-full border border-surface-variant bg-surface-lowest/95 py-2.5 pl-3 pr-4 shadow-level-1 backdrop-blur-md">
+      <span className="flex size-6 items-center justify-center rounded-full bg-emerald-500/15">
+        <IconCheck size={14} className="text-emerald-600" />
       </span>
-      <span className="text-xs font-semibold text-ink-100">
+      <span className="text-xs font-semibold text-primary">
         Payment received{' '}
-        <span className="font-display text-hustle-400">+$45.00</span>
+        <span className="font-display font-bold text-hustle-600">+$45.00</span>
       </span>
     </div>
   )
@@ -82,29 +82,29 @@ export default function Hero({ onNavigate }) {
     >
       <div
         aria-hidden="true"
-        className="pointer-events-none absolute inset-0 bg-[radial-gradient(55%_55%_at_78%_12%,rgba(255,175,43,0.13),transparent_62%)]"
+        className="pointer-events-none absolute inset-0 bg-[radial-gradient(55%_55%_at_78%_12%,rgba(255,175,43,0.18),transparent_62%)]"
       />
 
       <div className="relative mx-auto grid max-w-6xl items-center gap-14 px-4 sm:px-6 lg:grid-cols-[1.05fr_0.95fr] lg:gap-10 lg:px-8">
         <div className="max-w-xl">
           <motion.div {...fade(reduce, 0)}>
-            <span className="inline-flex items-center rounded-full border border-white/10 bg-white/5 px-3.5 py-1.5 text-[13px] font-medium text-ink-200">
+            <span className="inline-flex items-center rounded-full border border-surface-variant bg-surface-container px-3.5 py-1.5 text-[13px] font-medium text-on-surface-variant">
               The campus gig platform
             </span>
           </motion.div>
 
           <motion.h1
             {...fade(reduce, 0.08)}
-            className="mt-6 font-display text-5xl font-semibold leading-[0.98] tracking-tight text-ink-50 sm:text-6xl lg:text-[4.4rem]"
+            className="mt-6 font-display text-5xl font-semibold leading-[0.98] tracking-tight text-primary sm:text-6xl lg:text-[4.4rem]"
           >
             Your campus.
             <br />
-            <span className="italic text-hustle-500">Your hustle.</span>
+            <span className="italic text-hustle-600">Your hustle.</span>
           </motion.h1>
 
           <motion.p
             {...fade(reduce, 0.16)}
-            className="mt-6 max-w-md text-lg leading-relaxed text-ink-300"
+            className="mt-6 max-w-md text-lg leading-relaxed text-on-surface-variant"
           >
             Post a skill, pick up a gig, and get paid within days. Built for
             students, by students.
@@ -118,7 +118,7 @@ export default function Hero({ onNavigate }) {
               {...ctaProps}
               href="#"
               onClick={handleNav('signup')}
-              className="group inline-flex items-center gap-2 rounded-full bg-hustle-500 px-7 py-3.5 font-semibold text-ink-contrast transition-[background-color] duration-200 hover:bg-hustle-400"
+              className="group inline-flex items-center gap-2 rounded-full bg-hustle-500 px-7 py-3.5 font-semibold text-ink-contrast shadow-sm transition-[background-color] duration-200 hover:bg-hustle-400"
             >
               Start hustling
               <IconArrowRight
@@ -129,7 +129,7 @@ export default function Hero({ onNavigate }) {
             <motion.a
               {...ctaProps}
               href="#how-it-works"
-              className="inline-flex items-center gap-2 rounded-full border border-white/15 px-6 py-3.5 font-semibold text-ink-100 transition-colors duration-200 hover:border-white/30 hover:bg-white/5"
+              className="inline-flex items-center gap-2 rounded-full border border-outline-variant px-6 py-3.5 font-semibold text-primary transition-colors duration-200 hover:border-primary hover:bg-surface-low"
             >
               How it works
             </motion.a>
@@ -147,7 +147,7 @@ export default function Hero({ onNavigate }) {
 
           <motion.div
             style={reduce ? undefined : { y: yTall }}
-            className="relative aspect-[3/4] w-[64%] overflow-hidden rounded-[2rem] border border-white/10"
+            className="relative aspect-[3/4] w-[64%] overflow-hidden rounded-[2rem] border border-surface-variant shadow-level-1"
           >
             <img
               src={HERO_TALL_IMG}
@@ -162,7 +162,7 @@ export default function Hero({ onNavigate }) {
 
           <motion.div
             style={reduce ? undefined : { y: ySquare }}
-            className="absolute top-1/3 right-0 aspect-square w-[56%] overflow-hidden rounded-[1.75rem] border border-white/10 shadow-[0_24px_60px_-16px_rgba(0,0,0,0.6)]"
+            className="absolute top-1/3 right-0 aspect-square w-[56%] overflow-hidden rounded-[1.75rem] border border-surface-variant shadow-level-2"
           >
             <img
               src={HERO_SQUARE_IMG}

@@ -10,7 +10,7 @@ import Footer from '../components/Footer.jsx'
 
 export default function HomeScreen({ onNavigate }) {
   return (
-    <div className="relative min-h-[100dvh] overflow-x-clip bg-ink-950 text-ink-100 font-body antialiased">
+    <div className="relative min-h-[100dvh] overflow-x-clip bg-surface text-on-surface font-body antialiased">
       <Navbar onNavigate={onNavigate} />
       <main>
         <Hero onNavigate={onNavigate} />
