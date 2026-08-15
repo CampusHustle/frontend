@@ -8,6 +8,7 @@ import CompleteProfileScreen from './screens/CompleteProfileScreen.jsx'
 import FindTutorScreen from './screens/FindTutorScreen.jsx'
 import MarketplaceScreen from './screens/MarketplaceScreen.jsx'
 import ProfileScreen from './screens/ProfileScreen.jsx'
+import TutorDetailScreen from './screens/TutorDetailScreen.jsx'
 import { mockUpdateProfile } from './api/mockAuthApi.js'
 import {
   clearSession,
@@ -150,6 +151,16 @@ export function AppRoutes() {
         path="/tutor"
         element={
           <FindTutorScreen
+            user={currentUser}
+            onLogout={handleLogout}
+            onNavigate={handleNavigate}
+          />
+        }
+      />
+      <Route
+        path="/tutor/:id"
+        element={
+          <TutorDetailScreen
             user={currentUser}
             onLogout={handleLogout}
             onNavigate={handleNavigate}

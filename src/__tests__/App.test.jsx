@@ -100,6 +100,25 @@ describe('App navigation and session persistence', () => {
     expect(await screen.findByRole('heading', { name: 'Set Up Your Profile' })).toBeInTheDocument()
   })
 
+  it('navigates to a tutor detail page when a tutor card is clicked', async () => {
+    const user = userEvent.setup()
+    saveSessionView('login')
+    window.history.pushState({}, '', '/login')
+
+    render(<App />)
+
+    await user.type(screen.getByLabelText('Email'), 'student@campus.edu.et')
+    await user.type(screen.getByLabelText('Password'), 'password123')
+    await user.click(screen.getByRole('button', { name: 'Log in' }))
+
+    expect(await screen.findByRole('heading', { name: 'Find Tutors' })).toBeInTheDocument()
+
+    await user.click(screen.getByRole('button', { name: 'View profile of Sarah Johnson' }))
+
+    expect(await screen.findByRole('heading', { name: /Sarah Johnson/ })).toBeInTheDocument()
+    expect(screen.getByRole('heading', { name: 'Rating Breakdown' })).toBeInTheDocument()
+  })
+
   it('renders footer on FindTutorPage with same brand branding and links', () => {
     const user = {
       id: 'u-demo',
