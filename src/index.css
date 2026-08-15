@@ -1,17 +1,17 @@
 @import "tailwindcss";
 
 @theme {
-  --color-ink-950: #0a0a0c;
-  --color-ink-900: #101014;
-  --color-ink-850: #14141a;
-  --color-ink-800: #1a1a21;
-  --color-ink-700: #26262f;
-  --color-ink-600: #3d3d48;
-  --color-ink-400: #71717c;
-  --color-ink-300: #a1a1ac;
-  --color-ink-200: #cbcbd1;
-  --color-ink-100: #ededf0;
-  --color-ink-50: #f6f6f7;
+  --color-ink-950: #f8f9fa;
+  --color-ink-900: #ffffff;
+  --color-ink-850: #f3f4f5;
+  --color-ink-800: #edeeef;
+  --color-ink-700: #e1e3e4;
+  --color-ink-600: #c5c6cf;
+  --color-ink-400: #75777f;
+  --color-ink-300: #45464e;
+  --color-ink-200: #26262f;
+  --color-ink-100: #191c1d;
+  --color-ink-50: #041534;
 
   --color-hustle-300: #ffd37a;
   --color-hustle-400: #ffc04d;
@@ -125,57 +125,14 @@
   }
 }
 
-@variant light (&:where(.light, .light *));
-
-/*
- * Light mode. The ink scale is inverted (dark surfaces become light, light
- * text becomes dark) so every component flips without per-class overrides.
- * --color-white / --color-black are also swapped so white-alpha borders and
- * subtle fills become dark-alpha in light mode. ink-contrast is the one
- * non-inverting token: it stays dark for text sitting on amber accents.
- */
-.light {
-  --color-ink-950: #f6f6f7;
-  --color-ink-900: #ffffff;
-  --color-ink-850: #ffffff;
-  --color-ink-800: #f3f3f4;
-  --color-ink-700: #ececef;
-  --color-ink-600: #d4d4da;
-  --color-ink-400: #a1a1ac;
-  --color-ink-300: #6a6a75;
-  --color-ink-200: #45454f;
-  --color-ink-100: #26262f;
-  --color-ink-50: #14141a;
-  --color-white: #0a0a0c;
-  --color-black: #f6f6f7;
-}
-
-@media (prefers-color-scheme: light) {
-  :root:not(.dark) {
-    --color-ink-950: #f6f6f7;
-    --color-ink-900: #ffffff;
-    --color-ink-850: #ffffff;
-    --color-ink-800: #f3f3f4;
-    --color-ink-700: #ececef;
-    --color-ink-600: #d4d4da;
-    --color-ink-400: #a1a1ac;
-    --color-ink-300: #6a6a75;
-    --color-ink-200: #45454f;
-    --color-ink-100: #26262f;
-    --color-ink-50: #14141a;
-    --color-white: #0a0a0c;
-    --color-black: #f6f6f7;
-  }
-}
-
 @layer base {
   html {
     scroll-behavior: smooth;
   }
 
   body {
-    background-color: var(--color-ink-950);
-    color: var(--color-ink-100);
+    background-color: var(--color-surface);
+    color: var(--color-on-surface);
     font-family: var(--font-body);
     font-size: 16px;
     line-height: 1.5;
