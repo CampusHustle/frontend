@@ -32,16 +32,33 @@
   --color-secondary-container: #feae2c;
   --color-on-secondary: #ffffff;
   --color-on-secondary-container: #6b4500;
+  --color-secondary-fixed: #ffddb4;
+  --color-secondary-fixed-dim: #ffb955;
+  --color-on-secondary-fixed: #291800;
+  --color-on-secondary-fixed-variant: #633f00;
+  --color-tertiary: #001630;
   --color-tertiary-container: #002b53;
+  --color-on-tertiary: #ffffff;
+  --color-on-tertiary-container: #4f94e6;
+  --color-tertiary-fixed: #d4e3ff;
+  --color-tertiary-fixed-dim: #a4c9ff;
+  --color-on-tertiary-fixed: #001c39;
+  --color-on-tertiary-fixed-variant: #004883;
   --color-surface: #f8f9fa;
   --color-surface-lowest: #ffffff;
   --color-surface-low: #f3f4f5;
   --color-surface-container: #edeeef;
+  --color-surface-container-low: #f3f4f5;
+  --color-surface-container-high: #e7e8e9;
+  --color-surface-container-highest: #e1e3e4;
   --color-surface-high: #e7e8e9;
   --color-surface-highest: #e1e3e4;
   --color-surface-variant: #e1e3e4;
+  --color-surface-dim: #d9dadb;
+  --color-surface-bright: #f8f9fa;
   --color-on-surface: #191c1d;
   --color-on-surface-variant: #45464e;
+  --color-on-background: #191c1d;
   --color-outline: #75777f;
   --color-outline-variant: #c5c6cf;
   --color-error: #ba1a1a;
@@ -98,6 +115,14 @@
   -webkit-backdrop-filter: blur(16px);
   border: 1px solid rgba(255, 255, 255, 0.5);
   box-shadow: 0 8px 32px 0 rgba(4, 21, 52, 0.05);
+}
+
+@utility hide-scrollbar {
+  -ms-overflow-style: none;
+  scrollbar-width: none;
+  &::-webkit-scrollbar {
+    display: none;
+  }
 }
 
 @variant light (&:where(.light, .light *));

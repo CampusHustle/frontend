@@ -53,7 +53,30 @@ describe('App navigation and session persistence', () => {
     expect(screen.queryByText('Complete Your Profile')).not.toBeInTheDocument()
   })
 
-  it('routes new signups through verify-email to complete-profile', async () => {
+  it('navigates to My Profile when the profile icon is clicked', async () => {
+    const user = userEvent.setup()
+    saveSessionView('login')
+    window.history.pushState({}, '', '/login')
+
+    render(<App />)
+
+    await user.type(screen.getByLabelText('Email'), 'student@campus.edu.et')
+    await user.type(screen.getByLabelText('Password'), 'password123')
+    await user.click(screen.getByRole('button', { name: 'Log in' }))
+
+    expect(await screen.findByRole('heading', { name: 'Find Tutors' })).toBeInTheDocument()
+
+    await user.click(screen.getByRole('button', { name: 'View my profile' }))
+
+    expect(await screen.findByRole('heading', { name: 'My Profile' })).toBeInTheDocument()
+    expect(screen.getByText('Demo Student')).toBeInTheDocument()
+    expect(screen.getByText('General Studies • Campus University • sophomore')).toBeInTheDocument()
+    expect(
+      screen.getByText('Demo account used to walk through the CampusHustle flow.'),
+    ).toBeInTheDocument()
+  })
+
+  it('routes new signups through verify-email', async () => {
     const user = userEvent.setup()
     saveSessionView('signup')
     window.history.pushState({}, '', '/signup')
@@ -70,11 +93,26 @@ describe('App navigation and session persistence', () => {
     await user.click(screen.getByRole('button', { name: 'Create Account' }))
 
     expect(await screen.findByRole('heading', { name: 'Check your inbox!' })).toBeInTheDocument()
+    expect(screen.queryByRole('button', { name: 'Verify & Set Up Profile' })).not.toBeInTheDocument()
+  })
 
-    // Click verify & set up profile
-    await user.click(screen.getByRole('button', { name: /Verify & Set Up Profile/i }))
+  it('navigates to a tutor detail page when a tutor card is clicked', async () => {
+    const user = userEvent.setup()
+    saveSessionView('login')
+    window.history.pushState({}, '', '/login')
 
-    expect(await screen.findByRole('heading', { name: 'Complete Your Profile' })).toBeInTheDocument()
+    render(<App />)
+
+    await user.type(screen.getByLabelText('Email'), 'student@campus.edu.et')
+    await user.type(screen.getByLabelText('Password'), 'password123')
+    await user.click(screen.getByRole('button', { name: 'Log in' }))
+
+    expect(await screen.findByRole('heading', { name: 'Find Tutors' })).toBeInTheDocument()
+
+    await user.click(screen.getByRole('button', { name: 'View profile of Sarah Johnson' }))
+
+    expect(await screen.findByRole('heading', { name: /Sarah Johnson/ })).toBeInTheDocument()
+    expect(screen.getByRole('heading', { name: 'Rating Breakdown' })).toBeInTheDocument()
   })
 
   it('renders footer on FindTutorPage with same brand branding and links', () => {

@@ -1,4 +1,4 @@
-import React, { useState, useMemo } from 'react'
+import { useState, useMemo } from 'react'
 import AuthFiltersSidebar from '../components/AuthFiltersSidebar.jsx'
 import AuthNotesMarketplace, { dummyNotes } from '../components/AuthNotesMarketplace.jsx'
 import Footer from '../components/Footer.jsx'

@@ -38,29 +38,45 @@ function Avatar({ user, className = 'w-16 h-16' }) {
   )
 }
 
-function TutorCard({ tutor }) {
-  return (
-    <div className="bg-surface-lowest rounded-xl shadow-level-1 hover:shadow-level-2 transition-all duration-300 border border-surface-variant p-5 flex flex-col relative overflow-hidden group">
-      {/* Rating Badge Top Right */}
-      <div className="absolute top-4 right-4 bg-secondary-container/10 text-on-secondary-container text-xs font-semibold px-2.5 py-1 rounded-full flex items-center gap-1 backdrop-blur-sm z-10">
-        <IconStarFilled size={14} className="text-secondary-container" aria-hidden="true" />
-        <span>{tutor.rating.knowledge.toFixed(1)}</span>
-      </div>
+function TutorCard({ tutor, onView }) {
+  const handleKeyDown = (e) => {
+    if (e.key === 'Enter' || e.key === ' ') {
+      e.preventDefault()
+      onView(tutor)
+    }
+  }
 
+  return (
+    <div
+      role="button"
+      tabIndex={0}
+      aria-label={`View profile of ${tutor.name}`}
+      onClick={() => onView(tutor)}
+      onKeyDown={handleKeyDown}
+      className="bg-surface-lowest rounded-xl shadow-level-1 hover:shadow-level-2 transition-all duration-300 border border-surface-variant p-5 flex flex-col relative overflow-hidden group cursor-pointer focus:outline-none focus-visible:ring-2 focus-visible:ring-primary"
+    >
       {/* Header Info */}
       <div className="flex gap-4 mb-4 relative z-10">
         <Avatar user={tutor} className="w-14 h-14 shrink-0" />
-        <div className="min-w-0 pr-10">
-          <div className="flex items-center gap-1.5">
-            <h3 className="font-display text-base font-bold text-primary truncate">{tutor.name}</h3>
-            <IconCircleCheckFilled
-              size={16}
-              className="text-tertiary-container shrink-0"
-              title="Verified Student"
-              aria-label="Verified tutor"
-            />
+        <div className="min-w-0 flex-1">
+          <div className="flex items-start justify-between gap-2">
+            <div className="min-w-0">
+              <div className="flex items-center gap-1.5">
+                <h3 className="font-display text-base font-bold text-primary truncate">{tutor.name}</h3>
+                <IconCircleCheckFilled
+                  size={16}
+                  className="text-tertiary-container shrink-0"
+                  title="Verified Student"
+                  aria-label="Verified tutor"
+                />
+              </div>
+              <p className="text-xs text-on-surface-variant truncate mt-0.5">{tutor.department}, {tutor.university}</p>
+            </div>
+            <div className="flex items-center gap-1 bg-secondary-fixed px-2.5 py-1 rounded-full shrink-0">
+              <IconStarFilled size={14} className="text-secondary" aria-hidden="true" />
+              <span className="text-sm font-semibold text-secondary">{tutor.rating.knowledge.toFixed(1)}</span>
+            </div>
           </div>
-          <p className="text-xs text-on-surface-variant truncate mt-0.5">{tutor.department}, {tutor.university}</p>
         </div>
       </div>
 
@@ -90,6 +106,10 @@ function TutorCard({ tutor }) {
         </div>
         <button
           type="button"
+          onClick={(e) => {
+            e.stopPropagation()
+            onView(tutor)
+          }}
           className="border border-primary text-primary text-sm font-semibold px-4 py-1.5 rounded-lg hover:bg-primary hover:text-on-primary transition-colors"
         >
           Book
@@ -135,6 +155,10 @@ export default function FindTutorScreen({ user, onLogout, onNavigate }) {
     () => filtered.slice(0, visibleCount),
     [filtered, visibleCount],
   )
+
+  const handleViewTutor = (tutor) => {
+    onNavigate?.(`/tutor/${tutor.id}`)
+  }
 
   return (
     <div className="flex min-h-screen flex-col bg-surface font-body text-on-surface">
@@ -269,7 +293,7 @@ export default function FindTutorScreen({ user, onLogout, onNavigate }) {
           ) : (
             <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
               {visibleTutors.map((tutor) => (
-                <TutorCard key={tutor.id} tutor={tutor} />
+                <TutorCard key={tutor.id} tutor={tutor} onView={handleViewTutor} />
               ))}
             </div>
           )}

@@ -7,6 +7,8 @@ import VerifyEmailScreen from './screens/VerifyEmailScreen.jsx'
 import CompleteProfileScreen from './screens/CompleteProfileScreen.jsx'
 import FindTutorScreen from './screens/FindTutorScreen.jsx'
 import MarketplaceScreen from './screens/MarketplaceScreen.jsx'
+import ProfileScreen from './screens/ProfileScreen.jsx'
+import TutorDetailScreen from './screens/TutorDetailScreen.jsx'
 import { mockUpdateProfile } from './api/mockAuthApi.js'
 import {
   clearSession,
@@ -23,6 +25,7 @@ function getInitialPath() {
   if (user) {
     if (savedView === 'complete-profile') return '/complete-profile'
     if (savedView === 'marketplace' || savedView === 'market') return '/market'
+    if (savedView === 'profile') return '/profile'
     return '/tutor'
   }
   if (savedView) {
@@ -67,6 +70,7 @@ export function AppRoutes() {
       tutor: '/tutor',
       marketplace: '/market',
       market: '/market',
+      profile: '/profile',
     }
     const path = routeMap[targetView] || (typeof targetView === 'string' && targetView.startsWith('/') ? targetView : '/')
     saveSessionView(targetView)
@@ -115,14 +119,6 @@ export function AppRoutes() {
           <VerifyEmailScreen
             email={pendingEmail || currentUser?.email || 'student@campus.edu.et'}
             onBackToLogin={() => handleNavigate('login')}
-            onContinue={() => {
-              const activeUser = pendingUser || currentUser
-              if (activeUser) {
-                setCurrentUser(activeUser)
-                saveSessionUser(activeUser)
-              }
-              handleNavigate('complete-profile')
-            }}
           />
         }
       />
@@ -154,6 +150,16 @@ export function AppRoutes() {
         }
       />
       <Route
+        path="/tutor/:id"
+        element={
+          <TutorDetailScreen
+            user={currentUser}
+            onLogout={handleLogout}
+            onNavigate={handleNavigate}
+          />
+        }
+      />
+      <Route
         path="/market"
         element={
           <MarketplaceScreen
@@ -161,6 +167,20 @@ export function AppRoutes() {
             onLogout={handleLogout}
             onNavigate={handleNavigate}
           />
+        }
+      />
+      <Route
+        path="/profile"
+        element={
+          currentUser ? (
+            <ProfileScreen
+              user={currentUser}
+              onLogout={handleLogout}
+              onNavigate={handleNavigate}
+            />
+          ) : (
+            <Navigate to="/" replace />
+          )
         }
       />
       <Route path="*" element={<Navigate to="/" replace />} />

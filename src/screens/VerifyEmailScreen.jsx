@@ -1,7 +1,7 @@
 import { useState } from 'react'
-import { IconArrowRight, IconMailOpened, IconSend } from '@tabler/icons-react'
+import { IconMailOpened, IconSend } from '@tabler/icons-react'
 
-export default function VerifyEmailScreen({ email, onBackToLogin, onContinue }) {
+export default function VerifyEmailScreen({ email, onBackToLogin }) {
   const [resent, setResent] = useState(false)
 
   const handleResend = () => {
@@ -41,20 +41,6 @@ export default function VerifyEmailScreen({ email, onBackToLogin, onContinue }) 
             </p>
 
             <div className="flex w-full flex-col gap-3">
-              {onContinue && (
-                <button
-                  type="button"
-                  onClick={onContinue}
-                  className="group flex w-full items-center justify-center gap-2 rounded-lg bg-primary px-6 py-3 text-sm font-semibold text-on-primary transition-colors duration-200 hover:bg-primary-container focus:outline-none focus:ring-2 focus:ring-primary focus:ring-offset-2 focus:ring-offset-surface-lowest"
-                >
-                  Verify &amp; Set Up Profile
-                  <IconArrowRight
-                    size={18}
-                    className="transition-transform group-hover:translate-x-0.5"
-                    aria-hidden="true"
-                  />
-                </button>
-              )}
               <button
                 type="button"
                 onClick={handleResend}

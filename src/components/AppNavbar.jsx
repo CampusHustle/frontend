@@ -128,12 +128,17 @@ export default function AppNavbar({
             <span>Post Listing</span>
           </button>
 
-          <div className="flex items-center gap-2">
+          <button
+            type="button"
+            aria-label="View my profile"
+            onClick={() => onNavigate?.('profile')}
+            className="flex items-center gap-2 rounded-full transition-opacity hover:opacity-80"
+          >
             <Avatar user={user} className="size-9" />
             <span className="hidden text-sm font-semibold text-primary sm:inline">
               {user?.name?.split(' ')[0] ?? 'Student'}
             </span>
-          </div>
+          </button>
           {onLogout && (
             <button
               type="button"
