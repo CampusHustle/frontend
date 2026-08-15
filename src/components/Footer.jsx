@@ -63,7 +63,7 @@ export default function Footer({ onNavigate }) {
             <a
               href="#"
               onClick={handleNav('signup')}
-              className="group mt-6 inline-flex items-center gap-2 rounded-full bg-primary px-5 py-2.5 text-sm font-semibold text-on-primary shadow-level-1 transition-[background-color] duration-200 hover:bg-primary-container hover:text-on-primary-container"
+              className="group mt-6 inline-flex items-center gap-2 rounded-full bg-hustle-500 px-5 py-2.5 text-sm font-semibold text-ink-contrast shadow-sm transition-[background-color] duration-200 hover:bg-hustle-400"
             >
               Start hustling
               <IconArrowRight
