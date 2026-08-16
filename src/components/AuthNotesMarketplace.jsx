@@ -1,4 +1,5 @@
 import AuthNoteCard from './AuthNoteCard'
+import { Link } from 'react-router-dom'
 
 // eslint-disable-next-line react-refresh/only-export-components
 export const dummyNotes = [
@@ -95,16 +96,17 @@ export default function AuthNotesMarketplace({ notes = dummyNotes, visibleCount 
       {/* The Grid Layout */}
       <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
         {visibleItems.map((note) => (
-          <AuthNoteCard
-            key={note.id}
-            contentType={note.contentType}
-            price={note.price}
-            title={note.title}
-            course={note.course}
-            authorName={note.authorName}
-            authorAvatar={note.authorAvatar}
-            coverImage={note.coverImage}
-          />
+          <Link key={note.id} to={`/notes/${note.id}`} className="block">
+            <AuthNoteCard
+              contentType={note.contentType}
+              price={note.price}
+              title={note.title}
+              course={note.course}
+              authorName={note.authorName}
+              authorAvatar={note.authorAvatar}
+              coverImage={note.coverImage}
+            />
+          </Link>
         ))}
       </div>
 
