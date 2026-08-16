@@ -51,13 +51,15 @@ export default function AiAssistantScreen({ user, onLogout, onNavigate }) {
   }
 
   return (
-    <div className="mesh-bg flex min-h-screen flex-col bg-surface font-body text-on-surface">
-      <AppNavbar
-        user={user}
-        activeView="assistant"
-        onNavigate={onNavigate}
-        onLogout={onLogout}
-      />
+    <div className="mesh-bg flex h-dvh flex-col overflow-hidden bg-surface font-body text-on-surface">
+      <div className="shrink-0">
+        <AppNavbar
+          user={user}
+          activeView="assistant"
+          onNavigate={onNavigate}
+          onLogout={onLogout}
+        />
+      </div>
 
       <main className="mx-auto flex min-h-0 w-full max-w-4xl flex-1 flex-col px-4 pt-6 sm:px-6">
         <div className="mb-6 flex shrink-0 flex-col items-center text-center">
@@ -132,7 +134,9 @@ export default function AiAssistantScreen({ user, onLogout, onNavigate }) {
         </form>
       </main>
 
-      <Footer onNavigate={onNavigate} />
+      <div className="shrink-0">
+        <Footer onNavigate={onNavigate} />
+      </div>
     </div>
   )
 }
