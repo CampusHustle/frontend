@@ -110,8 +110,13 @@ export default function AppNavbar({
             href="#"
             onClick={(e) => {
               e.preventDefault()
+              onNavigate?.('assistant')
             }}
-            className="text-on-surface-variant transition-colors hover:text-primary"
+            className={
+              activeView === 'assistant'
+                ? 'border-b-2 border-secondary-container pb-1 text-primary font-bold'
+                : 'text-on-surface-variant transition-colors hover:text-primary'
+            }
           >
             AI Assistant
           </a>

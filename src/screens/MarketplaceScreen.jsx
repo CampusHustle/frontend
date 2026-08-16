@@ -92,6 +92,7 @@ export default function MarketplaceScreen({ user, onLogout, onNavigate }) {
               setVisibleCount(VISIBLE_STEP)
             }}
             onClearAll={handleClearAll}
+            onPostMaterial={() => onNavigate?.('post-listing')}
           />
 
           {/* Right Content Area */}

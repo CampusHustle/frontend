@@ -4,11 +4,11 @@ import userEvent from '@testing-library/user-event'
 import FindTutorPage from '../pages/FindTutorPage.jsx'
 import { tutors } from '../api/mockUsers.js'
 
-const setup = () => {
+const setup = (onNavigate) => {
   const user = userEvent.setup()
   const onLogout = vi.fn()
-  render(<FindTutorPage user={tutors[1]} onLogout={onLogout} />)
-  return { user, onLogout }
+  render(<FindTutorPage user={tutors[1]} onLogout={onLogout} onNavigate={onNavigate} />)
+  return { user, onLogout, onNavigate }
 }
 
 describe('FindTutorPage', () => {
@@ -53,5 +53,14 @@ describe('FindTutorPage', () => {
     await user.click(screen.getByRole('button', { name: 'Log out' }))
 
     expect(onLogout).toHaveBeenCalledTimes(1)
+  })
+
+  it('navigates to the AI Assistant when Try AI Assistant is clicked', async () => {
+    const onNavigate = vi.fn()
+    const { user } = setup(onNavigate)
+
+    await user.click(screen.getByRole('button', { name: 'Try AI Assistant' }))
+
+    expect(onNavigate).toHaveBeenCalledWith('assistant')
   })
 })
