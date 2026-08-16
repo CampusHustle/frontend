@@ -10,6 +10,7 @@ import MarketplaceScreen from './screens/MarketplaceScreen.jsx'
 import ProfileScreen from './screens/ProfileScreen.jsx'
 import TutorDetailScreen from './screens/TutorDetailScreen.jsx'
 import PostListingScreen from './screens/PostListingScreen.jsx'
+import AiAssistantScreen from './screens/AiAssistantScreen.jsx'
 import { mockUpdateProfile } from './api/mockAuthApi.js'
 import {
   clearSession,
@@ -28,6 +29,7 @@ function getInitialPath() {
     if (savedView === 'marketplace' || savedView === 'market') return '/market'
     if (savedView === 'profile') return '/profile'
     if (savedView === 'post-listing') return '/post-listing'
+    if (savedView === 'assistant') return '/assistant'
     return '/tutor'
   }
   if (savedView) {
@@ -41,6 +43,7 @@ function getInitialPath() {
       marketplace: '/market',
       market: '/market',
       home: '/',
+      assistant: '/assistant',
     }
     if (viewToPath[savedView]) return viewToPath[savedView]
   }
@@ -75,6 +78,7 @@ export function AppRoutes() {
       market: '/market',
       profile: '/profile',
       'post-listing': '/post-listing',
+      assistant: '/assistant',
     }
     const path = routeMap[targetView] || (typeof targetView === 'string' && targetView.startsWith('/') ? targetView : '/')
     saveSessionView(targetView)
@@ -191,6 +195,16 @@ export function AppRoutes() {
         path="/post-listing"
         element={
           <PostListingScreen
+            user={currentUser}
+            onLogout={handleLogout}
+            onNavigate={handleNavigate}
+          />
+        }
+      />
+      <Route
+        path="/assistant"
+        element={
+          <AiAssistantScreen
             user={currentUser}
             onLogout={handleLogout}
             onNavigate={handleNavigate}
