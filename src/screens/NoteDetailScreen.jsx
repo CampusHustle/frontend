@@ -19,7 +19,7 @@ const DUMMY_NOTE = {
   ]
 };
 
-export default function NotePreviewPage() {
+export default function NoteDetailScreen() {
   const [note, setNote] = useState(null);
   const [isLoading, setIsLoading] = useState(true);
 
