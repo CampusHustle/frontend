@@ -38,6 +38,16 @@ describe('AiAssistantPage', () => {
     expect(screen.queryByRole('button', { name: 'ECON101 Notes' })).not.toBeInTheDocument()
   })
 
+  it('does not render the chat sub-header bar or feedback icons', () => {
+    setup()
+
+    expect(screen.queryByText('Campus Study AI')).not.toBeInTheDocument()
+    expect(screen.queryByText('GPT-4o')).not.toBeInTheDocument()
+    expect(screen.queryByRole('button', { name: /New Chat/i })).not.toBeInTheDocument()
+    expect(screen.queryByTitle('Helpful')).not.toBeInTheDocument()
+    expect(screen.queryByTitle('Not helpful')).not.toBeInTheDocument()
+  })
+
   it('sends a message and appends the user and AI replies', async () => {
     const { user } = setup()
 
@@ -71,5 +81,26 @@ describe('AiAssistantPage', () => {
     await user.click(screen.getByRole('link', { name: 'AI Assistant' }))
 
     expect(onNavigate).toHaveBeenCalledWith('assistant')
+  })
+
+  it('renders starter prompt cards and sends a prompt when clicked', async () => {
+    const { user } = setup()
+
+    const summarizeCard = screen.getByRole('button', { name: /Summarize Lecture Notes/i })
+    expect(summarizeCard).toBeInTheDocument()
+
+    await user.click(summarizeCard)
+
+    expect(
+      screen.getAllByText(/Summarize the key takeaways and core concepts from my latest lecture in bullet points\./).length,
+    ).toBeGreaterThanOrEqual(1)
+    expect(screen.getByText(/Here's my answer for/)).toBeInTheDocument()
+  })
+
+  it('renders the footer at the bottom with brand elements', () => {
+    setup()
+
+    expect(screen.getByText(/CampusHustle Inc\./i)).toBeInTheDocument()
+    expect(screen.getByRole('link', { name: /Start hustling/i })).toBeInTheDocument()
   })
 })
