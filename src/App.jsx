@@ -12,6 +12,7 @@ import TutorDetailScreen from './screens/TutorDetailScreen.jsx'
 import PostListingScreen from './screens/PostListingScreen.jsx'
 import AiAssistantScreen from './screens/AiAssistantScreen.jsx'
 import BookingScreen from './screens/BookingScreen.jsx'
+import ChatScreen from './screens/ChatScreen.jsx'
 import { mockUpdateProfile } from './api/mockAuthApi.js'
 import {
   clearSession,
@@ -31,6 +32,8 @@ function getInitialPath() {
     if (savedView === 'profile') return '/profile'
     if (savedView === 'post-listing') return '/post-listing'
     if (savedView === 'assistant') return '/assistant'
+    if (savedView === 'bookings') return '/bookings'
+    if (savedView === 'chat') return '/chat'
     return '/tutor'
   }
   if (savedView) {
@@ -80,6 +83,8 @@ export function AppRoutes() {
       profile: '/profile',
       'post-listing': '/post-listing',
       assistant: '/assistant',
+      bookings: '/bookings',
+      chat: '/chat',
     }
     const path = routeMap[targetView] || (typeof targetView === 'string' && targetView.startsWith('/') ? targetView : '/')
     saveSessionView(targetView)
@@ -143,7 +148,7 @@ export function AppRoutes() {
               setCurrentUser(updated)
               saveSessionUser(updated)
               handleNavigate('tutor')
-            mockUpdateProfile(updated.email, profile).catch(() => {})
+              mockUpdateProfile(updated.email, profile).catch(() => { })
             }}
           />
         }
@@ -216,6 +221,16 @@ export function AppRoutes() {
         path="/bookings"
         element={
           <BookingScreen
+            user={currentUser}
+            onLogout={handleLogout}
+            onNavigate={handleNavigate}
+          />
+        }
+      />
+      <Route
+        path="/chat"
+        element={
+          <ChatScreen
             user={currentUser}
             onLogout={handleLogout}
             onNavigate={handleNavigate}
