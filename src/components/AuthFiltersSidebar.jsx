@@ -6,6 +6,7 @@ export default function AuthFiltersSidebar({
   maxPrice = 50,
   onMaxPriceChange = () => {},
   onClearAll = () => {},
+  onPostMaterial = () => {},
 }) {
   return (
     <aside className="w-full shrink-0 space-y-6 md:w-64">
@@ -96,6 +97,7 @@ export default function AuthFiltersSidebar({
         <p className="text-xs text-on-surface-variant mb-4 leading-relaxed">Monetize your study guides and help fellow students succeed.</p>
         <button
           type="button"
+          onClick={onPostMaterial}
           className="w-full rounded-lg bg-secondary-container px-4 py-2 text-sm font-bold text-on-secondary-container shadow-level-1 hover:brightness-105 transition-all"
         >
           Post Material
