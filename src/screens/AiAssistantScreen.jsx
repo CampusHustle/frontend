@@ -51,7 +51,7 @@ export default function AiAssistantScreen({ user, onLogout, onNavigate }) {
   }
 
   return (
-    <div className="mesh-bg flex min-h-screen flex-col bg-surface font-body text-on-surface">
+    <div className="mesh-bg flex h-dvh flex-col overflow-hidden bg-surface font-body text-on-surface">
       <AppNavbar
         user={user}
         activeView="assistant"
@@ -59,7 +59,7 @@ export default function AiAssistantScreen({ user, onLogout, onNavigate }) {
         onLogout={onLogout}
       />
 
-      <main className="mx-auto flex w-full max-w-4xl flex-1 flex-col px-4 py-6 sm:px-6">
+      <main className="mx-auto flex min-h-0 w-full max-w-4xl flex-1 flex-col px-4 pt-6 sm:px-6">
         <div className="mb-6 flex shrink-0 flex-col items-center text-center">
           <div className="mb-3 flex size-12 items-center justify-center rounded-full bg-secondary-container shadow-sm">
             <IconRobot size={24} className="text-on-secondary-container" aria-hidden="true" />
@@ -69,7 +69,7 @@ export default function AiAssistantScreen({ user, onLogout, onNavigate }) {
           </h1>
         </div>
 
-        <div ref={scrollRef} className="flex-1 space-y-5 overflow-y-auto pb-6">
+        <div ref={scrollRef} className="min-h-0 flex-1 space-y-5 overflow-y-auto pb-6">
           {messages.map((message) =>
             message.role === 'user' ? (
               <div key={message.id} className="flex justify-end">
