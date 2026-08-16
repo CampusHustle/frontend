@@ -1,7 +1,6 @@
 import { useRef, useState } from 'react'
 import { IconPaperclip, IconRobot, IconSend } from '@tabler/icons-react'
 import AppNavbar from '../components/AppNavbar.jsx'
-import Footer from '../components/Footer.jsx'
 
 function getAssistantReply(message) {
   return `Here's my answer for "${message}". I'm your CampusHustle study assistant — ask me anything about your courses.`
@@ -131,8 +130,6 @@ export default function AiAssistantScreen({ user, onLogout, onNavigate }) {
           </p>
         </form>
       </main>
-
-      <Footer onNavigate={onNavigate} />
     </div>
   )
 }
