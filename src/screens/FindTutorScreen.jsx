@@ -254,6 +254,7 @@ export default function FindTutorScreen({ user, onLogout, onNavigate }) {
             <p className="text-xs text-on-surface-variant mb-4 leading-relaxed">Try our AI Assistant to build a custom schedule.</p>
             <button
               type="button"
+              onClick={() => onNavigate?.('assistant')}
               className="w-full bg-primary text-on-primary text-sm font-semibold py-2 rounded-lg shadow-level-1 hover:bg-primary-container transition-colors"
             >
               Try AI Assistant
