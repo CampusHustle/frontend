@@ -1,4 +1,6 @@
-import { IconLogout, IconPlus, IconSearch } from '@tabler/icons-react'
+import { useState } from 'react'
+import { IconLogout, IconMoon, IconPlus, IconSearch, IconSun } from '@tabler/icons-react'
+import { applyTheme } from '../utils/theme.js'
 
 function initialsOf(name) {
   return (name || '')
@@ -39,6 +41,18 @@ export default function AppNavbar({
   onSearchChange,
   searchPlaceholder = 'Search...',
 }) {
+  const [isDark, setIsDark] = useState(() =>
+    document.documentElement.classList.contains('dark'),
+  )
+
+  const toggleTheme = () => {
+    setIsDark((prev) => {
+      const next = !prev
+      applyTheme(next ? 'dark' : 'light')
+      return next
+    })
+  }
+
   return (
     <nav className="sticky top-0 z-50 bg-surface-lowest shadow-level-1">
       <div className="mx-auto flex h-16 w-full max-w-7xl items-center justify-between gap-4 px-4 sm:px-6 lg:px-8">
@@ -123,6 +137,19 @@ export default function AppNavbar({
         </div>
 
         <div className="flex items-center gap-3">
+          <button
+            type="button"
+            aria-label={isDark ? 'Switch to light mode' : 'Switch to dark mode'}
+            onClick={toggleTheme}
+            className="inline-flex size-9 items-center justify-center rounded-full border border-outline-variant text-on-surface-variant transition-colors hover:text-primary"
+          >
+            {isDark ? (
+              <IconSun size={18} aria-hidden="true" />
+            ) : (
+              <IconMoon size={18} aria-hidden="true" />
+            )}
+          </button>
+
           {/* Post Listing CTA Button */}
           <button
             type="button"

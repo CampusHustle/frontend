@@ -9,6 +9,21 @@
       content="Campus Hustle — turn your campus skills into campus cash. Post a gig, get matched, get paid."
     />
     <title>Campus Hustle — Your campus. Your hustle.</title>
+    <script>
+      ;(function () {
+        try {
+          var stored = localStorage.getItem('campus-hustle-theme')
+          if (stored !== 'dark' && stored !== 'light') {
+            stored =
+              window.matchMedia &&
+              window.matchMedia('(prefers-color-scheme: dark)').matches
+                ? 'dark'
+                : 'light'
+          }
+          if (stored === 'dark') document.documentElement.classList.add('dark')
+        } catch (e) {}
+      })()
+    </script>
     <link rel="preconnect" href="https://fonts.googleapis.com" />
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
     <link
