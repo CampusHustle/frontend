@@ -11,6 +11,7 @@ import ProfileScreen from './screens/ProfileScreen.jsx'
 import TutorDetailScreen from './screens/TutorDetailScreen.jsx'
 import PostListingScreen from './screens/PostListingScreen.jsx'
 import AiAssistantScreen from './screens/AiAssistantScreen.jsx'
+import BookingScreen from './screens/BookingScreen.jsx'
 import { mockUpdateProfile } from './api/mockAuthApi.js'
 import {
   clearSession,
@@ -142,7 +143,7 @@ export function AppRoutes() {
               setCurrentUser(updated)
               saveSessionUser(updated)
               handleNavigate('tutor')
-              mockUpdateProfile(updated.email, profile).catch(() => {})
+            mockUpdateProfile(updated.email, profile).catch(() => {})
             }}
           />
         }
@@ -205,6 +206,16 @@ export function AppRoutes() {
         path="/assistant"
         element={
           <AiAssistantScreen
+            user={currentUser}
+            onLogout={handleLogout}
+            onNavigate={handleNavigate}
+          />
+        }
+      />
+      <Route
+        path="/bookings"
+        element={
+          <BookingScreen
             user={currentUser}
             onLogout={handleLogout}
             onNavigate={handleNavigate}
