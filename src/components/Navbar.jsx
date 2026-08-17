@@ -1,6 +1,7 @@
 import { useState } from 'react'
 import { motion, useReducedMotion, useScroll, useSpring } from 'motion/react'
-import { IconMenu2, IconX } from '@tabler/icons-react'
+import { IconMenu2, IconMoon, IconSun, IconX } from '@tabler/icons-react'
+import { applyTheme } from '../utils/theme.js'
 
 const links = [
   { label: 'How it works', href: '#how-it-works' },
@@ -10,6 +11,9 @@ const links = [
 
 export default function Navbar({ onNavigate }) {
   const [open, setOpen] = useState(false)
+  const [isDark, setIsDark] = useState(() =>
+    document.documentElement.classList.contains('dark'),
+  )
   const reduce = useReducedMotion()
   const { scrollYProgress } = useScroll()
   const progress = useSpring(scrollYProgress, {
@@ -17,6 +21,14 @@ export default function Navbar({ onNavigate }) {
     damping: 26,
     mass: 0.4,
   })
+
+  const toggleTheme = () => {
+    setIsDark((prev) => {
+      const next = !prev
+      applyTheme(next ? 'dark' : 'light')
+      return next
+    })
+  }
 
   const handleNav = (targetView) => (e) => {
     e.preventDefault()
@@ -58,6 +70,21 @@ export default function Navbar({ onNavigate }) {
         </div>
 
         <div className="flex items-center gap-3">
+          {/* Theme toggle */}
+          <button
+            type="button"
+            id="landing-theme-toggle"
+            aria-label={isDark ? 'Switch to light mode' : 'Switch to dark mode'}
+            onClick={toggleTheme}
+            className="inline-flex size-9 items-center justify-center rounded-full border border-surface-variant text-on-surface-variant transition-colors hover:text-primary"
+          >
+            {isDark ? (
+              <IconSun size={18} aria-hidden="true" />
+            ) : (
+              <IconMoon size={18} aria-hidden="true" />
+            )}
+          </button>
+
           <a
             href="#"
             onClick={handleNav('login')}

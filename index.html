@@ -13,13 +13,7 @@
       ;(function () {
         try {
           var stored = localStorage.getItem('campus-hustle-theme')
-          if (stored !== 'dark' && stored !== 'light') {
-            stored =
-              window.matchMedia &&
-              window.matchMedia('(prefers-color-scheme: dark)').matches
-                ? 'dark'
-                : 'light'
-          }
+          // Only apply dark if explicitly stored; default is always light
           if (stored === 'dark') document.documentElement.classList.add('dark')
         } catch (e) {}
       })()

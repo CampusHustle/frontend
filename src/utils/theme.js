@@ -3,13 +3,7 @@ export const THEME_STORAGE_KEY = 'campus-hustle-theme'
 export function getStoredTheme() {
   const stored = localStorage.getItem(THEME_STORAGE_KEY)
   if (stored === 'dark' || stored === 'light') return stored
-  if (
-    typeof window !== 'undefined' &&
-    typeof window.matchMedia === 'function' &&
-    window.matchMedia('(prefers-color-scheme: dark)').matches
-  ) {
-    return 'dark'
-  }
+  // Default to light theme regardless of system preference
   return 'light'
 }
 
