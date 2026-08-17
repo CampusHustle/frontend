@@ -80,7 +80,7 @@ export default function Hero({ onNavigate }) {
       id="top"
       className="relative overflow-hidden pt-28 pb-20 sm:pt-32 lg:min-h-[calc(100svh-4rem)]"
     >
-      {/* Direct image background with slight blur and no white overlay */}
+      {/* Direct image background with slight blur and smooth readability gradient */}
       <div
         aria-hidden="true"
         className="pointer-events-none absolute inset-0 z-0 overflow-hidden"
@@ -88,32 +88,33 @@ export default function Hero({ onNavigate }) {
         <img
           src="/assets/ch.png"
           alt=""
-          className="size-full object-cover object-center filter blur-[3px] scale-105"
+          className="size-full object-cover object-center filter blur-[2px] scale-105"
         />
-        {/* Subtle dark tint to guarantee text readability while keeping the image vibrant */}
-        <div className="absolute inset-0 bg-black/15" />
+        {/* Dark contrast gradient to ensure high readability for text */}
+        <div className="absolute inset-0 bg-gradient-to-r from-black/80 via-black/55 to-black/35" />
+        <div className="absolute inset-0 bg-gradient-to-t from-black/60 via-transparent to-black/40" />
       </div>
 
       <div className="relative z-10 mx-auto grid max-w-6xl items-center gap-14 px-4 sm:px-6 lg:grid-cols-[1.05fr_0.95fr] lg:gap-10 lg:px-8">
         <div className="max-w-xl">
           <motion.div {...fade(reduce, 0)}>
-            <span className="inline-flex items-center rounded-full border border-surface-variant bg-surface-container px-3.5 py-1.5 text-[13px] font-medium text-on-surface-variant">
+            <span className="inline-flex items-center rounded-full border border-white/25 bg-black/40 px-3.5 py-1.5 text-[13px] font-medium text-white/90 shadow-sm backdrop-blur-md">
               The campus gig platform
             </span>
           </motion.div>
 
           <motion.h1
             {...fade(reduce, 0.08)}
-            className="mt-6 font-display text-5xl font-semibold leading-[0.98] tracking-tight text-primary sm:text-6xl lg:text-[4.4rem]"
+            className="mt-6 font-display text-5xl font-semibold leading-[0.98] tracking-tight text-white drop-shadow-md sm:text-6xl lg:text-[4.4rem]"
           >
             Your campus.
             <br />
-            <span className="italic text-hustle-600">Your hustle.</span>
+            <span className="italic text-hustle-400 drop-shadow">Your hustle.</span>
           </motion.h1>
 
           <motion.p
             {...fade(reduce, 0.16)}
-            className="mt-6 max-w-md text-lg leading-relaxed text-on-surface-variant"
+            className="mt-6 max-w-md text-lg leading-relaxed text-white/90 drop-shadow-sm"
           >
             Post a skill, pick up a gig, and get paid within days. Built for
             students, by students.
@@ -127,7 +128,7 @@ export default function Hero({ onNavigate }) {
               {...ctaProps}
               href="#"
               onClick={handleNav('signup')}
-              className="group inline-flex items-center gap-2 rounded-full bg-hustle-500 px-7 py-3.5 font-semibold text-ink-contrast shadow-sm transition-[background-color] duration-200 hover:bg-hustle-400"
+              className="group inline-flex items-center gap-2 rounded-full bg-hustle-500 px-7 py-3.5 font-semibold text-ink-contrast shadow-level-2 transition-[background-color] duration-200 hover:bg-hustle-400"
             >
               Start hustling
               <IconArrowRight
@@ -138,7 +139,7 @@ export default function Hero({ onNavigate }) {
             <motion.a
               {...ctaProps}
               href="#how-it-works"
-              className="inline-flex items-center gap-2 rounded-full border border-outline-variant px-6 py-3.5 font-semibold text-primary transition-colors duration-200 hover:border-primary hover:bg-surface-low"
+              className="inline-flex items-center gap-2 rounded-full border border-white/40 bg-black/20 px-6 py-3.5 font-semibold text-white shadow-sm backdrop-blur-sm transition-colors duration-200 hover:border-white hover:bg-white/20"
             >
               How it works
             </motion.a>
