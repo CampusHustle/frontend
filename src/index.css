@@ -1,20 +1,17 @@
 @import "tailwindcss";
 
 @theme {
-  --font-display: "Space Grotesk", ui-sans-serif, system-ui, sans-serif;
-  --font-sans: "DM Sans", ui-sans-serif, system-ui, sans-serif;
-
-  --color-ink-950: #0a0a0c;
-  --color-ink-900: #101014;
-  --color-ink-850: #14141a;
-  --color-ink-800: #1a1a21;
-  --color-ink-700: #26262f;
-  --color-ink-600: #3d3d48;
-  --color-ink-400: #71717c;
-  --color-ink-300: #a1a1ac;
-  --color-ink-200: #cbcbd1;
-  --color-ink-100: #ededf0;
-  --color-ink-50: #f6f6f7;
+  --color-ink-950: #f8f9fa;
+  --color-ink-900: #ffffff;
+  --color-ink-850: #f3f4f5;
+  --color-ink-800: #edeeef;
+  --color-ink-700: #e1e3e4;
+  --color-ink-600: #c5c6cf;
+  --color-ink-400: #75777f;
+  --color-ink-300: #45464e;
+  --color-ink-200: #26262f;
+  --color-ink-100: #191c1d;
+  --color-ink-50: #041534;
 
   --color-hustle-300: #ffd37a;
   --color-hustle-400: #ffc04d;
@@ -22,73 +19,152 @@
   --color-hustle-600: #f59e0b;
   --color-hustle-700: #d97706;
 
-  --animate-marquee: marquee 36s linear infinite;
-  --animate-float: float 7s ease-in-out infinite;
-  --animate-float-slow: float 10s ease-in-out infinite;
-  --animate-pulse-dot: pulse-dot 2.4s ease-in-out infinite;
-}
+  --color-ink-contrast: #1a1200;
 
-@keyframes marquee {
-  from {
-    transform: translateX(0);
+  /* Academic Momentum (light) design tokens — mirror of the Stitch design system */
+  --color-primary: #041534;
+  --color-primary-container: #1b2a4a;
+  --color-on-primary: #ffffff;
+  --color-on-primary-container: #8392b7;
+  --color-primary-fixed: #d9e2ff;
+  --color-primary-fixed-dim: #b7c6ee;
+  --color-secondary: #835500;
+  --color-secondary-container: #feae2c;
+  --color-on-secondary: #ffffff;
+  --color-on-secondary-container: #6b4500;
+  --color-secondary-fixed: #ffddb4;
+  --color-secondary-fixed-dim: #ffb955;
+  --color-on-secondary-fixed: #291800;
+  --color-on-secondary-fixed-variant: #633f00;
+  --color-tertiary: #001630;
+  --color-tertiary-container: #002b53;
+  --color-on-tertiary: #ffffff;
+  --color-on-tertiary-container: #4f94e6;
+  --color-tertiary-fixed: #d4e3ff;
+  --color-tertiary-fixed-dim: #a4c9ff;
+  --color-on-tertiary-fixed: #001c39;
+  --color-on-tertiary-fixed-variant: #004883;
+  --color-surface: #f8f9fa;
+  --color-surface-lowest: #ffffff;
+  --color-surface-low: #f3f4f5;
+  --color-surface-container: #edeeef;
+  --color-surface-container-low: #f3f4f5;
+  --color-surface-container-high: #e7e8e9;
+  --color-surface-container-highest: #e1e3e4;
+  --color-surface-high: #e7e8e9;
+  --color-surface-highest: #e1e3e4;
+  --color-surface-variant: #e1e3e4;
+  --color-surface-dim: #d9dadb;
+  --color-surface-bright: #f8f9fa;
+  --color-on-surface: #191c1d;
+  --color-on-surface-variant: #45464e;
+  --color-on-background: #191c1d;
+  --color-outline: #75777f;
+  --color-outline-variant: #c5c6cf;
+  --color-error: #ba1a1a;
+  --color-error-container: #ffdad6;
+  --color-on-error: #ffffff;
+  --color-on-error-container: #93000a;
+
+  --shadow-level-1: 0px 2px 4px rgba(27, 42, 74, 0.05);
+  --shadow-level-2: 0px 4px 12px rgba(27, 42, 74, 0.1);
+  --shadow-level-3: 0px 8px 24px rgba(27, 42, 74, 0.15);
+
+  --font-display: "Montserrat Variable", "Montserrat", sans-serif;
+  --font-body: "Inter Variable", "Inter", sans-serif;
+  --font-poppins: "Poppins", sans-serif;
+
+  --animate-marquee: marquee 34s linear infinite;
+  --animate-float: float 6s ease-in-out infinite;
+  --animate-float-slow: float 9s ease-in-out infinite;
+
+  @keyframes marquee {
+    from {
+      transform: translateX(0);
+    }
+    to {
+      transform: translateX(-50%);
+    }
   }
-  to {
-    transform: translateX(-50%);
+
+  @keyframes float {
+    0%,
+    100% {
+      transform: translateY(0);
+    }
+    50% {
+      transform: translateY(-10px);
+    }
   }
 }
 
-@keyframes float {
-  0%,
-  100% {
-    transform: translateY(0);
+@utility font-display {
+  font-family: var(--font-display);
+}
+
+@utility font-poppins {
+  font-family: var(--font-poppins);
+}
+
+@utility mesh-bg {
+  background-color: var(--color-surface);
+  background-image:
+    radial-gradient(at 0% 0%, hsla(217, 85%, 11%, 0.1) 0px, transparent 50%),
+    radial-gradient(at 100% 100%, hsla(37, 99%, 58%, 0.15) 0px, transparent 50%),
+    radial-gradient(at 100% 0%, hsla(217, 85%, 11%, 0.05) 0px, transparent 50%);
+}
+
+@utility glass-card {
+  background: rgba(255, 255, 255, 0.85);
+  backdrop-filter: blur(16px);
+  -webkit-backdrop-filter: blur(16px);
+  border: 1px solid rgba(255, 255, 255, 0.5);
+  box-shadow: 0 8px 32px 0 rgba(4, 21, 52, 0.05);
+}
+
+@utility hide-scrollbar {
+  -ms-overflow-style: none;
+  scrollbar-width: none;
+  &::-webkit-scrollbar {
+    display: none;
   }
-  50% {
-    transform: translateY(-14px);
+}
+
+@layer base {
+  html {
+    scroll-behavior: smooth;
   }
-}
 
-@keyframes pulse-dot {
-  0%,
-  100% {
-    opacity: 1;
+  body {
+    background-color: var(--color-surface);
+    color: var(--color-on-surface);
+    font-family: var(--font-body);
+    font-size: 16px;
+    line-height: 1.5;
+    -webkit-font-smoothing: antialiased;
+    text-rendering: optimizeLegibility;
   }
-  50% {
-    opacity: 0.35;
+
+  ::selection {
+    background-color: var(--color-hustle-500);
+    color: #1a1200;
   }
-}
 
-@media (prefers-reduced-motion: reduce) {
-  .animate-marquee,
-  .animate-float,
-  .animate-float-slow,
-  .animate-pulse-dot {
-    animation: none;
+  :focus-visible {
+    outline: 2px solid var(--color-hustle-500);
+    outline-offset: 2px;
+    border-radius: 4px;
   }
-}
 
-body {
-  @apply bg-ink-950 font-sans text-ink-100 antialiased;
-  font-feature-settings: "ss01";
-}
+  @media (prefers-reduced-motion: reduce) {
+    html {
+      scroll-behavior: auto;
+    }
 
-::selection {
-  background-color: var(--color-hustle-500);
-  color: #1a1200;
-}
-
-::-webkit-scrollbar {
-  width: 10px;
-}
-
-::-webkit-scrollbar-track {
-  background: var(--color-ink-950);
-}
-
-::-webkit-scrollbar-thumb {
-  background: var(--color-ink-700);
-  border-radius: 8px;
-}
-
-::-webkit-scrollbar-thumb:hover {
-  background: var(--color-ink-600);
+    .animate-marquee,
+    .animate-float,
+    .animate-float-slow {
+      animation: none;
+    }
+  }
 }

@@ -1,0 +1,59 @@
+import { useState } from 'react';
+
+export default function DocumentCarousel({ previewPages }) {
+  const [currentIndex, setCurrentIndex] = useState(0);
+
+  const goNext = () => {
+    setCurrentIndex((prev) => (prev === previewPages.length - 1 ? 0 : prev + 1));
+  };
+
+  const goPrev = () => {
+    setCurrentIndex((prev) => (prev === 0 ? previewPages.length - 1 : prev - 1));
+  };
+
+  if (!previewPages || previewPages.length === 0) {
+    return (
+      <div className="flex h-96 items-center justify-center rounded-xl bg-gray-100 border border-gray-200 shadow-sm text-gray-600">
+        No preview pages available
+      </div>
+    );
+  }
+
+  return (
+    <div className="relative w-full overflow-hidden rounded-xl border border-gray-200 shadow-sm group aspect-[4/3] max-h-[500px] bg-gray-100">
+      <img
+        src={previewPages[currentIndex]}
+        alt={`Preview page ${currentIndex + 1}`}
+        className="object-cover w-full h-full pointer-events-none"
+      />
+
+      {previewPages.length > 1 && (
+        <>
+          <button
+            onClick={goPrev}
+            className="absolute left-4 top-1/2 -translate-y-1/2 rounded-full bg-white/90 p-3 text-gray-800 opacity-0 shadow-lg backdrop-blur-sm transition-all hover:bg-white hover:scale-110 group-hover:opacity-100 focus:opacity-100"
+            aria-label="Previous page"
+          >
+            <svg className="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2.5} d="M15 19l-7-7 7-7" />
+            </svg>
+          </button>
+          <button
+            onClick={goNext}
+            className="absolute right-4 top-1/2 -translate-y-1/2 rounded-full bg-white/90 p-3 text-gray-800 opacity-0 shadow-lg backdrop-blur-sm transition-all hover:bg-white hover:scale-110 group-hover:opacity-100 focus:opacity-100"
+            aria-label="Next page"
+          >
+            <svg className="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2.5} d="M9 5l7 7-7 7" />
+            </svg>
+          </button>
+        </>
+      )}
+
+      {/* Page Indicator */}
+      <div className="absolute bottom-4 left-1/2 -translate-x-1/2 rounded-full bg-gray-900/80 px-4 py-1.5 text-sm font-semibold text-white backdrop-blur-md shadow-md">
+        {currentIndex + 1} / {previewPages.length}
+      </div>
+    </div>
+  );
+}

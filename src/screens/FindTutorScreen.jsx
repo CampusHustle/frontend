@@ -1,0 +1,319 @@
+import { useMemo, useState } from 'react'
+import {
+  IconCircleCheckFilled,
+  IconStarFilled,
+} from '@tabler/icons-react'
+import { tutors } from '../api/mockUsers.js'
+import Footer from '../components/Footer.jsx'
+import AppNavbar from '../components/AppNavbar.jsx'
+
+const VISIBLE_STEP = 6
+
+function initialsOf(name) {
+  return (name || '')
+    .split(' ')
+    .filter(Boolean)
+    .slice(0, 2)
+    .map((part) => part[0]?.toUpperCase())
+    .join('')
+}
+
+function Avatar({ user, className = 'w-16 h-16' }) {
+  if (user?.profilePicUrl) {
+    return (
+      <img
+        src={user.profilePicUrl}
+        alt={user.name || 'Tutor avatar'}
+        className={`${className} rounded-full object-cover border-2 border-surface shadow-sm`}
+      />
+    )
+  }
+  return (
+    <div
+      aria-hidden="true"
+      className={`${className} flex items-center justify-center rounded-full border-2 border-surface bg-primary-fixed text-lg font-bold text-primary shadow-sm`}
+    >
+      {initialsOf(user?.name || 'Student')}
+    </div>
+  )
+}
+
+function TutorCard({ tutor, onView }) {
+  const handleKeyDown = (e) => {
+    if (e.key === 'Enter' || e.key === ' ') {
+      e.preventDefault()
+      onView(tutor)
+    }
+  }
+
+  return (
+    <div
+      role="button"
+      tabIndex={0}
+      aria-label={`View profile of ${tutor.name}`}
+      onClick={() => onView(tutor)}
+      onKeyDown={handleKeyDown}
+      className="bg-surface-lowest rounded-xl shadow-level-1 hover:shadow-level-2 transition-all duration-300 border border-surface-variant p-5 flex flex-col relative overflow-hidden group cursor-pointer focus:outline-none focus-visible:ring-2 focus-visible:ring-primary"
+    >
+      {/* Header Info */}
+      <div className="flex gap-4 mb-4 relative z-10">
+        <Avatar user={tutor} className="w-14 h-14 shrink-0" />
+        <div className="min-w-0 flex-1">
+          <div className="flex items-start justify-between gap-2">
+            <div className="min-w-0">
+              <div className="flex items-center gap-1.5">
+                <h3 className="font-display text-base font-bold text-primary truncate">{tutor.name}</h3>
+                <IconCircleCheckFilled
+                  size={16}
+                  className="text-tertiary-container shrink-0"
+                  title="Verified Student"
+                  aria-label="Verified tutor"
+                />
+              </div>
+              <p className="text-xs text-on-surface-variant truncate mt-0.5">{tutor.department}, {tutor.university}</p>
+            </div>
+            <div className="flex items-center gap-1 bg-secondary-fixed px-2.5 py-1 rounded-full shrink-0">
+              <IconStarFilled size={14} className="text-secondary" aria-hidden="true" />
+              <span className="text-sm font-semibold text-secondary">{tutor.rating.knowledge.toFixed(1)}</span>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      {/* Teaching Skills Chips */}
+      {tutor.skillsTeaching?.length > 0 && (
+        <div className="flex flex-wrap gap-1.5 mb-4 z-10">
+          {tutor.skillsTeaching.slice(0, 3).map((skill) => (
+            <span
+              key={skill}
+              className="bg-surface-high text-on-surface-variant text-xs font-medium px-3 py-1 rounded-full"
+            >
+              {skill}
+            </span>
+          ))}
+          {tutor.skillsTeaching.length > 3 && (
+            <span className="bg-surface-high text-on-surface-variant text-xs font-medium px-3 py-1 rounded-full">
+              +{tutor.skillsTeaching.length - 3}
+            </span>
+          )}
+        </div>
+      )}
+
+      {/* Price & Book Action */}
+      <div className="mt-auto flex justify-between items-center pt-4 border-t border-surface-variant z-10">
+        <div className="text-base font-bold text-primary">
+          ${tutor.hourlyRate} <span className="text-xs text-on-surface-variant font-normal">/hr</span>
+        </div>
+        <button
+          type="button"
+          onClick={(e) => {
+            e.stopPropagation()
+            onView(tutor)
+          }}
+          className="border border-primary text-primary text-sm font-semibold px-4 py-1.5 rounded-lg hover:bg-primary hover:text-on-primary transition-colors"
+        >
+          Book
+        </button>
+      </div>
+
+      <div className="absolute inset-0 bg-gradient-to-br from-surface to-surface-container-lowest opacity-0 group-hover:opacity-100 transition-opacity duration-300 pointer-events-none"></div>
+    </div>
+  )
+}
+
+export default function FindTutorScreen({ user, onLogout, onNavigate }) {
+  const [query, setQuery] = useState('')
+  const [selectedDepts, setSelectedDepts] = useState([])
+  const [maxRate, setMaxRate] = useState(60)
+  const [minRating, setMinRating] = useState(0)
+  const [visibleCount, setVisibleCount] = useState(VISIBLE_STEP)
+
+  const handleDeptToggle = (dept) => {
+    setSelectedDepts((prev) =>
+      prev.includes(dept) ? prev.filter((d) => d !== dept) : [...prev, dept]
+    )
+    setVisibleCount(VISIBLE_STEP)
+  }
+
+  const filtered = useMemo(() => {
+    const q = query.trim().toLowerCase()
+    return tutors.filter((t) => {
+      const matchDept = selectedDepts.length === 0 || selectedDepts.includes(t.department)
+      const matchRate = t.hourlyRate <= maxRate
+      const matchRating = t.rating.knowledge >= minRating
+      const matchQuery =
+        !q ||
+        t.name.toLowerCase().includes(q) ||
+        t.university.toLowerCase().includes(q) ||
+        t.department.toLowerCase().includes(q) ||
+        t.skillsTeaching.some((s) => s.toLowerCase().includes(q))
+      return matchDept && matchRate && matchRating && matchQuery
+    })
+  }, [query, selectedDepts, maxRate, minRating])
+
+  const visibleTutors = useMemo(
+    () => filtered.slice(0, visibleCount),
+    [filtered, visibleCount],
+  )
+
+  const handleViewTutor = (tutor) => {
+    onNavigate?.(`/tutor/${tutor.id}`)
+  }
+
+  return (
+    <div className="flex min-h-screen flex-col bg-surface font-body text-on-surface">
+      <AppNavbar
+        user={user}
+        activeView="tutor"
+        onNavigate={onNavigate}
+        onLogout={onLogout}
+        searchQuery={query}
+        onSearchChange={setQuery}
+        searchPlaceholder="Search tutors, subjects..."
+      />
+
+      <main className="flex-grow w-full max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8 md:py-10 grid grid-cols-1 md:grid-cols-12 gap-8">
+        {/* Sidebar Filters */}
+        <aside className="md:col-span-3 space-y-6 hidden md:block">
+          <div className="bg-surface-lowest p-6 rounded-xl shadow-level-1 border border-surface-variant">
+            <h2 className="font-display text-lg font-bold text-primary mb-4">Filters</h2>
+            
+            <div className="space-y-5">
+              {/* Subject Filter */}
+              <div>
+                <h3 className="text-xs font-bold uppercase tracking-wider text-outline mb-2">Subject</h3>
+                <div className="space-y-2">
+                  {['Computer Science', 'Mathematics', 'Physics'].map((dept) => (
+                    <label key={dept} className="flex items-center gap-2 cursor-pointer group">
+                      <input
+                        type="checkbox"
+                        checked={selectedDepts.includes(dept)}
+                        onChange={() => handleDeptToggle(dept)}
+                        className="rounded text-primary focus:ring-primary border-outline-variant"
+                      />
+                      <span className="text-sm text-on-surface-variant group-hover:text-primary transition-colors">
+                        {dept}
+                      </span>
+                    </label>
+                  ))}
+                </div>
+              </div>
+
+              {/* Hourly Rate Filter */}
+              <div>
+                <h3 className="text-xs font-bold uppercase tracking-wider text-outline mb-2">Hourly Rate</h3>
+                <input
+                  type="range"
+                  min="10"
+                  max="100"
+                  value={maxRate}
+                  onChange={(e) => {
+                    setMaxRate(Number(e.target.value))
+                    setVisibleCount(VISIBLE_STEP)
+                  }}
+                  className="w-full accent-primary cursor-pointer"
+                />
+                <div className="flex justify-between text-xs text-outline mt-1 font-medium">
+                  <span>$10</span>
+                  <span>${maxRate === 100 ? '100+' : maxRate}</span>
+                </div>
+              </div>
+
+              {/* Minimum Rating Filter */}
+              <div>
+                <h3 className="text-xs font-bold uppercase tracking-wider text-outline mb-2">Minimum Rating</h3>
+                <div className="flex gap-1.5 cursor-pointer">
+                  {[1, 2, 3, 4, 5].map((star) => (
+                    <button
+                      key={star}
+                      type="button"
+                      onClick={() => {
+                        setMinRating(minRating === star ? 0 : star)
+                        setVisibleCount(VISIBLE_STEP)
+                      }}
+                      className="focus:outline-none transition-transform active:scale-95"
+                    >
+                      <IconStarFilled
+                        size={20}
+                        className={
+                          star <= minRating
+                            ? 'text-secondary-container'
+                            : 'text-surface-variant'
+                        }
+                      />
+                    </button>
+                  ))}
+                </div>
+              </div>
+            </div>
+          </div>
+
+          {/* Study Plan AI Banner */}
+          <div className="bg-surface-low p-5 rounded-xl border border-surface-variant text-center">
+            <h3 className="font-display text-base font-bold text-primary mb-1.5">Need a study plan?</h3>
+            <p className="text-xs text-on-surface-variant mb-4 leading-relaxed">Try our AI Assistant to build a custom schedule.</p>
+            <button
+              type="button"
+              onClick={() => onNavigate?.('assistant')}
+              className="w-full bg-primary text-on-primary text-sm font-semibold py-2 rounded-lg shadow-level-1 hover:bg-primary-container transition-colors"
+            >
+              Try AI Assistant
+            </button>
+          </div>
+        </aside>
+
+        {/* Tutor Grid Section */}
+        <section className="md:col-span-9">
+          <div className="flex justify-between items-end mb-6">
+            <div>
+              <h1 className="font-display text-2xl sm:text-3xl font-bold text-primary tracking-tight">
+                Find Tutors
+              </h1>
+              <p className="text-sm text-on-surface-variant mt-1 font-medium">
+                {filtered.length} available right now
+              </p>
+            </div>
+
+            <div className="hidden md:flex items-center gap-2">
+              <span className="text-xs font-medium text-outline">Sort by:</span>
+              <select className="bg-surface-lowest border border-surface-variant rounded-lg text-xs font-medium text-on-surface focus:border-primary focus:ring-1 focus:ring-primary py-1.5 px-3">
+                <option>Recommended</option>
+                <option>Price: Low to High</option>
+                <option>Highest Rated</option>
+              </select>
+            </div>
+          </div>
+
+          {filtered.length === 0 ? (
+            <div className="bg-surface-lowest rounded-xl border border-dashed border-surface-variant p-12 text-center shadow-sm">
+              <h3 className="font-display text-lg font-bold text-primary">No tutors found</h3>
+              <p className="text-sm text-on-surface-variant mt-1">
+                Try widening your search terms or adjusting filter limits.
+              </p>
+            </div>
+          ) : (
+            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
+              {visibleTutors.map((tutor) => (
+                <TutorCard key={tutor.id} tutor={tutor} onView={handleViewTutor} />
+              ))}
+            </div>
+          )}
+
+          {visibleCount < filtered.length && (
+            <div className="pt-8 text-center">
+              <button
+                type="button"
+                onClick={() => setVisibleCount((c) => c + VISIBLE_STEP)}
+                className="bg-surface-lowest border border-surface-variant text-primary text-sm font-semibold px-6 py-2.5 rounded-lg shadow-level-1 hover:bg-surface-low transition-colors"
+              >
+                Load More Tutors ({filtered.length - visibleCount} remaining)
+              </button>
+            </div>
+          )}
+        </section>
+      </main>
+
+      <Footer onNavigate={onNavigate} />
+    </div>
+  )
+}
