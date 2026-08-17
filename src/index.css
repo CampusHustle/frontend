@@ -138,74 +138,74 @@
   }
 
   .dark {
-    /* Dark theme token overrides — Stitch design system dark mirror */
-    --color-primary: #b7c6ee;
-    --color-primary-container: #384667;
-    --color-on-primary: #0a1b3a;
-    --color-on-primary-container: #d9e2ff;
-    --color-primary-fixed: #d9e2ff;
-    --color-primary-fixed-dim: #b7c6ee;
-    --color-secondary: #ffaf2b;
-    --color-secondary-container: #f59e0b;
-    --color-on-secondary: #1a1200;
-    --color-on-secondary-container: #1a1200;
-    --color-secondary-fixed: #ffddb4;
-    --color-secondary-fixed-dim: #ffb955;
-    --color-on-secondary-fixed: #291800;
-    --color-on-secondary-fixed-variant: #633f00;
-    --color-tertiary: #a4c9ff;
-    --color-tertiary-container: #004883;
-    --color-on-tertiary: #001c39;
-    --color-on-tertiary-container: #d4e3ff;
-    --color-tertiary-fixed: #d4e3ff;
-    --color-tertiary-fixed-dim: #a4c9ff;
-    --color-on-tertiary-fixed: #001c39;
-    --color-on-tertiary-fixed-variant: #004883;
-    --color-surface: #131316;
-    --color-surface-lowest: #0b0c0e;
-    --color-surface-low: #1a1b1d;
-    --color-surface-container: #1e2023;
-    --color-surface-container-low: #17181b;
-    --color-surface-container-high: #292b2e;
-    --color-surface-container-highest: #34363a;
-    --color-surface-high: #292b2e;
-    --color-surface-highest: #34363a;
-    --color-surface-variant: #40444a;
-    --color-surface-dim: #101114;
-    --color-surface-bright: #3a3d41;
-    --color-on-surface: #e4e2e6;
-    --color-on-surface-variant: #c5c6d0;
-    --color-on-background: #e4e2e6;
-    --color-outline: #8f929a;
-    --color-outline-variant: #45464e;
+    /* Dark palette — Tutor Profile mockup navy / gold / teal */
+    --color-primary: #ffdca1;
+    --color-primary-container: #ffb800;
+    --color-on-primary: #412d00;
+    --color-on-primary-container: #6b4c00;
+    --color-primary-fixed: #ffdea8;
+    --color-primary-fixed-dim: #ffba20;
+    --color-secondary: #bec6df;
+    --color-secondary-container: #41495e;
+    --color-on-secondary: #283044;
+    --color-on-secondary-container: #b0b8d1;
+    --color-secondary-fixed: #dae2fc;
+    --color-secondary-fixed-dim: #bec6df;
+    --color-on-secondary-fixed: #131b2e;
+    --color-on-secondary-fixed-variant: #3f465b;
+    --color-tertiary: #60f8e2;
+    --color-tertiary-container: #39dbc6;
+    --color-on-tertiary: #003731;
+    --color-on-tertiary-container: #005c52;
+    --color-tertiary-fixed: #62fae3;
+    --color-tertiary-fixed-dim: #3cddc7;
+    --color-on-tertiary-fixed: #00201c;
+    --color-on-tertiary-fixed-variant: #005047;
+    --color-surface: #0e1321;
+    --color-surface-lowest: #090e1c;
+    --color-surface-low: #161b2a;
+    --color-surface-container: #1a1f2e;
+    --color-surface-container-low: #161b2a;
+    --color-surface-container-high: #252a39;
+    --color-surface-container-highest: #303444;
+    --color-surface-high: #252a39;
+    --color-surface-highest: #303444;
+    --color-surface-variant: #303444;
+    --color-surface-dim: #0e1321;
+    --color-surface-bright: #343948;
+    --color-on-surface: #dee2f6;
+    --color-on-surface-variant: #d5c4ab;
+    --color-on-background: #dee2f6;
+    --color-outline: #9e8f78;
+    --color-outline-variant: #514532;
     --color-error: #ffb4ab;
     --color-error-container: #93000a;
     --color-on-error: #690005;
     --color-on-error-container: #ffdad6;
 
-    /* Ink scale inverted for dark surfaces */
-    --color-ink-950: #0d0f12;
-    --color-ink-900: #121417;
-    --color-ink-850: #1a1d20;
-    --color-ink-800: #22252a;
-    --color-ink-700: #2b2f35;
-    --color-ink-600: #3a3f47;
-    --color-ink-400: #9aa0aa;
-    --color-ink-300: #c3c7cf;
-    --color-ink-200: #d9dce2;
-    --color-ink-100: #e6e6e8;
-    --color-ink-50: #eef1f8;
+    /* Ink scale — dark navy surface, light text */
+    --color-ink-950: #0e1321;
+    --color-ink-900: #090e1c;
+    --color-ink-850: #161b2a;
+    --color-ink-800: #1a1f2e;
+    --color-ink-700: #252a39;
+    --color-ink-600: #303444;
+    --color-ink-400: #94a3b8;
+    --color-ink-300: #d5c4ab;
+    --color-ink-200: #dee2f6;
+    --color-ink-100: #e2e6f0;
+    --color-ink-50: #ffffff;
 
     --shadow-level-1: 0px 2px 4px rgba(0, 0, 0, 0.3);
     --shadow-level-2: 0px 4px 12px rgba(0, 0, 0, 0.45);
     --shadow-level-3: 0px 8px 24px rgba(0, 0, 0, 0.55);
 
-    --glass-bg: rgba(19, 19, 22, 0.85);
-    --glass-border: rgba(255, 255, 255, 0.08);
+    --glass-bg: rgba(26, 34, 53, 0.6);
+    --glass-border: rgba(255, 255, 255, 0.1);
     --glass-shadow: 0 8px 32px 0 rgba(0, 0, 0, 0.4);
-    --mesh-a: hsla(217, 85%, 90%, 0.08);
-    --mesh-b: hsla(37, 99%, 58%, 0.1);
-    --mesh-c: hsla(217, 85%, 90%, 0.06);
+    --mesh-a: hsla(220, 60%, 50%, 0.06);
+    --mesh-b: hsla(37, 99%, 58%, 0.05);
+    --mesh-c: hsla(170, 60%, 45%, 0.04);
   }
 
   html {
