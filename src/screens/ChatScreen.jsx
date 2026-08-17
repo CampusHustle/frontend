@@ -9,6 +9,11 @@ import {
   IconMail,
   IconPhone,
   IconUser,
+  IconArrowLeft,
+  IconSearch,
+  IconPhone as IconPhoneCall,
+  IconUserPlus,
+  IconBan,
 } from '@tabler/icons-react'
 import AppNavbar from '../components/AppNavbar.jsx'
 import Footer from '../components/Footer.jsx'
@@ -23,21 +28,21 @@ import {
 const STATUS_CONFIG = {
   connecting: {
     label: 'Connecting…',
-    badgeClass: 'bg-[#fff8e1] border-[#ffe082] text-[#7c5e00]',
+    badgeClass: 'bg-yellow-400/20 border-yellow-400/40 text-yellow-300',
     Icon: IconLoader2,
-    iconClass: 'text-[#f59f00] animate-spin',
+    iconClass: 'text-yellow-300 animate-spin',
   },
   connected: {
-    label: 'Connected',
-    badgeClass: 'bg-[#e8f5e9] border-[#c8e6c9] text-[#1b5e20]',
+    label: 'online',
+    badgeClass: 'bg-transparent border-transparent text-green-400',
     Icon: IconWifi,
-    iconClass: 'text-[#2e7d32]',
+    iconClass: 'text-green-400',
   },
   disconnected: {
-    label: 'Disconnected',
-    badgeClass: 'bg-[#fce4ec] border-[#f8bbd0] text-[#880e4f]',
+    label: 'offline',
+    badgeClass: 'bg-transparent border-transparent text-on-primary/50',
     Icon: IconWifiOff,
-    iconClass: 'text-[#c62828]',
+    iconClass: 'text-on-primary/50',
   },
 }
 
@@ -58,7 +63,7 @@ function ConnectionStatusBadge({ status }) {
 }
 
 function PeerAvatar({ peer, size = 'md' }) {
-  const dim = size === 'sm' ? 'size-8' : 'size-10'
+  const dim = size === 'sm' ? 'size-8' : size === 'lg' ? 'size-11' : 'size-10'
   const text = size === 'sm' ? 'text-xs' : 'text-sm'
   const initials = (peer.name ?? '')
     .split(' ')
@@ -334,18 +339,81 @@ export default function ChatScreen({ user, onLogout, onNavigate }) {
       <AppNavbar user={user} activeView="chat" onNavigate={onNavigate} onLogout={onLogout} />
 
       <div className="relative flex h-[calc(100dvh-64px)] w-full shrink-0 flex-col overflow-hidden">
-        <header className="shrink-0 border-b border-surface-variant bg-surface-lowest px-4 py-3 shadow-level-1 sm:px-6">
-          <div className="mx-auto flex w-full max-w-3xl items-center justify-between gap-3">
-            <div className="flex items-center gap-3">
-              <PeerAvatar peer={MOCK_PEER} />
-              <div>
-                <p className="text-sm font-semibold text-primary leading-tight">{MOCK_PEER.name}</p>
-                <p className="text-xs text-on-surface-variant leading-tight mt-0.5">
-                  {MOCK_PEER.department} · {MOCK_PEER.university}
-                </p>
+        {/* ── Chat header ── */}
+        <header className="shrink-0 bg-primary shadow-level-2">
+          {/* Top row: back · avatar + name/status · search · call */}
+          <div className="mx-auto flex w-full max-w-3xl items-center gap-3 px-3 py-2.5 sm:px-5">
+            {/* Back button */}
+            <button
+              type="button"
+              aria-label="Go back"
+              onClick={() => onNavigate('tutor')}
+              className="relative flex size-9 shrink-0 items-center justify-center rounded-full text-on-primary/70 transition-colors hover:bg-white/10 hover:text-on-primary active:scale-95"
+            >
+              <IconArrowLeft size={20} aria-hidden="true" />
+              {/* Unread badge — static indicator matching the reference */}
+              <span className="absolute -right-0.5 -top-0.5 flex size-4 items-center justify-center rounded-full bg-secondary-container text-[9px] font-bold text-on-secondary-container">
+                24
+              </span>
+            </button>
+
+            {/* Avatar + online dot */}
+            <div className="relative shrink-0">
+              <PeerAvatar peer={MOCK_PEER} size="lg" />
+              <span
+                aria-label="Online"
+                className="absolute bottom-0 right-0 size-3 rounded-full border-2 border-primary bg-green-400"
+              />
+            </div>
+
+            {/* Name + online label */}
+            <div className="min-w-0 flex-1">
+              <p className="truncate text-sm font-semibold leading-tight text-on-primary">
+                {MOCK_PEER.name}
+              </p>
+              <div className="flex items-center gap-1 mt-0.5">
+                <ConnectionStatusBadge status={status} />
               </div>
             </div>
-            <ConnectionStatusBadge status={status} />
+
+            {/* Right actions */}
+            <div className="flex items-center gap-1 shrink-0">
+              <button
+                type="button"
+                aria-label="Search messages"
+                className="flex size-9 items-center justify-center rounded-full text-on-primary/70 transition-colors hover:bg-white/10 hover:text-on-primary active:scale-95"
+              >
+                <IconSearch size={19} aria-hidden="true" />
+              </button>
+              <button
+                type="button"
+                aria-label="Call"
+                className="flex size-9 items-center justify-center rounded-full text-on-primary/70 transition-colors hover:bg-white/10 hover:text-on-primary active:scale-95"
+              >
+                <IconPhoneCall size={19} aria-hidden="true" />
+              </button>
+            </div>
+          </div>
+
+          {/* Action bar: Add Contact · Block User */}
+          <div className="mx-auto flex w-full max-w-3xl border-t border-white/10">
+            <button
+              type="button"
+              onClick={() => setConsentOpen(true)}
+              className="flex flex-1 items-center justify-center gap-2 py-2.5 text-xs font-bold uppercase tracking-widest text-secondary-container transition-colors hover:bg-white/10 active:scale-95 sm:text-sm"
+            >
+              <IconUserPlus size={14} aria-hidden="true" />
+              Add Contact
+            </button>
+            <div className="w-px bg-white/10" />
+            <button
+              type="button"
+              aria-label="Block this user"
+              className="flex flex-1 items-center justify-center gap-2 py-2.5 text-xs font-bold uppercase tracking-widest text-red-400 transition-colors hover:bg-white/10 active:scale-95 sm:text-sm"
+            >
+              <IconBan size={14} aria-hidden="true" />
+              Block User
+            </button>
           </div>
         </header>
 
