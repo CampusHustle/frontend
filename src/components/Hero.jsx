@@ -80,7 +80,7 @@ export default function Hero({ onNavigate }) {
       id="top"
       className="relative overflow-hidden pt-28 pb-20 sm:pt-32 lg:min-h-[calc(100svh-4rem)]"
     >
-      {/* Background Image from /assets/ch.png with layered gradient overlays */}
+      {/* Direct image background with slight blur and no white overlay */}
       <div
         aria-hidden="true"
         className="pointer-events-none absolute inset-0 z-0 overflow-hidden"
@@ -88,10 +88,10 @@ export default function Hero({ onNavigate }) {
         <img
           src="/assets/ch.png"
           alt=""
-          className="size-full object-cover object-center opacity-30 filter contrast-105"
+          className="size-full object-cover object-center filter blur-[3px] scale-105"
         />
-        <div className="absolute inset-0 bg-gradient-to-b from-surface-lowest/80 via-surface-lowest/60 to-surface-lowest" />
-        <div className="absolute inset-0 bg-[radial-gradient(55%_55%_at_78%_12%,rgba(255,175,43,0.18),transparent_62%)]" />
+        {/* Subtle dark tint to guarantee text readability while keeping the image vibrant */}
+        <div className="absolute inset-0 bg-black/15" />
       </div>
 
       <div className="relative z-10 mx-auto grid max-w-6xl items-center gap-14 px-4 sm:px-6 lg:grid-cols-[1.05fr_0.95fr] lg:gap-10 lg:px-8">
