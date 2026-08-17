@@ -12,8 +12,6 @@ import {
   IconArrowLeft,
   IconSearch,
   IconPhone as IconPhoneCall,
-  IconUserPlus,
-  IconBan,
 } from '@tabler/icons-react'
 import AppNavbar from '../components/AppNavbar.jsx'
 import Footer from '../components/Footer.jsx'
