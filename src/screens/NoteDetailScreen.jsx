@@ -28,7 +28,7 @@ export default function NoteDetailScreen({ user, onNavigate, onLogout }) {
   useEffect(() => {
     const fetchNote = async () => {
       setIsLoading(true);
-      await new Promise(resolve => setTimeout(resolve, 600));
+      //await new Promise(resolve => setTimeout(resolve, 600));
       setNote(DUMMY_NOTE);
       setIsLoading(false);
     };
@@ -60,16 +60,16 @@ export default function NoteDetailScreen({ user, onNavigate, onLogout }) {
 
   return (
     <div className="flex min-h-screen flex-col bg-surface font-body text-on-surface">
-      <AppNavbar 
-        user={user} 
-        activeView="marketplace" 
-        onNavigate={onNavigate} 
-        onLogout={onLogout} 
+      <AppNavbar
+        user={user}
+        activeView="marketplace"
+        onNavigate={onNavigate}
+        onLogout={onLogout}
       />
-      
-      <main className="flex-1 bg-gray-50 py-12 px-4 sm:px-6 lg:px-8">
-        <div className="mx-auto max-w-7xl">
-          
+
+      <main className="flex-1 bg-gray-50">
+        <div className="mx-auto max-w-7xl w-full px-4 py-8 sm:px-6 lg:px-8">
+
           {/* Breadcrumb Navigation */}
           <nav className="mb-8 flex text-sm text-gray-600 font-medium">
             <a href="/notes" className="hover:text-amber-600 transition-colors">Marketplace</a>
@@ -79,19 +79,19 @@ export default function NoteDetailScreen({ user, onNavigate, onLogout }) {
             <span className="text-gray-900 truncate max-w-xs">{note.title}</span>
           </nav>
 
-          <div className="grid grid-cols-1 gap-10 lg:grid-cols-12">
-            
+          <div className="grid grid-cols-1 gap-8 lg:grid-cols-12 lg:gap-12">
+
             {/* Main Content Area: Document Preview */}
-            <div className="lg:col-span-8">
+            <div className="lg:col-span-7">
               <div className="mb-4 flex items-center justify-between">
                 <h2 className="text-xl font-bold text-gray-900">Document Preview</h2>
                 <span className="rounded-full bg-gray-100 px-3 py-1 text-xs font-bold text-gray-700">
                   Preview ({note.previewPages.length} Pages)
                 </span>
               </div>
-              
+
               <DocumentCarousel previewPages={note.previewPages} />
-              
+
               {/* Trust Badges / Extra Info */}
               <div className="mt-8 grid grid-cols-1 gap-6 sm:grid-cols-3">
                 <div className="rounded-xl bg-white p-5 text-center shadow-sm border border-gray-200">
@@ -125,7 +125,7 @@ export default function NoteDetailScreen({ user, onNavigate, onLogout }) {
             </div>
 
             {/* Sidebar Area: Purchase Details */}
-            <div className="lg:col-span-4">
+            <div className="lg:col-span-5 sticky top-28 self-start">
               <PurchaseCard note={note} />
             </div>
 
