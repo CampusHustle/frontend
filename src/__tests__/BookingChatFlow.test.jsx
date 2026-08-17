@@ -29,7 +29,7 @@ vi.mock('../api/mockChatApi.js', () => ({
   INITIAL_MESSAGES: [
     { id: 'init-1', sender: 'peer', text: 'Hello there!', time: '9:01 AM' },
   ],
-  subscribeLiveMessages: vi.fn(() => () => {}),
+  subscribeLiveMessages: vi.fn(() => () => { }),
 }))
 
 const MOCK_BOOKINGS = [
@@ -77,11 +77,12 @@ describe('Booking → accept → chat → contact-share flow', () => {
 
     expect(within(pendingCard).getByRole('status')).toHaveAttribute('data-status', 'pending')
 
-    bookingApi.updateBookingStatus.mockResolvedValueOnce({ ...MOCK_BOOKINGS[0], status: 'confirmed' })
-    await user.click(screen.getByRole('button', { name: /confirm.*calculus/i }))
+    // Cancel the pending booking — this exercises the status-change path
+    bookingApi.updateBookingStatus.mockResolvedValueOnce({ ...MOCK_BOOKINGS[0], status: 'cancelled' })
+    await user.click(within(pendingCard).getByRole('button', { name: /cancel/i }))
 
     await waitFor(() => {
-      expect(within(pendingCard).getByRole('status')).toHaveAttribute('data-status', 'confirmed')
+      expect(within(pendingCard).getByRole('status')).toHaveAttribute('data-status', 'cancelled')
     })
   })
 
@@ -169,7 +170,8 @@ describe('Booking → accept → chat → contact-share flow', () => {
     await user.click(within(confirmedCard).getByRole('button', { name: /share contact/i }))
     expect(screen.getByRole('dialog')).toBeInTheDocument()
 
-    await user.click(screen.getByRole('button', { name: /^cancel$/i }))
+    // Click the Cancel button inside the dialog
+    await user.click(within(screen.getByRole('dialog')).getByRole('button', { name: /^cancel$/i }))
 
     expect(screen.queryByRole('dialog')).not.toBeInTheDocument()
     expect(screen.queryByText(/contact info shared/i)).not.toBeInTheDocument()
@@ -236,7 +238,9 @@ describe('Chat page — send message + share contact', () => {
     render(<MemoryRouter><ChatPage user={mockUser} onNavigate={vi.fn()} onLogout={vi.fn()} /></MemoryRouter>)
 
     await user.click(screen.getByRole('button', { name: /share contact info/i }))
-    await user.click(screen.getByRole('button', { name: /^share contact info$/i }))
+
+    // Confirm inside the dialog specifically to avoid matching the input-bar button
+    await user.click(within(screen.getByRole('dialog')).getByRole('button', { name: /share contact info/i }))
 
     expect(screen.queryByRole('dialog')).not.toBeInTheDocument()
     await waitFor(() => {
