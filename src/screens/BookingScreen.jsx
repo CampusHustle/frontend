@@ -5,9 +5,11 @@ import {
   IconDotsVertical,
   IconMessageCircle,
   IconRefresh,
+  IconArrowRight,
 } from '@tabler/icons-react'
 import AppNavbar from '../components/AppNavbar.jsx'
 import BookingCard from '../components/BookingCard.jsx'
+import ConsentModal from '../components/ConsentModal.jsx'
 import Footer from '../components/Footer.jsx'
 import {
   fetchBookings,
@@ -209,8 +211,9 @@ export default function BookingScreen({ user, onLogout, onNavigate }) {
   const [loading, setLoading] = useState(true)
   const [error, setError] = useState(null)
   const [activeTab, setActiveTab] = useState('all')
-  const [activeChat, setActiveChat] = useState(null) // booking object
+  const [activeChat, setActiveChat] = useState(null)
   const [toastMsg, setToastMsg] = useState(null)
+  const [consentBookingId, setConsentBookingId] = useState(null)
 
   /* ── load bookings from mock backend ── */
   const loadBookings = useCallback(async () => {
@@ -219,7 +222,7 @@ export default function BookingScreen({ user, onLogout, onNavigate }) {
     try {
       const data = await fetchBookings()
       setBookings(data)
-    } catch (err) {
+    } catch {
       setError('Failed to load bookings. Please try again.')
     } finally {
       setLoading(false)
@@ -227,6 +230,7 @@ export default function BookingScreen({ user, onLogout, onNavigate }) {
   }, [])
 
   useEffect(() => {
+    // eslint-disable-next-line react-hooks/set-state-in-effect
     loadBookings()
   }, [loadBookings])
 
@@ -236,9 +240,9 @@ export default function BookingScreen({ user, onLogout, onNavigate }) {
     setTimeout(() => setToastMsg(null), 3000)
   }
 
-  
+
   async function handleStatusChange(id, newStatus) {
-    
+
     setBookings((prev) =>
       prev.map((b) => (b.id === id ? { ...b, status: newStatus } : b)),
     )
@@ -271,10 +275,18 @@ export default function BookingScreen({ user, onLogout, onNavigate }) {
       ? bookings
       : bookings.filter((b) => b.status === activeTab)
 
-  /* ── active chat booking (sync with latest state) ── */
   const chatBooking = activeChat
     ? bookings.find((b) => b.id === activeChat.id) ?? activeChat
     : null
+
+  const consentPeer = consentBookingId
+    ? bookings.find((b) => b.id === consentBookingId)?.tutorName ?? 'this tutor'
+    : ''
+
+  function handleConsentConfirm() {
+    setConsentBookingId(null)
+    showToast('Contact info shared.')
+  }
 
   return (
     <div className="flex min-h-screen flex-col bg-background text-on-background font-body-md overflow-x-hidden">
@@ -377,14 +389,12 @@ export default function BookingScreen({ user, onLogout, onNavigate }) {
                 setActiveChat(b ?? null)
               }}
               onCancel={(id) => handleStatusChange(id, 'cancelled')}
-              onShareContact={() =>
-                showToast('Contact info copied to clipboard.')
-              }
+              onShareContact={(id) => setConsentBookingId(id)}
             />
           ))}
         </div>
 
-      
+
         <section
           aria-label="Demo: simulate backend status updates"
           className="w-full max-w-3xl glass-card rounded-2xl p-5"
@@ -427,13 +437,23 @@ export default function BookingScreen({ user, onLogout, onNavigate }) {
               <h2 className="font-semibold text-sm text-primary">
                 Messages — {chatBooking.title}
               </h2>
-              <button
-                type="button"
-                onClick={() => setActiveChat(null)}
-                className="text-xs text-on-surface-variant hover:text-primary transition-colors"
-              >
-                Close
-              </button>
+              <div className="flex items-center gap-3">
+                <button
+                  type="button"
+                  onClick={() => onNavigate('chat')}
+                  className="inline-flex items-center gap-1 text-xs font-semibold text-primary hover:underline"
+                >
+                  Open in Chat
+                  <IconArrowRight size={13} aria-hidden="true" />
+                </button>
+                <button
+                  type="button"
+                  onClick={() => setActiveChat(null)}
+                  className="text-xs text-on-surface-variant hover:text-primary transition-colors"
+                >
+                  Close
+                </button>
+              </div>
             </div>
             <ChatPanel booking={chatBooking} />
           </div>
@@ -452,6 +472,13 @@ export default function BookingScreen({ user, onLogout, onNavigate }) {
           {toastMsg}
         </div>
       )}
+
+      <ConsentModal
+        isOpen={consentBookingId !== null}
+        peerName={consentPeer}
+        onCancel={() => setConsentBookingId(null)}
+        onConfirm={handleConsentConfirm}
+      />
     </div>
   )
 }

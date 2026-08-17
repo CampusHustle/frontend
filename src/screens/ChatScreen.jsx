@@ -393,26 +393,6 @@ export default function ChatScreen({ user, onLogout, onNavigate }) {
             </div>
           </div>
 
-          {/* Action bar: Add Contact · Block User */}
-          <div className="mx-auto flex w-full max-w-3xl border-t border-white/10">
-            <button
-              type="button"
-              onClick={() => setConsentOpen(true)}
-              className="flex flex-1 items-center justify-center gap-2 py-2.5 text-xs font-bold uppercase tracking-widest text-secondary-container transition-colors hover:bg-white/10 active:scale-95 sm:text-sm"
-            >
-              <IconUserPlus size={14} aria-hidden="true" />
-              Add Contact
-            </button>
-            <div className="w-px bg-white/10" />
-            <button
-              type="button"
-              aria-label="Block this user"
-              className="flex flex-1 items-center justify-center gap-2 py-2.5 text-xs font-bold uppercase tracking-widest text-red-400 transition-colors hover:bg-white/10 active:scale-95 sm:text-sm"
-            >
-              <IconBan size={14} aria-hidden="true" />
-              Block User
-            </button>
-          </div>
         </header>
 
         <div className="flex flex-1 flex-col overflow-hidden bg-white/20 backdrop-blur-sm">

@@ -99,7 +99,7 @@ export async function updateBookingStatus(id, newStatus) {
  * Create a new booking in pending state.
  * @param {{ tutorId: string, tutorName: string, tutorProfilePicUrl: string|null, subject: string, day: string, time: string }} params
  */
-export async function createBooking({ tutorId, tutorName, tutorProfilePicUrl, subject, day, time }) {
+export async function createBooking({ _tutorId, tutorName, tutorProfilePicUrl, subject, day, time }) {
   await delay(DELAY)
   const newBooking = {
     id: `bk-${Date.now()}`,
