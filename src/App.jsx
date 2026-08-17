@@ -178,7 +178,16 @@ export function AppRoutes() {
           />
         }
       />
-      <Route path="/notes/:id" element={<NoteDetailPage />} />
+      <Route 
+         path="/notes/:id" 
+         element={
+        <NoteDetailPage 
+         user={currentUser} 
+         onNavigate={handleNavigate} 
+         onLogout={handleLogout} 
+        />
+      } 
+    />
       <Route
         path="/profile"
         element={
