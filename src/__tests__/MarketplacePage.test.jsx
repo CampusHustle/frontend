@@ -1,12 +1,17 @@
 import { describe, it, expect, vi } from 'vitest'
 import { render, screen } from '@testing-library/react'
 import userEvent from '@testing-library/user-event'
+import { MemoryRouter } from 'react-router-dom'
 import MarketplaceScreen from '../screens/MarketplaceScreen.jsx'
 
 const setup = (onNavigate) => {
   const user = userEvent.setup()
   const onLogout = vi.fn()
-  render(<MarketplaceScreen user={null} onLogout={onLogout} onNavigate={onNavigate} />)
+  render(
+    <MemoryRouter>
+      <MarketplaceScreen user={null} onLogout={onLogout} onNavigate={onNavigate} />
+    </MemoryRouter>
+  )
   return { user, onNavigate }
 }
 

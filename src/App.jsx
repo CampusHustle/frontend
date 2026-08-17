@@ -11,8 +11,7 @@ import ProfileScreen from './screens/ProfileScreen.jsx'
 import TutorDetailScreen from './screens/TutorDetailScreen.jsx'
 import PostListingScreen from './screens/PostListingScreen.jsx'
 import AiAssistantScreen from './screens/AiAssistantScreen.jsx'
-import BookingScreen from './screens/BookingScreen.jsx'
-import ChatScreen from './screens/ChatScreen.jsx'
+import NoteDetailPage from './pages/NoteDetailPage.jsx'
 import { mockUpdateProfile } from './api/mockAuthApi.js'
 import {
   clearSession,
@@ -185,6 +184,16 @@ export function AppRoutes() {
           />
         }
       />
+      <Route 
+         path="/notes/:id" 
+         element={
+        <NoteDetailPage 
+         user={currentUser} 
+         onNavigate={handleNavigate} 
+         onLogout={handleLogout} 
+        />
+      } 
+    />
       <Route
         path="/profile"
         element={
