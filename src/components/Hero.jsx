@@ -1,84 +1,36 @@
-import { useRef } from 'react'
-import { motion, useReducedMotion, useScroll, useTransform } from 'motion/react'
-import { IconArrowRight, IconCheck } from '@tabler/icons-react'
-
-const HERO_TALL_IMG =
-  'https://picsum.photos/seed/campus-hustle-quad/720/960'
-const HERO_SQUARE_IMG =
-  'https://picsum.photos/seed/campus-hustle-study/600/600'
+import { useRef } from "react";
+import { motion, useReducedMotion, useScroll } from "motion/react";
+import { IconArrowRight, IconRocket, IconPlayerPlayFilled } from "@tabler/icons-react";
 
 function fade(reduce, delay) {
   return {
     initial: reduce ? false : { opacity: 0, y: 26 },
     animate: { opacity: 1, y: 0 },
     transition: { duration: 0.7, delay, ease: [0.16, 1, 0.3, 1] },
-  }
-}
-
-function GigCard() {
-  return (
-    <div className="w-56 rounded-2xl border border-surface-variant bg-surface-lowest/95 p-4 shadow-level-2 backdrop-blur-md sm:w-64">
-      <div className="flex items-center justify-between">
-        <span className="rounded-full bg-surface-container px-2.5 py-1 text-[11px] font-semibold uppercase tracking-wider text-on-surface-variant">
-          Design
-        </span>
-        <span className="text-[11px] text-outline">posted 2h ago</span>
-      </div>
-      <p className="mt-3 text-sm font-semibold leading-snug text-primary">
-        Design a club flyer for Spring Fest
-      </p>
-      <div className="mt-3 flex items-baseline justify-between">
-        <span className="font-display text-2xl font-semibold text-hustle-600">
-          $45
-        </span>
-        <span className="text-xs text-outline">3 bids · near you</span>
-      </div>
-    </div>
-  )
-}
-
-function PaymentChip() {
-  return (
-    <div className="flex items-center gap-2.5 rounded-full border border-surface-variant bg-surface-lowest/95 py-2.5 pl-3 pr-4 shadow-level-1 backdrop-blur-md">
-      <span className="flex size-6 items-center justify-center rounded-full bg-emerald-500/15">
-        <IconCheck size={14} className="text-emerald-600" />
-      </span>
-      <span className="text-xs font-semibold text-primary">
-        Payment received{' '}
-        <span className="font-display font-bold text-hustle-600">+$45.00</span>
-      </span>
-    </div>
-  )
+  };
 }
 
 export default function Hero({ onNavigate }) {
-  const reduce = useReducedMotion()
-  const sectionRef = useRef(null)
-  const { scrollYProgress } = useScroll({
-    target: sectionRef,
-    offset: ['start start', 'end start'],
-  })
-  const yTall = useTransform(scrollYProgress, [0, 1], [0, -48])
-  const ySquare = useTransform(scrollYProgress, [0, 1], [0, -84])
-  const yCards = useTransform(scrollYProgress, [0, 1], [0, 64])
+  const reduce = useReducedMotion();
+  const sectionRef = useRef(null);
 
   const handleNav = (targetView) => (e) => {
-    e.preventDefault()
-    if (onNavigate) onNavigate(targetView)
-  }
+    e.preventDefault();
+    if (onNavigate) onNavigate(targetView);
+  };
 
   const ctaProps = reduce
     ? {}
     : {
         whileHover: { y: -2 },
         whileTap: { scale: 0.97 },
-      }
+      };
 
   return (
     <section
       ref={sectionRef}
       id="top"
-      className="relative overflow-hidden pt-28 pb-20 sm:pt-32 lg:min-h-[calc(100svh-4rem)]"
+      className="relative flex min-h-[90svh] items-center justify-center overflow-hidden pt-28 pb-20 sm:pt-32 font-['Poppins']"
     >
       {/* Direct image background with slight blur and smooth readability gradient */}
       <div
@@ -91,115 +43,88 @@ export default function Hero({ onNavigate }) {
           className="size-full object-cover object-center filter blur-[2px] scale-105"
         />
         {/* Dark contrast gradient to ensure high readability for text */}
-        <div className="absolute inset-0 bg-gradient-to-r from-black/80 via-black/55 to-black/35" />
-        <div className="absolute inset-0 bg-gradient-to-t from-black/60 via-transparent to-black/40" />
+        <div className="absolute inset-0 bg-gradient-to-b from-black/70 via-black/50 to-black/75" />
       </div>
 
-      <div className="relative z-10 mx-auto grid max-w-6xl items-center gap-14 px-4 sm:px-6 lg:grid-cols-[1.05fr_0.95fr] lg:gap-10 lg:px-8">
-        <div className="max-w-xl">
-          <motion.div {...fade(reduce, 0)}>
-            <span className="inline-flex items-center rounded-full border border-white/25 bg-black/40 px-3.5 py-1.5 text-[13px] font-medium text-white/90 shadow-sm backdrop-blur-md">
-              The campus gig platform
-            </span>
-          </motion.div>
+      <div className="relative z-10 mx-auto max-w-4xl px-4 text-center sm:px-6 lg:px-8">
+        <motion.h1
+          {...fade(reduce, 0.08)}
+          className="mt-6 font-poppins text-5xl font-bold leading-[1.05] tracking-tight text-white drop-shadow-md sm:text-6xl lg:text-7xl"
+        >
+          Your campus.{" "}
+          <span className=" text-hustle-400 drop-shadow">Your hustle.</span>
+        </motion.h1>
 
-          <motion.h1
-            {...fade(reduce, 0.08)}
-            className="mt-6 font-display text-5xl font-semibold leading-[0.98] tracking-tight text-white drop-shadow-md sm:text-6xl lg:text-[4.4rem]"
-          >
-            Your campus.
-            <br />
-            <span className="italic text-hustle-400 drop-shadow">Your hustle.</span>
-          </motion.h1>
-
-          <motion.p
-            {...fade(reduce, 0.16)}
-            className="mt-6 max-w-md text-lg leading-relaxed text-white/90 drop-shadow-sm"
-          >
-            Post a skill, pick up a gig, and get paid within days. Built for
-            students, by students.
-          </motion.p>
-
-          <motion.div
-            {...fade(reduce, 0.24)}
-            className="mt-9 flex flex-wrap items-center gap-4"
-          >
-            <motion.a
-              {...ctaProps}
-              href="#"
-              onClick={handleNav('signup')}
-              className="group inline-flex items-center gap-2 rounded-full bg-hustle-500 px-7 py-3.5 font-semibold text-ink-contrast shadow-level-2 transition-[background-color] duration-200 hover:bg-hustle-400"
-            >
-              Start hustling
-              <IconArrowRight
-                size={18}
-                className="transition-transform duration-200 group-hover:translate-x-0.5"
-              />
-            </motion.a>
-            <motion.a
-              {...ctaProps}
-              href="#how-it-works"
-              className="inline-flex items-center gap-2 rounded-full border border-white/40 bg-black/20 px-6 py-3.5 font-semibold text-white shadow-sm backdrop-blur-sm transition-colors duration-200 hover:border-white hover:bg-white/20"
-            >
-              How it works
-            </motion.a>
-          </motion.div>
-        </div>
+        <motion.p
+          {...fade(reduce, 0.16)}
+          className="mx-auto mt-6 max-w-2xl text-lg sm:text-xl leading-relaxed text-white/90 drop-shadow-sm"
+        >
+          Post a skill, pick up a gig, and get paid within days. Built for
+          students, by students.
+        </motion.p>
 
         <motion.div
-          {...fade(reduce, 0.2)}
-          className="relative mx-auto w-full max-w-[26rem] lg:max-w-none"
+          {...fade(reduce, 0.24)}
+          className="mt-10 flex flex-wrap items-center justify-center gap-4 sm:gap-5"
         >
-          <div
-            aria-hidden="true"
-            className="pointer-events-none absolute -top-10 -right-6 size-40 rounded-full bg-hustle-500/20 blur-3xl"
-          />
-
-          <motion.div
-            style={reduce ? undefined : { y: yTall }}
-            className="relative aspect-[3/4] w-[64%] overflow-hidden rounded-[2rem] border border-surface-variant shadow-level-1"
+          {/* Primary Button with Text Flip & Icon Metamorphosis */}
+          <motion.a
+            whileHover={reduce ? {} : { scale: 1.05, y: -2 }}
+            whileTap={reduce ? {} : { scale: 0.96 }}
+            transition={{ type: "spring", stiffness: 400, damping: 17 }}
+            href="#"
+            onClick={handleNav("signup")}
+            className="group relative inline-flex items-center justify-center gap-2.5 overflow-hidden rounded-full bg-gradient-to-r from-hustle-400 via-hustle-500 to-hustle-600 px-8 py-4 text-base font-bold text-ink-contrast shadow-[0_4px_20px_rgba(255,175,43,0.4)] transition-shadow duration-300 hover:shadow-[0_8px_32px_rgba(255,175,43,0.65)]"
           >
-            <img
-              src={HERO_TALL_IMG}
-              alt="Student on campus"
-              width="720"
-              height="960"
-              fetchPriority="high"
-              decoding="async"
-              className="size-full object-cover"
+            {/* Animated light shine beam sweeping across */}
+            <span
+              aria-hidden="true"
+              className="absolute inset-0 -translate-x-full bg-gradient-to-r from-transparent via-white/50 to-transparent transition-transform duration-700 ease-out group-hover:translate-x-full"
             />
-          </motion.div>
+            
+            {/* Text Flip Effect */}
+            <span className="relative z-10 block h-6 overflow-hidden leading-6 font-bold tracking-wide">
+              <span className="flex flex-col transition-transform duration-300 ease-out group-hover:-translate-y-6">
+                <span>Start hustling</span>
+                <span>Join the Hustle</span>
+              </span>
+            </span>
 
-          <motion.div
-            style={reduce ? undefined : { y: ySquare }}
-            className="absolute top-1/3 right-0 aspect-square w-[56%] overflow-hidden rounded-[1.75rem] border border-surface-variant shadow-level-2"
-          >
-            <img
-              src={HERO_SQUARE_IMG}
-              alt="Late night study session"
-              width="600"
-              height="600"
-              loading="lazy"
-              decoding="async"
-              className="size-full object-cover"
-            />
-          </motion.div>
+            {/* Icon Flip Effect */}
+            <span className="relative z-10 block size-5 overflow-hidden">
+              <span className="flex flex-col items-center transition-transform duration-300 ease-out group-hover:-translate-y-5">
+                <IconArrowRight size={19} stroke={2.5} className="shrink-0" />
+                <IconRocket size={19} stroke={2.5} className="shrink-0 text-ink-contrast -rotate-45" />
+              </span>
+            </span>
+          </motion.a>
 
-          <motion.div
-            style={reduce ? undefined : { y: yCards }}
-            className="absolute -left-2 bottom-6 animate-float sm:left-0"
+          {/* Secondary Button with Text Flip & Play Icon Metamorphosis */}
+          <motion.a
+            whileHover={reduce ? {} : { scale: 1.05, y: -2 }}
+            whileTap={reduce ? {} : { scale: 0.96 }}
+            transition={{ type: "spring", stiffness: 400, damping: 17 }}
+            href="#how-it-works"
+            className="group relative inline-flex items-center justify-center gap-2.5 overflow-hidden rounded-full border border-white/35 bg-white/10 px-8 py-4 text-base font-semibold text-white shadow-level-1 backdrop-blur-md transition-all duration-300 hover:border-white hover:bg-white/20 hover:shadow-[0_0_24px_rgba(255,255,255,0.3)]"
           >
-            <GigCard />
-          </motion.div>
+            {/* Animated Icon Container */}
+            <span className="relative z-10 block size-4 overflow-hidden">
+              <span className="flex flex-col items-center transition-transform duration-300 ease-out group-hover:-translate-y-4">
+                <span className="flex size-2 rounded-full bg-hustle-400 animate-pulse my-1 shrink-0" />
+                <IconPlayerPlayFilled size={14} className="text-hustle-400 my-0.5 shrink-0" />
+              </span>
+            </span>
 
-          <motion.div
-            style={reduce ? undefined : { y: yCards }}
-            className="absolute top-4 -left-2 animate-float-slow sm:top-6 sm:left-2"
-          >
-            <PaymentChip />
-          </motion.div>
+            {/* Text Flip Effect */}
+            <span className="relative z-10 block h-6 overflow-hidden leading-6">
+              <span className="flex flex-col transition-transform duration-300 ease-out group-hover:-translate-y-6">
+                <span>How it works</span>
+                <span className="text-white font-bold">See the Magic</span>
+              </span>
+            </span>
+          </motion.a>
         </motion.div>
       </div>
     </section>
-  )
+  );
 }
