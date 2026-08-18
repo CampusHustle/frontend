@@ -62,7 +62,7 @@ describe('SignupForm', () => {
     await user.type(screen.getByLabelText('Confirm Password'), 'password123')
     await user.click(screen.getByRole('button', { name: 'Create Account' }))
 
-    expect(screen.getByText('Email must end with .edu.et')).toBeInTheDocument()
+    expect(screen.getByText('Enter valid student email')).toBeInTheDocument()
   })
 
   it('shows an error when the passwords do not match', async () => {

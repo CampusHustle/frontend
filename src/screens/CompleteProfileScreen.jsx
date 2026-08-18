@@ -125,7 +125,7 @@ export default function CompleteProfileScreen({ user, onFinish }) {
                   <input
                     id="firstName"
                     className={fieldClass}
-                    placeholder="Jane"
+                    placeholder="Daniel"
                     value={form.firstName}
                     onChange={set('firstName')}
                   />
@@ -137,7 +137,7 @@ export default function CompleteProfileScreen({ user, onFinish }) {
                   <input
                     id="lastName"
                     className={fieldClass}
-                    placeholder="Doe"
+                    placeholder="Gidey"
                     value={form.lastName}
                     onChange={set('lastName')}
                   />

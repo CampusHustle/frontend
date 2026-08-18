@@ -1,8 +1,8 @@
 import { useState } from 'react'
 import {
   IconArrowRight,
+  IconBuildingBank,
   IconCircleCheckFilled,
-  IconInfoCircle,
   IconKey,
   IconLock,
   IconSchool,
@@ -17,12 +17,50 @@ import {
   validateEmail,
   validatePassword,
   validateConfirmPassword,
+  validateUniversity,
 } from '../utils/validators.js'
 
-export default function SignupScreen({ onSwitchToLogin, onSignupSuccess }) {
-  const [values, setValues] = useState({ name: '', email: '', password: '', confirm: '' })
+const ETHIOPIAN_UNIVERSITIES = [
+  'Addis Ababa University',
+  'Adama Science & Technology University (ASTU)',
+  'Addis Ababa Science & Technology University (AASTU)',
+  'Hawassa University',
+  'Jimma University',
+  'Bahir Dar University',
+  'Mekelle University',
+  'Haramaya University',
+  'Arba Minch University',
+  'University of Gondar',
+  'Wollo University',
+  'Debre Berhan University',
+  'Other',
+]
+
+export default function SignupScreen({ onSwitchToLogin, onSignupSuccess, onNavigate }) {
+  const [values, setValues] = useState({
+    name: '',
+    email: '',
+    university: 'Addis Ababa University',
+    customUniversity: '',
+    password: '',
+    confirm: '',
+  })
   const [errors, setErrors] = useState({})
   const [status, setStatus] = useState('idle')
+
+  const handleGoToTerms = (e) => {
+    e?.preventDefault?.()
+    if (onNavigate) {
+      onNavigate('terms')
+    }
+  }
+
+  const handleGoToPrivacy = (e) => {
+    e?.preventDefault?.()
+    if (onNavigate) {
+      onNavigate('privacy')
+    }
+  }
 
   const handleChange = (field) => (e) => {
     setValues((v) => ({ ...v, [field]: e.target.value }))
@@ -32,9 +70,17 @@ export default function SignupScreen({ onSwitchToLogin, onSignupSuccess }) {
   const handleSubmit = async (e) => {
     e.preventDefault()
 
+    const effectiveUniversity =
+      values.university === 'Other' ? values.customUniversity.trim() : values.university
+
     const nextErrors = {
       name: validateName(values.name),
       email: validateEmail(values.email),
+      university: validateUniversity(effectiveUniversity),
+      customUniversity:
+        values.university === 'Other' && !values.customUniversity.trim()
+          ? 'Please enter your university name'
+          : null,
       password: validatePassword(values.password),
       confirm: validateConfirmPassword(values.password, values.confirm),
     }
@@ -47,7 +93,10 @@ export default function SignupScreen({ onSwitchToLogin, onSignupSuccess }) {
 
     setStatus('loading')
     try {
-      const { user } = await mockSignup(values)
+      const { user } = await mockSignup({
+        ...values,
+        university: effectiveUniversity,
+      })
       setStatus('success')
       onSignupSuccess?.(user)
     } catch (err) {
@@ -60,107 +109,159 @@ export default function SignupScreen({ onSwitchToLogin, onSignupSuccess }) {
   }
 
   return (
-    <div className="mesh-bg flex min-h-screen flex-col items-center justify-center px-4 py-12 antialiased md:px-8">
-      <main className="mx-auto w-full max-w-md">
-        <div className="mb-10 text-center">
-          <h1 className="font-display text-3xl font-bold tracking-tight text-primary">
+    <div className="mesh-bg flex min-h-screen h-full flex-col justify-center items-center px-4 py-4 sm:py-6 antialiased md:px-8">
+      <main className="mx-auto w-full max-w-lg">
+        <div className="mb-3 text-center">
+          <h1 className="font-display text-2xl font-bold tracking-tight text-primary sm:text-3xl">
             CampusHustle
           </h1>
-          <p className="mt-1 text-base text-on-surface-variant">Join the academic marketplace.</p>
+          <p className="text-xs sm:text-sm text-on-surface-variant">Join the academic marketplace.</p>
         </div>
 
-        <div className="glass-card relative overflow-hidden rounded-xl p-6 md:p-8">
+        <div className="glass-card relative overflow-hidden rounded-2xl p-5 sm:p-6 shadow-level-2">
           <div
             aria-hidden="true"
-            className="pointer-events-none absolute -right-10 -top-10 size-32 rounded-full bg-secondary-container/20 blur-xl"
+            className="pointer-events-none absolute -right-10 -top-10 size-28 rounded-full bg-secondary-container/20 blur-xl"
           />
 
-          <div className="mb-6 flex justify-center">
-            <div className="inline-flex items-center gap-1 rounded-full border border-outline-variant bg-surface-high px-3 py-1">
-              <IconCircleCheckFilled size={16} className="text-primary" aria-hidden="true" />
-              <span className="text-xs font-medium uppercase tracking-wider text-primary">
-                Verified Students Only
+          <div className="mb-4 flex justify-center">
+            <div className="inline-flex items-center gap-1.5 rounded-full border border-outline-variant bg-surface-high px-3 py-0.5">
+              <IconCircleCheckFilled size={14} className="text-primary" aria-hidden="true" />
+              <span className="text-[11px] font-semibold uppercase tracking-wider text-primary">
+                Verified .edu.et Students
               </span>
             </div>
           </div>
 
-          <form onSubmit={handleSubmit} className="relative z-10 flex flex-col gap-5" noValidate>
-            <AuthTextField
-              label="Full Name"
-              icon={IconUser}
-              value={values.name}
-              onChange={handleChange('name')}
-              error={errors.name}
-              placeholder="Alex Smith"
-              autoComplete="name"
-            />
-            <AuthTextField
-              label="University Email"
-              type="email"
-              icon={IconSchool}
-              value={values.email}
-              onChange={handleChange('email')}
-              error={errors.email}
-              placeholder="schoolid@university.edu.et"
-              hint={
-                <span className="inline-flex items-center gap-1">
-                  <IconInfoCircle size={14} aria-hidden="true" />
-                  Must be a valid .edu.et address
-                </span>
-              }
-              autoComplete="email"
-            />
-            <AuthTextField
-              label="Password"
-              type="password"
-              icon={IconLock}
-              value={values.password}
-              onChange={handleChange('password')}
-              error={errors.password}
-              placeholder="••••••••"
-              autoComplete="new-password"
-            />
-            <AuthTextField
-              label="Confirm Password"
-              type="password"
-              icon={IconKey}
-              value={values.confirm}
-              onChange={handleChange('confirm')}
-              error={errors.confirm}
-              placeholder="••••••••"
-              autoComplete="new-password"
-            />
+          <form onSubmit={handleSubmit} className="relative z-10 flex flex-col gap-3" noValidate>
+            {/* Name and Email 2-column or stacked */}
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+              <AuthTextField
+                label="Full Name"
+                icon={IconUser}
+                value={values.name}
+                onChange={handleChange('name')}
+                error={errors.name}
+                placeholder="Daniel Gidey"
+                autoComplete="name"
+              />
+
+              <AuthTextField
+                label="University Email"
+                type="email"
+                icon={IconSchool}
+                value={values.email}
+                onChange={handleChange('email')}
+                error={errors.email}
+                placeholder="id@uni.edu.et"
+                autoComplete="email"
+              />
+            </div>
+
+            {/* University Selection */}
+            <div className="flex flex-col gap-1">
+              <label htmlFor="auth-university" className="text-xs font-semibold text-on-surface">
+                University Name
+              </label>
+              <div className="relative">
+                <IconBuildingBank
+                  size={17}
+                  className="pointer-events-none absolute left-3 top-1/2 -translate-y-1/2 text-outline"
+                />
+                <select
+                  id="auth-university"
+                  value={values.university}
+                  onChange={handleChange('university')}
+                  className="w-full rounded-lg border border-outline-variant bg-surface-low py-2.5 pl-9 pr-4 text-xs sm:text-sm text-on-surface transition-colors focus:border-primary focus:outline-none focus:ring-1 focus:ring-primary"
+                >
+                  {ETHIOPIAN_UNIVERSITIES.map((uni) => (
+                    <option key={uni} value={uni}>
+                      {uni}
+                    </option>
+                  ))}
+                </select>
+              </div>
+              {errors.university && (
+                <p className="text-[11px] font-medium text-error">{errors.university}</p>
+              )}
+            </div>
+
+            {/* If Other selected, show custom university input */}
+            {values.university === 'Other' && (
+              <AuthTextField
+                label="Enter University Name"
+                icon={IconBuildingBank}
+                value={values.customUniversity}
+                onChange={handleChange('customUniversity')}
+                error={errors.customUniversity}
+                placeholder="e.g. Dilla University"
+                autoFocus
+              />
+            )}
+
+            {/* Password and Confirm in 2 columns */}
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+              <AuthTextField
+                label="Password"
+                type="password"
+                icon={IconLock}
+                value={values.password}
+                onChange={handleChange('password')}
+                error={errors.password}
+                placeholder="••••••••"
+                autoComplete="new-password"
+              />
+
+              <AuthTextField
+                label="Confirm Password"
+                type="password"
+                icon={IconKey}
+                value={values.confirm}
+                onChange={handleChange('confirm')}
+                error={errors.confirm}
+                placeholder="••••••••"
+                autoComplete="new-password"
+              />
+            </div>
 
             {errors.form && <Toast type="error" message={errors.form} />}
             {status === 'success' && (
               <Toast type="success" message="Account created successfully" />
             )}
 
-            <PrimaryButton loading={status === 'loading'} className="mt-1">
+            <PrimaryButton loading={status === 'loading'} className="mt-1 py-2.5 text-sm">
               Create Account
-              <IconArrowRight size={18} aria-hidden="true" />
+              <IconArrowRight size={17} aria-hidden="true" />
             </PrimaryButton>
           </form>
 
-          <p className="mt-5 text-center text-sm text-on-surface-variant">
+          <p className="mt-3 text-center text-[11px] text-on-surface-variant">
             By signing up, you agree to our{' '}
-            <a href="#" className="text-primary underline transition-colors hover:text-secondary">
-              Terms
-            </a>{' '}
+            <button
+              type="button"
+              onClick={handleGoToTerms}
+              className="text-primary underline transition-colors hover:text-secondary font-medium"
+            >
+              Terms of Service
+            </button>{' '}
             and{' '}
-            <a href="#" className="text-primary underline transition-colors hover:text-secondary">
+            <button
+              type="button"
+              onClick={handleGoToPrivacy}
+              className="text-primary underline transition-colors hover:text-secondary font-medium"
+            >
               Privacy Policy
-            </a>
+            </button>
             .
           </p>
         </div>
 
-        <p className="mt-6 text-center text-base text-on-surface-variant">
+        <p className="mt-3 text-center text-xs sm:text-sm text-on-surface-variant">
           Already have an account?{' '}
           <button
             type="button"
             onClick={onSwitchToLogin}
-            className="ml-1 text-sm font-semibold text-primary transition-colors hover:text-secondary"
+            className="ml-1 text-xs sm:text-sm font-semibold text-primary transition-colors hover:text-secondary"
           >
             Log in
           </button>

@@ -21,9 +21,9 @@ function Row() {
       {categories.map((category) => (
         <span
           key={category}
-          className="flex items-center gap-3 whitespace-nowrap font-display text-lg font-medium text-on-surface-variant"
+          className="flex items-center gap-3 whitespace-nowrap font-display text-lg font-medium text-white/90"
         >
-          <IconBolt size={16} className="text-hustle-600" />
+          <IconBolt size={16} className="text-hustle-400" />
           {category}
         </span>
       ))}
@@ -35,7 +35,7 @@ export default function Marquee() {
   return (
     <section
       aria-label="Gig categories"
-      className="relative overflow-hidden border-y border-surface-variant bg-surface-lowest/60 py-5"
+      className="relative overflow-hidden border-y border-white/15 bg-black/35 py-5 shadow-sm backdrop-blur-xl"
     >
       <div className="flex w-max animate-marquee">
         <Row />
@@ -43,11 +43,11 @@ export default function Marquee() {
       </div>
       <div
         aria-hidden="true"
-        className="pointer-events-none absolute inset-y-0 left-0 w-24 bg-gradient-to-r from-surface to-transparent"
+        className="pointer-events-none absolute inset-y-0 left-0 w-24 bg-gradient-to-r from-black/30 to-transparent"
       />
       <div
         aria-hidden="true"
-        className="pointer-events-none absolute inset-y-0 right-0 w-24 bg-gradient-to-l from-surface to-transparent"
+        className="pointer-events-none absolute inset-y-0 right-0 w-24 bg-gradient-to-l from-black/30 to-transparent"
       />
     </section>
   )

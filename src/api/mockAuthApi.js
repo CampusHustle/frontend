@@ -3,7 +3,7 @@ import { mockUsers } from './mockUsers.js'
 // Demo-only mock layer: plaintext passwords live here so the frontend flow can
 // be exercised without a backend. Production auth uses bcrypt (spec NFR-1) and
 // never stores or logs plaintext passwords.
-const DELAY = 800
+const DELAY = import.meta.env?.MODE === 'test' ? 50 : 800
 
 function delay(ms) {
   return new Promise((resolve) => setTimeout(resolve, ms))
@@ -27,7 +27,15 @@ export async function mockLogin({ email, password }) {
   }
 }
 
-export async function mockSignup({ name, email, password }) {
+export async function mockSignup({
+  name,
+  email,
+  password,
+  university = 'Addis Ababa University',
+  department = '',
+  year = 1,
+  role = 'student',
+}) {
   await delay(DELAY)
   if (findMockUser(email)) {
     throw { message: 'That email is already registered' }
@@ -37,10 +45,10 @@ export async function mockSignup({ name, email, password }) {
     name,
     email,
     password,
-    role: ['student'],
-    university: '',
-    department: '',
-    year: '',
+    role: Array.isArray(role) ? role : [role],
+    university,
+    department,
+    year: Number(year) || 1,
     bio: '',
     skillsTeaching: [],
     skillsLearning: [],

@@ -13,6 +13,8 @@ import PostListingScreen from './screens/PostListingScreen.jsx'
 import AiAssistantScreen from './screens/AiAssistantScreen.jsx'
 import BookingScreen from './screens/BookingScreen.jsx'
 import ChatScreen from './screens/ChatScreen.jsx'
+import TermsScreen from './screens/TermsScreen.jsx'
+import PrivacyScreen from './screens/PrivacyScreen.jsx'
 import NoteDetailPage from './pages/NoteDetailPage.jsx'
 import { mockUpdateProfile } from './api/mockAuthApi.js'
 import {
@@ -35,6 +37,8 @@ function getInitialPath() {
     if (savedView === 'assistant') return '/assistant'
     if (savedView === 'bookings') return '/bookings'
     if (savedView === 'chat') return '/chat'
+    if (savedView === 'terms') return '/terms'
+    if (savedView === 'privacy') return '/privacy'
     return '/tutor'
   }
   if (savedView) {
@@ -51,6 +55,8 @@ function getInitialPath() {
       assistant: '/assistant',
       bookings: '/bookings',
       chat: '/chat',
+      terms: '/terms',
+      privacy: '/privacy',
     }
     if (viewToPath[savedView]) return viewToPath[savedView]
   }
@@ -88,6 +94,8 @@ export function AppRoutes() {
       assistant: '/assistant',
       bookings: '/bookings',
       chat: '/chat',
+      terms: '/terms',
+      privacy: '/privacy',
     }
     const path = routeMap[targetView] || (typeof targetView === 'string' && targetView.startsWith('/') ? targetView : '/')
     saveSessionView(targetView)
@@ -104,6 +112,8 @@ export function AppRoutes() {
   return (
     <Routes>
       <Route path="/" element={<HomeScreen onNavigate={handleNavigate} />} />
+      <Route path="/terms" element={<TermsScreen onNavigate={handleNavigate} />} />
+      <Route path="/privacy" element={<PrivacyScreen onNavigate={handleNavigate} />} />
       <Route
         path="/login"
         element={
@@ -122,6 +132,7 @@ export function AppRoutes() {
         element={
           <SignupScreen
             onSwitchToLogin={() => handleNavigate('login')}
+            onNavigate={handleNavigate}
             onSignupSuccess={(user) => {
               setPendingUser(user)
               setPendingEmail(user.email)

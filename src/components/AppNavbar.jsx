@@ -40,7 +40,7 @@ export default function AppNavbar({
   searchPlaceholder = 'Search...',
 }) {
   return (
-    <nav className="sticky top-0 z-50 bg-surface-lowest shadow-level-1">
+    <nav className="sticky top-0 z-50 border-b border-surface-variant/50 bg-surface-lowest/80 shadow-sm backdrop-blur-xl">
       <div className="mx-auto flex h-16 w-full max-w-7xl items-center justify-between gap-4 px-4 sm:px-6 lg:px-8">
         <a
           href="#"
