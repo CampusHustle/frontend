@@ -3,7 +3,7 @@ import { mockUsers } from './mockUsers.js'
 // Demo-only mock layer: plaintext passwords live here so the frontend flow can
 // be exercised without a backend. Production auth uses bcrypt (spec NFR-1) and
 // never stores or logs plaintext passwords.
-const DELAY = typeof process !== 'undefined' && process.env?.NODE_ENV === 'test' || import.meta.env?.MODE === 'test' ? 50 : 800
+const DELAY = import.meta.env?.MODE === 'test' ? 50 : 800
 
 function delay(ms) {
   return new Promise((resolve) => setTimeout(resolve, ms))

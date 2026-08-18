@@ -1,5 +1,5 @@
 import { useRef } from "react";
-import { motion, useReducedMotion, useScroll } from "motion/react";
+import { motion, useReducedMotion } from "motion/react";
 import { IconArrowRight, IconRocket, IconPlayerPlayFilled } from "@tabler/icons-react";
 
 function fade(reduce, delay) {
@@ -18,13 +18,6 @@ export default function Hero({ onNavigate }) {
     e.preventDefault();
     if (onNavigate) onNavigate(targetView);
   };
-
-  const ctaProps = reduce
-    ? {}
-    : {
-        whileHover: { y: -2 },
-        whileTap: { scale: 0.97 },
-      };
 
   return (
     <section
