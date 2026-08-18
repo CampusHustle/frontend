@@ -1,28 +1,37 @@
-import { describe, it, expect, vi } from 'vitest'
+import { describe, it, expect, vi, beforeEach } from 'vitest'
 import { render, screen, waitFor } from '@testing-library/react'
 import userEvent from '@testing-library/user-event'
 import NoteDetailPage from '../pages/NoteDetailPage.jsx'
 import NotePaymentPage from '../pages/NotePaymentPage.jsx'
 
 describe('NoteDetailPage & NotePaymentPage', () => {
-  it('renders the redesigned note details, syllabus topics, and make payment button', async () => {
+  beforeEach(() => {
+    Object.defineProperty(navigator, 'clipboard', {
+      value: {
+        writeText: vi.fn().mockResolvedValue(undefined),
+      },
+      configurable: true,
+    })
+  })
+
+  it('renders the Stitch-designed note details, syllabus content, and buy button', async () => {
     const onNavigate = vi.fn()
+    const user = userEvent.setup()
     render(<NoteDetailPage user={null} onNavigate={onNavigate} onLogout={vi.fn()} />)
 
     await waitFor(() => {
-      expect(screen.getByRole('heading', { name: /Complete Study Guide/i })).toBeInTheDocument()
+      expect(screen.getByRole('heading', { name: /Reaction Mechanisms Masterclass/i })).toBeInTheDocument()
     })
 
-    expect(screen.getByText('150 ETB')).toBeInTheDocument()
-    expect(screen.getByText(/Description & Syllabus Coverage/i)).toBeInTheDocument()
-    expect(screen.getByText(/Asymptotic Analysis & Big-O Notation/i)).toBeInTheDocument()
+    expect(screen.getByText('$18.50')).toBeInTheDocument()
+    expect(screen.getByText(/About these notes/i)).toBeInTheDocument()
+    expect(screen.getByText(/Sarah Jenkins/i)).toBeInTheDocument()
 
-    const makePaymentButton = screen.getByRole('button', { name: /Make Payment \(Purchase\)/i })
-    expect(makePaymentButton).toBeInTheDocument()
+    const buyButton = screen.getByRole('button', { name: /Buy Now \(Make Payment\)/i })
+    expect(buyButton).toBeInTheDocument()
 
-    // Click Make Payment
-    const user = userEvent.setup()
-    await user.click(makePaymentButton)
+    // Click Buy Now
+    await user.click(buyButton)
     expect(onNavigate).toHaveBeenCalledWith('/notes/note_123/payment')
   })
 
@@ -30,13 +39,13 @@ describe('NoteDetailPage & NotePaymentPage', () => {
     const user = userEvent.setup()
     render(<NotePaymentPage user={{ name: 'Daniel Gidey' }} onNavigate={vi.fn()} onLogout={vi.fn()} />)
 
-    expect(screen.getByRole('heading', { name: 'Complete Payment' })).toBeInTheDocument()
+    expect(screen.getByRole('heading', { name: 'Complete Your Payment' })).toBeInTheDocument()
     expect(screen.getByText('Telebirr')).toBeInTheDocument()
     expect(screen.getByText(/Commercial Bank of Ethiopia/i)).toBeInTheDocument()
     expect(screen.getByText(/Bank of Abyssinia/i)).toBeInTheDocument()
 
     // Copy action test
-    const copyButton = screen.getByRole('button', { name: /Copy/i })
+    const copyButton = screen.getByRole('button', { name: /Copy Number/i })
     expect(copyButton).toBeInTheDocument()
     await user.click(copyButton)
     expect(screen.getByText('Copied!')).toBeInTheDocument()
@@ -62,7 +71,7 @@ describe('NoteDetailPage & NotePaymentPage', () => {
       expect(screen.getByTestId('verification-under-review')).toBeInTheDocument()
       expect(screen.getByText(/Payment Verification in Progress/i)).toBeInTheDocument()
       expect(screen.getByText('TLBR-99887766')).toBeInTheDocument()
-      expect(screen.getByRole('button', { name: /Browse More Notes/i })).toBeInTheDocument()
+      expect(screen.getByRole('button', { name: /Browse Marketplace/i })).toBeInTheDocument()
     })
   })
 })
