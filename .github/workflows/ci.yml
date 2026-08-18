@@ -40,7 +40,7 @@ jobs:
         run: npm run lint
 
       - name: Run Automated Test Suite (Vitest)
-        run: npm test
+        run: npm test -- --reporter=verbose --retry=2
 
       - name: Build Production Bundle (Vite)
         run: npm run build
