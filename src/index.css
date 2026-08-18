@@ -1,5 +1,7 @@
 @import "tailwindcss";
 
+@custom-variant dark (&:where(.dark, .dark *));
+
 @theme {
   --color-ink-950: #f8f9fa;
   --color-ink-900: #ffffff;
@@ -109,17 +111,17 @@
 @utility mesh-bg {
   background-color: var(--color-surface);
   background-image:
-    radial-gradient(at 0% 0%, hsla(217, 85%, 11%, 0.1) 0px, transparent 50%),
-    radial-gradient(at 100% 100%, hsla(37, 99%, 58%, 0.15) 0px, transparent 50%),
-    radial-gradient(at 100% 0%, hsla(217, 85%, 11%, 0.05) 0px, transparent 50%);
+    radial-gradient(at 0% 0%, var(--mesh-a) 0px, transparent 50%),
+    radial-gradient(at 100% 100%, var(--mesh-b) 0px, transparent 50%),
+    radial-gradient(at 100% 0%, var(--mesh-c) 0px, transparent 50%);
 }
 
 @utility glass-card {
-  background: rgba(255, 255, 255, 0.85);
+  background: var(--glass-bg);
   backdrop-filter: blur(16px);
   -webkit-backdrop-filter: blur(16px);
-  border: 1px solid rgba(255, 255, 255, 0.5);
-  box-shadow: 0 8px 32px 0 rgba(4, 21, 52, 0.05);
+  border: 1px solid var(--glass-border);
+  box-shadow: var(--glass-shadow);
 }
 
 @utility hide-scrollbar {
@@ -131,6 +133,86 @@
 }
 
 @layer base {
+  :root {
+    --glass-bg: rgba(255, 255, 255, 0.85);
+    --glass-border: rgba(255, 255, 255, 0.5);
+    --glass-shadow: 0 8px 32px 0 rgba(4, 21, 52, 0.05);
+    --mesh-a: hsla(217, 85%, 11%, 0.1);
+    --mesh-b: hsla(37, 99%, 58%, 0.15);
+    --mesh-c: hsla(217, 85%, 11%, 0.05);
+  }
+
+  .dark {
+    /* Dark palette — Tutor Profile mockup navy / gold / teal */
+    --color-primary: #ffdca1;
+    --color-primary-container: #ffb800;
+    --color-on-primary: #412d00;
+    --color-on-primary-container: #6b4c00;
+    --color-primary-fixed: #ffdea8;
+    --color-primary-fixed-dim: #ffba20;
+    --color-secondary: #bec6df;
+    --color-secondary-container: #41495e;
+    --color-on-secondary: #283044;
+    --color-on-secondary-container: #b0b8d1;
+    --color-secondary-fixed: #dae2fc;
+    --color-secondary-fixed-dim: #bec6df;
+    --color-on-secondary-fixed: #131b2e;
+    --color-on-secondary-fixed-variant: #3f465b;
+    --color-tertiary: #60f8e2;
+    --color-tertiary-container: #39dbc6;
+    --color-on-tertiary: #003731;
+    --color-on-tertiary-container: #005c52;
+    --color-tertiary-fixed: #62fae3;
+    --color-tertiary-fixed-dim: #3cddc7;
+    --color-on-tertiary-fixed: #00201c;
+    --color-on-tertiary-fixed-variant: #005047;
+    --color-surface: #0e1321;
+    --color-surface-lowest: #090e1c;
+    --color-surface-low: #161b2a;
+    --color-surface-container: #1a1f2e;
+    --color-surface-container-low: #161b2a;
+    --color-surface-container-high: #252a39;
+    --color-surface-container-highest: #303444;
+    --color-surface-high: #252a39;
+    --color-surface-highest: #303444;
+    --color-surface-variant: #303444;
+    --color-surface-dim: #0e1321;
+    --color-surface-bright: #343948;
+    --color-on-surface: #dee2f6;
+    --color-on-surface-variant: #d5c4ab;
+    --color-on-background: #dee2f6;
+    --color-outline: #9e8f78;
+    --color-outline-variant: #514532;
+    --color-error: #ffb4ab;
+    --color-error-container: #93000a;
+    --color-on-error: #690005;
+    --color-on-error-container: #ffdad6;
+
+    /* Ink scale — dark navy surface, light text */
+    --color-ink-950: #0e1321;
+    --color-ink-900: #090e1c;
+    --color-ink-850: #161b2a;
+    --color-ink-800: #1a1f2e;
+    --color-ink-700: #252a39;
+    --color-ink-600: #303444;
+    --color-ink-400: #94a3b8;
+    --color-ink-300: #d5c4ab;
+    --color-ink-200: #dee2f6;
+    --color-ink-100: #e2e6f0;
+    --color-ink-50: #ffffff;
+
+    --shadow-level-1: 0px 2px 4px rgba(0, 0, 0, 0.3);
+    --shadow-level-2: 0px 4px 12px rgba(0, 0, 0, 0.45);
+    --shadow-level-3: 0px 8px 24px rgba(0, 0, 0, 0.55);
+
+    --glass-bg: rgba(26, 34, 53, 0.6);
+    --glass-border: rgba(255, 255, 255, 0.1);
+    --glass-shadow: 0 8px 32px 0 rgba(0, 0, 0, 0.4);
+    --mesh-a: hsla(220, 60%, 50%, 0.06);
+    --mesh-b: hsla(37, 99%, 58%, 0.05);
+    --mesh-c: hsla(170, 60%, 45%, 0.04);
+  }
+
   html {
     scroll-behavior: smooth;
   }
