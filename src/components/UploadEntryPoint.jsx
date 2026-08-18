@@ -4,6 +4,8 @@ export default function UploadEntryPoint({ onFileSelect }) {
   const [selectedFile, setSelectedFile] = useState(null);
   const [uploadStatus, setUploadStatus] = useState('idle');
   const [errorMessage, setErrorMessage] = useState('');
+  const [coverImage, setCoverImage] = useState(null);
+  const [previewImages, setPreviewImages] = useState([]);
 
   const formatFileSize = (bytes) => {
     if (!bytes) return '0 Bytes';
@@ -39,10 +41,10 @@ export default function UploadEntryPoint({ onFileSelect }) {
         return;
       }
 
-      // Validate file size (e.g., limit to 10MB)
-      const MAX_FILE_SIZE = 10 * 1024 * 1024;
+      // Validate file size (e.g., limit to 100MB)
+      const MAX_FILE_SIZE = 100 * 1024 * 1024;
       if (file.size > MAX_FILE_SIZE) {
-        setErrorMessage('File too large. Maximum size is 10MB.');
+        setErrorMessage('File too large. Maximum size is 100MB.');
         setUploadStatus('failed');
         return;
       }
@@ -86,40 +88,136 @@ export default function UploadEntryPoint({ onFileSelect }) {
       case 'ready':
         return (
           <div className="flex w-full flex-col items-center justify-center py-6">
-            <div className="flex w-full max-w-sm items-center justify-between rounded-lg border border-gray-200 bg-white p-4 shadow-sm">
-              <div className="flex items-center space-x-4 overflow-hidden">
-                <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-full bg-green-100 text-green-600">
-                  <svg className="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
-                    <path strokeLinecap="round" strokeLinejoin="round" d="M7 21h10a2 2 0 002-2V9.414a1 1 0 00-.293-.707l-5.414-5.414A1 1 0 0012.586 3H7a2 2 0 00-2 2v14a2 2 0 002 2z" />
-                  </svg>
+            <div className="mb-6 grid w-full grid-cols-1 gap-6 md:grid-cols-2">
+              {/* Left Column (PDF Preview) */}
+              <div className="flex flex-col text-left">
+                <h4 className="mb-2 text-sm font-semibold text-gray-900">Document Preview</h4>
+                {selectedFile && (
+                  <object
+                    data={URL.createObjectURL(selectedFile)}
+                    className="h-80 w-full rounded-lg border border-gray-200"
+                  >
+                    <p className="p-4 text-sm text-gray-500">Preview not available.</p>
+                  </object>
+                )}
+              </div>
+
+              {/* Right Column (Asset Manager) */}
+              <div className="flex h-80 flex-col gap-6 overflow-y-auto pr-2 text-left">
+                {/* Section A: Cover Image */}
+                <div className="flex flex-col">
+                  <h4 className="mb-2 text-sm font-semibold text-gray-900">Upload Marketplace Cover (JPG/PNG)</h4>
+                  {!coverImage ? (
+                    <label 
+                      className="flex h-48 w-full cursor-pointer flex-col items-center justify-center rounded-lg border-2 border-dashed border-gray-300 bg-gray-50 transition-colors hover:border-amber-500 hover:bg-gray-100"
+                      onClick={(e) => e.stopPropagation()}
+                    >
+                      <svg className="mb-2 h-8 w-8 text-gray-400" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
+                        <path strokeLinecap="round" strokeLinejoin="round" d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z" />
+                      </svg>
+                      <span className="text-sm font-medium text-gray-600">Click to upload cover</span>
+                      <input
+                        type="file"
+                        className="hidden"
+                        accept="image/jpeg, image/png, image/*"
+                        onChange={(e) => {
+                          const file = e.target.files[0];
+                          if (file) setCoverImage(file);
+                        }}
+                      />
+                    </label>
+                  ) : (
+                    <div 
+                      className="flex h-48 w-full flex-col items-center justify-center rounded-lg border border-gray-200 bg-gray-50 p-4"
+                      onClick={(e) => e.stopPropagation()}
+                    >
+                      <img
+                        src={URL.createObjectURL(coverImage)}
+                        alt="Cover Preview"
+                        className="h-24 w-full rounded-lg object-cover"
+                      />
+                      <label className="mt-4 cursor-pointer rounded bg-white px-4 py-2 text-sm font-semibold text-gray-700 shadow-sm border border-gray-300 transition-colors hover:bg-gray-50">
+                        Change Cover
+                        <input
+                          type="file"
+                          className="hidden"
+                          accept="image/jpeg, image/png, image/*"
+                          onChange={(e) => {
+                            const file = e.target.files[0];
+                            if (file) setCoverImage(file);
+                          }}
+                        />
+                      </label>
+                    </div>
+                  )}
                 </div>
-                <div className="min-w-0 flex-1 text-left">
-                  <p className="truncate text-sm font-semibold text-gray-900">{selectedFile?.name}</p>
-                  <p className="text-xs text-gray-500">{formatFileSize(selectedFile?.size)}</p>
+
+                {/* Section B: Preview Pages */}
+                <div className="flex flex-col">
+                  <h4 className="mb-2 text-sm font-semibold text-gray-900">Upload Preview Pages (JPG/PNG)</h4>
+                  {previewImages.length === 0 ? (
+                    <label 
+                      className="flex h-32 w-full cursor-pointer flex-col items-center justify-center rounded-lg border-2 border-dashed border-gray-300 bg-gray-50 transition-colors hover:border-amber-500 hover:bg-gray-100"
+                      onClick={(e) => e.stopPropagation()}
+                    >
+                      <svg className="mb-2 h-6 w-6 text-gray-400" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
+                        <path strokeLinecap="round" strokeLinejoin="round" d="M12 6v6m0 0v6m0-6h6m-6 0H6" />
+                      </svg>
+                      <span className="text-sm font-medium text-gray-600">Select Preview Pages</span>
+                      <input
+                        type="file"
+                        multiple
+                        className="hidden"
+                        accept="image/jpeg, image/png"
+                        onChange={(e) => {
+                          const files = Array.from(e.target.files);
+                          if (files.length > 0) setPreviewImages(files);
+                        }}
+                      />
+                    </label>
+                  ) : (
+                    <div className="flex w-full flex-col rounded-lg border border-gray-200 bg-gray-50 p-4" onClick={(e) => e.stopPropagation()}>
+                      <div className="grid grid-cols-3 gap-2">
+                        {previewImages.map((file, idx) => (
+                          <img
+                            key={idx}
+                            src={URL.createObjectURL(file)}
+                            alt={`Preview ${idx + 1}`}
+                            className="aspect-square w-full rounded-md border border-gray-200 bg-white object-cover"
+                          />
+                        ))}
+                      </div>
+                      <button
+                        type="button"
+                        onClick={(e) => {
+                          e.stopPropagation();
+                          setPreviewImages([]);
+                        }}
+                        className="mt-4 w-full rounded border border-gray-300 bg-white px-4 py-2 text-sm font-semibold text-gray-700 shadow-sm transition-colors hover:bg-red-50 hover:text-red-600"
+                      >
+                        Clear Previews
+                      </button>
+                    </div>
+                  )}
                 </div>
               </div>
-              <button
-                type="button"
-                onClick={(e) => {
-                  e.stopPropagation();
-                  setUploadStatus('idle');
-                  setSelectedFile(null);
-                  setErrorMessage('');
-                }}
-                className="ml-4 shrink-0 rounded-md p-1.5 text-gray-400 transition-colors hover:bg-gray-100 hover:text-red-500"
-                title="Remove file"
-              >
-                <svg className="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
-                  <path strokeLinecap="round" strokeLinejoin="round" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" />
-                </svg>
-              </button>
             </div>
-            <p className="mt-4 flex items-center gap-2 text-sm font-medium text-green-700">
-              <svg className="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
-                <path strokeLinecap="round" strokeLinejoin="round" d="M5 13l4 4L19 7" />
-              </svg>
-              Document ready for publishing!
-            </p>
+
+            {/* Master Reset / Start Over Button */}
+            <button
+              type="button"
+              onClick={(e) => {
+                e.stopPropagation();
+                setUploadStatus('idle');
+                setSelectedFile(null);
+                setCoverImage(null);
+                setPreviewImages([]);
+                setErrorMessage('');
+              }}
+              className="mt-2 rounded-lg bg-red-100 px-6 py-2 text-sm font-semibold text-red-700 transition-colors hover:bg-red-200"
+            >
+              Start Over
+            </button>
           </div>
         );
       case 'failed':
