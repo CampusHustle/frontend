@@ -11,6 +11,8 @@ import ProfileScreen from './screens/ProfileScreen.jsx'
 import TutorDetailScreen from './screens/TutorDetailScreen.jsx'
 import PostListingScreen from './screens/PostListingScreen.jsx'
 import AiAssistantScreen from './screens/AiAssistantScreen.jsx'
+import TermsScreen from './screens/TermsScreen.jsx'
+import PrivacyScreen from './screens/PrivacyScreen.jsx'
 import NoteDetailPage from './pages/NoteDetailPage.jsx'
 import { mockUpdateProfile } from './api/mockAuthApi.js'
 import {
@@ -31,6 +33,8 @@ function getInitialPath() {
     if (savedView === 'profile') return '/profile'
     if (savedView === 'post-listing') return '/post-listing'
     if (savedView === 'assistant') return '/assistant'
+    if (savedView === 'terms') return '/terms'
+    if (savedView === 'privacy') return '/privacy'
     return '/tutor'
   }
   if (savedView) {
@@ -45,6 +49,8 @@ function getInitialPath() {
       market: '/market',
       home: '/',
       assistant: '/assistant',
+      terms: '/terms',
+      privacy: '/privacy',
     }
     if (viewToPath[savedView]) return viewToPath[savedView]
   }
@@ -80,6 +86,8 @@ export function AppRoutes() {
       profile: '/profile',
       'post-listing': '/post-listing',
       assistant: '/assistant',
+      terms: '/terms',
+      privacy: '/privacy',
     }
     const path = routeMap[targetView] || (typeof targetView === 'string' && targetView.startsWith('/') ? targetView : '/')
     saveSessionView(targetView)
@@ -96,6 +104,8 @@ export function AppRoutes() {
   return (
     <Routes>
       <Route path="/" element={<HomeScreen onNavigate={handleNavigate} />} />
+      <Route path="/terms" element={<TermsScreen onNavigate={handleNavigate} />} />
+      <Route path="/privacy" element={<PrivacyScreen onNavigate={handleNavigate} />} />
       <Route
         path="/login"
         element={
@@ -114,6 +124,7 @@ export function AppRoutes() {
         element={
           <SignupScreen
             onSwitchToLogin={() => handleNavigate('login')}
+            onNavigate={handleNavigate}
             onSignupSuccess={(user) => {
               setPendingUser(user)
               setPendingEmail(user.email)
