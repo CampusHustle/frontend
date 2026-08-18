@@ -171,6 +171,7 @@ export default function UploadEntryPoint({ onFileSelect }) {
                   type="file"
                   className="hidden"
                   accept="application/pdf"
+                  data-testid="file-upload-input"
                   onChange={handleFileChange}
                 />
               </label>

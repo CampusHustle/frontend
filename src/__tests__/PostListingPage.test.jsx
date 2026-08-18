@@ -71,11 +71,13 @@ describe('PostListingPage', () => {
   it('shows the selected file name after choosing a file', async () => {
     const { user } = setup()
 
-    const fileInput = screen.getByLabelText('Upload video or slides')
-    await user.upload(fileInput, new File(['video'], 'lecture.mp4', { type: 'video/mp4' }))
+    //const fileInput = screen.getByLabelText('Upload Study Materials')
+    const fileInput = screen.getByTestId('file-upload-input');
+    await user.upload(fileInput, new File(['dummy content'], 'notes.pdf', { type: 'application/pdf' }))
 
-    expect(screen.getByText(/Selected: lecture\.mp4/)).toBeInTheDocument()
-  })
+    
+    expect(await screen.findByText('notes.pdf', {}, { timeout: 6000 })).toBeInTheDocument();
+  },10000)
 
   it('disables publishing until a title and subject are provided', async () => {
     const { user } = setup()

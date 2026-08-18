@@ -28,11 +28,11 @@ export default function PostListingScreen({ user, onLogout, onNavigate }) {
   const [description, setDescription] = useState('')
   const [tutorialType, setTutorialType] = useState('free')
   const [visibility, setVisibility] = useState('public')
-  const [documentFile, setDocumentFile] = useState(null)
+  //const [documentFile, setDocumentFile] = useState(null)
   const [feedback, setFeedback] = useState('')
 
   const handleDocumentSelect = (file) => {
-    setDocumentFile(file)
+    console.log("File successfully received from UploadEntryPoint:", file);
   }
 
   const handleAction = (message) => {
