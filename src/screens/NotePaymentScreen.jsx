@@ -8,9 +8,9 @@ import {
   IconClock,
   IconCopy,
   IconDeviceMobile,
-  IconFileCertificate,
   IconFileUpload,
   IconPhoto,
+  IconReceipt,
   IconShieldCheck,
   IconTrash,
 } from '@tabler/icons-react'
@@ -20,14 +20,15 @@ import Footer from '../components/Footer.jsx'
 const DUMMY_NOTES_MAP = {
   note_123: {
     id: 'note_123',
-    title: 'CS101 Midterm Complete Study Guide & Practice Problems',
-    course: 'Computer Science 101',
-    tutorName: 'Alex Johnson',
+    title: 'Organic Chemistry: Reaction Mechanisms Masterclass',
+    course: 'Chemistry 201',
+    code: 'CHEM 201',
+    tutorName: 'Sarah Jenkins',
     tutorUniversity: 'Addis Ababa University',
-    department: 'Computer Science',
+    department: 'Chemistry',
     priceEtb: 150,
-    priceUsd: 15.0,
-    previewPagesCount: 40,
+    priceUsd: 18.5,
+    pagesCount: 42,
   },
 }
 
@@ -35,32 +36,32 @@ const PAYMENT_ACCOUNTS = [
   {
     id: 'telebirr',
     name: 'Telebirr',
-    accountName: 'CampusHustle Inc / Alex Johnson',
+    brandBadge: 'Recommended · Instant',
+    accountName: 'CampusHustle Inc (Sarah Jenkins)',
     accountNumber: '0911 23 45 67',
-    type: 'Mobile Money',
+    type: 'Ethio Telecom Mobile Money',
     icon: IconDeviceMobile,
-    badgeColor: 'bg-emerald-50 text-emerald-700 border-emerald-200',
-    instruction: 'Transfer via Telebirr app or *127# and take a screenshot of the transaction SMS/receipt.',
+    instruction: 'Open Telebirr App or dial *127#, send 150 ETB to 0911234567, and capture the payment confirmation screenshot.',
   },
   {
     id: 'cbe',
-    name: 'Commercial Bank of Ethiopia (CBE)',
+    name: 'Commercial Bank of Ethiopia',
+    brandBadge: 'CBE Mobile / CBEBirr',
     accountName: 'Campus Hustle Academic Services',
     accountNumber: '1000 4567 8901',
-    type: 'Bank Transfer',
+    type: 'CBE Bank Transfer',
     icon: IconBuildingBank,
-    badgeColor: 'bg-amber-50 text-amber-700 border-amber-200',
-    instruction: 'Transfer via CBE Mobile Banking or CBEBirr and upload the digital transaction confirmation.',
+    instruction: 'Transfer via CBE Mobile Banking or branch slip, enter note title in reference, and upload digital PDF/slip.',
   },
   {
     id: 'boa',
-    name: 'Bank of Abyssinia (BOA)',
+    name: 'Bank of Abyssinia',
+    brandBadge: 'BoA Mobile',
     accountName: 'Campus Hustle Platform',
     accountNumber: '5432 1098 7654',
-    type: 'Bank Transfer',
+    type: 'BoA Transfer',
     icon: IconBuildingBank,
-    badgeColor: 'bg-blue-50 text-blue-700 border-blue-200',
-    instruction: 'Transfer via BoA Mobile App and upload receipt slip screenshot.',
+    instruction: 'Send money using BoA Mobile App to account 543210987654 and save the transaction confirmation receipt.',
   },
 ]
 
@@ -68,20 +69,22 @@ export default function NotePaymentScreen({ user, onNavigate, onLogout, initialS
   const { id } = useParams()
   const note = DUMMY_NOTES_MAP[id] || {
     id: id || 'note_123',
-    title: 'CS101 Midterm Complete Study Guide & Practice Problems',
-    course: 'Computer Science 101',
-    tutorName: 'Alex Johnson',
+    title: 'Organic Chemistry: Reaction Mechanisms Masterclass',
+    course: 'Chemistry 201',
+    code: 'CHEM 201',
+    tutorName: 'Sarah Jenkins',
     tutorUniversity: 'Addis Ababa University',
-    department: 'Computer Science',
+    department: 'Chemistry',
     priceEtb: 150,
-    priceUsd: 15.0,
-    previewPagesCount: 40,
+    priceUsd: 18.5,
+    pagesCount: 42,
   }
 
   const [selectedMethod, setSelectedMethod] = useState('telebirr')
   const [copiedAccount, setCopiedAccount] = useState(null)
   const [transactionRef, setTransactionRef] = useState('')
   const [payerName, setPayerName] = useState(user?.name || '')
+  const [payerPhone, setPayerPhone] = useState('')
   const [receiptFile, setReceiptFile] = useState(null)
   const [receiptPreview, setReceiptPreview] = useState(null)
   const [isSubmitting, setIsSubmitting] = useState(false)
@@ -89,9 +92,11 @@ export default function NotePaymentScreen({ user, onNavigate, onLogout, initialS
   const [formError, setFormError] = useState('')
 
   const handleCopy = (accountNumber) => {
-    navigator.clipboard?.writeText(accountNumber.replace(/\s+/g, ''))
-    setCopiedAccount(accountNumber)
-    setTimeout(() => setCopiedAccount(null), 2500)
+    if (navigator.clipboard) {
+      navigator.clipboard.writeText(accountNumber.replace(/\s+/g, ''))
+      setCopiedAccount(accountNumber)
+      setTimeout(() => setCopiedAccount(null), 2500)
+    }
   }
 
   const handleFileChange = (e) => {
@@ -107,11 +112,18 @@ export default function NotePaymentScreen({ user, onNavigate, onLogout, initialS
     setReceiptFile(file)
 
     if (file.type.startsWith('image/')) {
-      const reader = new FileReader()
-      reader.onload = (event) => {
-        setReceiptPreview(event.target?.result)
+      try {
+        const reader = new FileReader()
+        reader.onload = (event) => {
+          setReceiptPreview(event.target?.result || 'data:image/png;base64,dummy')
+        }
+        reader.readAsDataURL(file)
+        if (!receiptPreview) {
+          setReceiptPreview(URL.createObjectURL ? URL.createObjectURL(file) : 'data:image/png;base64,dummy')
+        }
+      } catch {
+        setReceiptPreview('data:image/png;base64,dummy')
       }
-      reader.readAsDataURL(file)
     } else {
       setReceiptPreview('/assets/pdf-icon.png')
     }
@@ -133,14 +145,24 @@ export default function NotePaymentScreen({ user, onNavigate, onLogout, initialS
     setIsSubmitting(true)
     setFormError('')
 
-    // Simulate backend receipt recording
-    await new Promise((resolve) => setTimeout(resolve, 800))
+    await new Promise((resolve) => setTimeout(resolve, 900))
     setIsSubmitting(false)
     setIsSubmitted(true)
   }
 
+  const activeAccount = PAYMENT_ACCOUNTS.find((a) => a.id === selectedMethod) || PAYMENT_ACCOUNTS[0]
+
   return (
-    <div className="flex min-h-screen flex-col bg-surface font-body text-on-surface">
+    <div
+      className="flex min-h-screen flex-col bg-gray-50 text-gray-900 font-poppins antialiased"
+      style={{
+        backgroundImage: `
+          radial-gradient(circle at 15% 50%, rgba(4, 21, 52, 0.03), transparent 25%),
+          radial-gradient(circle at 85% 30%, rgba(254, 174, 44, 0.05), transparent 25%)
+        `,
+        backgroundAttachment: 'fixed',
+      }}
+    >
       <AppNavbar
         user={user}
         activeView="marketplace"
@@ -148,305 +170,350 @@ export default function NotePaymentScreen({ user, onNavigate, onLogout, initialS
         onLogout={onLogout}
       />
 
-      <main className="mx-auto flex w-full max-w-5xl flex-1 flex-col px-4 py-8 sm:px-6 lg:px-8">
-        {/* Back Link */}
+      <main className="mx-auto w-full max-w-5xl flex-1 px-4 py-8 sm:px-6 lg:px-8">
+        {/* Back Button */}
         <button
           type="button"
           onClick={() => onNavigate ? onNavigate('marketplace') : window.history.back()}
-          className="inline-flex w-fit items-center gap-2 text-sm font-medium text-on-surface-variant transition-colors hover:text-primary mb-6"
+          className="inline-flex w-fit items-center gap-2 text-xs font-semibold text-gray-600 transition-colors hover:text-gray-900 mb-6"
         >
-          <IconArrowLeft size={16} aria-hidden="true" />
-          <span>Back to Note Details</span>
+          <IconArrowLeft size={16} />
+          <span>Back to Note Overview</span>
         </button>
 
         {isSubmitted ? (
-          /* ================================================================= */
-          /* State: Receipt Submitted / Under Review                           */
-          /* ================================================================= */
-          <div data-testid="verification-under-review" className="mx-auto w-full max-w-2xl rounded-2xl border border-surface-variant bg-surface-lowest p-6 sm:p-10 shadow-level-2 text-center">
-            <div className="mx-auto flex size-16 items-center justify-center rounded-2xl bg-amber-500/10 text-amber-600 mb-5">
-              <IconClock size={36} className="animate-pulse" />
+          /* =============================================================== */
+          /* STATE 2: Verification Under Review / Processing                 */
+          /* =============================================================== */
+          <div
+            data-testid="verification-under-review"
+            className="mx-auto w-full max-w-2xl overflow-hidden rounded-3xl border border-gray-200 bg-white p-6 sm:p-10 shadow-lg text-center space-y-6"
+          >
+            {/* Animated Radar Pulse Circle */}
+            <div className="relative mx-auto flex h-20 w-20 items-center justify-center rounded-3xl bg-amber-50 text-amber-600 shadow-inner">
+              <span className="absolute inline-flex h-full w-full animate-ping rounded-3xl bg-amber-400 opacity-20" />
+              <IconClock size={40} className="relative z-10 animate-pulse" />
             </div>
 
-            <div className="inline-flex items-center gap-1.5 rounded-full border border-amber-500/30 bg-amber-500/10 px-3 py-1 text-xs font-bold text-amber-700 mb-3">
-              <IconCircleCheckFilled size={14} />
-              <span>Receipt Under Verification</span>
+            <div className="space-y-2">
+              <div className="inline-flex items-center gap-1.5 rounded-full border border-amber-300 bg-amber-50 px-3.5 py-1 text-xs font-bold text-amber-800">
+                <IconCircleCheckFilled size={14} />
+                <span>Verification Ticket #CH-892415</span>
+              </div>
+              <h1 className="text-2xl sm:text-3xl font-bold font-display text-[#041534] tracking-tight">
+                Payment Verification in Progress
+              </h1>
+              <p className="text-xs sm:text-sm text-gray-600 max-w-md mx-auto leading-relaxed">
+                We received your payment receipt for <strong className="text-gray-900">{note.title}</strong>. Our peer moderation team is verifying the transaction code.
+              </p>
             </div>
 
-            <h1 className="text-2xl sm:text-3xl font-display font-bold text-primary">
-              Payment Verification in Progress
-            </h1>
-
-            <p className="mt-3 text-sm text-on-surface-variant leading-relaxed">
-              Thank you, <strong className="text-primary">{payerName || 'Student'}</strong>! We have received your payment proof for{' '}
-              <strong className="text-primary">{note.title}</strong>.
-            </p>
-
-            <div className="my-6 rounded-xl border border-surface-variant bg-surface-low p-4 text-left text-xs sm:text-sm space-y-2">
-              <div className="flex justify-between">
-                <span className="text-outline">Note Course:</span>
-                <span className="font-semibold text-primary">{note.course}</span>
+            {/* Summary Ticket */}
+            <div className="rounded-2xl border border-gray-200 bg-gray-50 p-5 text-left text-xs sm:text-sm space-y-3 shadow-xs">
+              <div className="flex justify-between border-b border-gray-200 pb-2.5">
+                <span className="text-gray-500">Payer:</span>
+                <span className="font-semibold text-gray-900">{payerName || 'Student'} {payerPhone && `(${payerPhone})`}</span>
+              </div>
+              <div className="flex justify-between border-b border-gray-200 pb-2.5">
+                <span className="text-gray-500">Total Amount:</span>
+                <span className="font-extrabold text-emerald-600">{note.priceEtb} ETB (${note.priceUsd.toFixed(2)} USD)</span>
+              </div>
+              <div className="flex justify-between border-b border-gray-200 pb-2.5">
+                <span className="text-gray-500">Transaction Ref:</span>
+                <span className="font-mono font-bold text-gray-900">{transactionRef || 'TLBR-98234710'}</span>
               </div>
               <div className="flex justify-between">
-                <span className="text-outline">Amount Paid:</span>
-                <span className="font-bold text-emerald-600">{note.priceEtb} ETB (${note.priceUsd.toFixed(2)})</span>
-              </div>
-              <div className="flex justify-between">
-                <span className="text-outline">Transaction Ref:</span>
-                <span className="font-mono font-semibold text-primary">{transactionRef || 'TXN-7890214'}</span>
-              </div>
-              <div className="flex justify-between">
-                <span className="text-outline">Estimated Verification:</span>
-                <span className="font-semibold text-primary">15 – 30 minutes</span>
+                <span className="text-gray-500">Estimated Verification:</span>
+                <span className="font-bold text-amber-600">⏱ ~15 – 20 Minutes</span>
               </div>
             </div>
 
-            <p className="text-xs text-on-surface-variant leading-relaxed mb-8">
-              Once verified by our platform or tutor, you will receive an in-app notification and the full downloadable PDF and AI Study Assistant chat will automatically unlock in your account.
-            </p>
+            <div className="rounded-xl border border-emerald-200 bg-emerald-50 p-4 text-xs text-emerald-800 text-left flex items-start gap-2.5">
+              <IconShieldCheck size={18} className="text-emerald-600 shrink-0 mt-0.5" />
+              <span>Once confirmed, you will receive an in-app notification and the complete <strong>{note.pagesCount}-page PDF</strong> and AI Assistant study tool will automatically unlock in your account.</span>
+            </div>
 
-            <div className="flex flex-col sm:flex-row items-center justify-center gap-3">
+            <div className="flex flex-col sm:flex-row items-center justify-center gap-3 pt-2">
               <button
                 type="button"
                 onClick={() => onNavigate ? onNavigate('marketplace') : window.location.assign('/market')}
-                className="w-full sm:w-auto rounded-xl bg-primary px-6 py-3 text-sm font-bold text-on-primary shadow-level-1 transition-colors hover:bg-primary-container"
+                className="w-full sm:w-auto rounded-full bg-amber-500 px-6 py-3 text-xs sm:text-sm font-bold text-gray-950 shadow-md transition-all hover:bg-amber-400 hover:shadow-lg active:scale-95"
               >
-                Browse More Notes
+                Browse Marketplace
               </button>
               <button
                 type="button"
                 onClick={() => onNavigate ? onNavigate('assistant') : window.location.assign('/assistant')}
-                className="w-full sm:w-auto rounded-xl border border-surface-variant bg-surface-low px-6 py-3 text-sm font-semibold text-primary hover:bg-surface-high transition-colors"
+                className="w-full sm:w-auto rounded-full border border-gray-300 bg-white px-6 py-3 text-xs sm:text-sm font-semibold text-gray-900 transition-colors hover:bg-gray-100"
               >
                 Go to AI Assistant
               </button>
             </div>
           </div>
         ) : (
-          /* ================================================================= */
-          /* State: Manual Payment Instructions & Receipt Upload Form          */
-          /* ================================================================= */
-          <div className="grid grid-cols-1 gap-8 lg:grid-cols-12">
-            {/* Left: Account Transfer Details */}
-            <div className="lg:col-span-7 space-y-6">
-              <div>
-                <div className="inline-flex items-center gap-1.5 rounded-full border border-surface-variant bg-surface-low px-3 py-1 text-xs font-semibold text-primary">
-                  <IconFileCertificate size={14} className="text-hustle-600" />
-                  <span>Step 1: Direct Account Payment</span>
-                </div>
-                <h1 className="mt-2 text-2xl sm:text-3xl font-display font-bold text-primary tracking-tight">
-                  Complete Payment
-                </h1>
-                <p className="mt-1 text-sm text-on-surface-variant">
-                  Transfer the exact amount using any of our verified Ethiopian campus accounts below.
-                </p>
-              </div>
-
-              {/* Note Summary Card */}
-              <div className="rounded-xl border border-surface-variant bg-surface-lowest p-5 shadow-level-1 flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4">
+          /* =============================================================== */
+          /* STATE 1: Manual Transfer & Proof Submission Form                */
+          /* =============================================================== */
+          <div className="space-y-8">
+            {/* Step Progress Header */}
+            <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
+              <div className="flex items-center gap-3 rounded-2xl border border-[#041534] bg-blue-50/50 p-3.5 shadow-sm">
+                <div className="flex h-7 w-7 items-center justify-center rounded-full bg-[#041534] text-xs font-bold text-white">1</div>
                 <div>
-                  <span className="rounded-md bg-surface-high px-2 py-0.5 text-xs font-semibold text-primary">
-                    {note.course}
-                  </span>
-                  <h2 className="mt-1.5 text-base font-bold text-primary line-clamp-1">{note.title}</h2>
-                  <p className="text-xs text-on-surface-variant">Author: {note.tutorName} · {note.tutorUniversity}</p>
-                </div>
-                <div className="text-left sm:text-right shrink-0">
-                  <p className="text-xs text-outline">Total Due</p>
-                  <p className="text-2xl font-extrabold text-primary">{note.priceEtb} ETB</p>
-                  <p className="text-xs text-on-surface-variant">(${note.priceUsd.toFixed(2)} USD)</p>
+                  <p className="text-xs font-bold text-[#041534]">Select Account</p>
+                  <p className="text-[11px] text-gray-500">Telebirr, CBE, BOA</p>
                 </div>
               </div>
 
-              {/* Account Selection Tabs */}
-              <div className="space-y-3">
-                <h3 className="text-xs font-bold uppercase tracking-wider text-outline">
-                  Select Payment Account:
-                </h3>
-                <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
-                  {PAYMENT_ACCOUNTS.map((acc) => {
-                    const Icon = acc.icon
-                    const isSelected = selectedMethod === acc.id
-                    return (
-                      <button
-                        key={acc.id}
-                        type="button"
-                        onClick={() => setSelectedMethod(acc.id)}
-                        className={`flex flex-col items-start p-4 rounded-xl border text-left transition-all ${
-                          isSelected
-                            ? 'border-primary bg-primary-fixed/20 shadow-level-1 ring-1 ring-primary'
-                            : 'border-surface-variant bg-surface-lowest hover:border-primary/50'
-                        }`}
-                      >
-                        <div className="flex items-center justify-between w-full mb-2">
-                          <Icon size={20} className={isSelected ? 'text-primary' : 'text-outline'} />
-                          {isSelected && <IconCheck size={16} className="text-primary font-bold" />}
-                        </div>
-                        <span className="text-xs font-bold text-primary">{acc.name}</span>
-                        <span className="text-[11px] text-on-surface-variant mt-0.5">{acc.type}</span>
-                      </button>
-                    )
-                  })}
+              <div className="flex items-center gap-3 rounded-2xl border border-gray-200 bg-white p-3.5 shadow-sm">
+                <div className="flex h-7 w-7 items-center justify-center rounded-full bg-gray-100 text-xs font-bold text-gray-700">2</div>
+                <div>
+                  <p className="text-xs font-bold text-gray-900">Transfer & Upload</p>
+                  <p className="text-[11px] text-gray-500">Attach screenshot</p>
                 </div>
               </div>
 
-              {/* Active Account Details Box */}
-              {(() => {
-                const activeAcc = PAYMENT_ACCOUNTS.find((a) => a.id === selectedMethod) || PAYMENT_ACCOUNTS[0]
-                return (
-                  <div className="rounded-xl border border-surface-variant bg-surface-lowest p-5 sm:p-6 shadow-level-1 space-y-4">
-                    <div className="flex items-center justify-between">
-                      <span className="text-xs font-bold uppercase tracking-wider text-primary">
-                        {activeAcc.name} Account Information
-                      </span>
-                      <span className="rounded-full bg-surface-high px-2.5 py-0.5 text-xs font-medium text-on-surface-variant">
-                        Manual Verification
-                      </span>
-                    </div>
-
-                    <div className="rounded-lg border border-surface-variant bg-surface-low p-4 flex items-center justify-between gap-4">
-                      <div>
-                        <p className="text-xs text-outline">Account / Phone Number</p>
-                        <p className="text-lg sm:text-xl font-mono font-bold text-primary tracking-wide">
-                          {activeAcc.accountNumber}
-                        </p>
-                        <p className="text-xs text-on-surface-variant mt-0.5">Name: <strong className="text-primary">{activeAcc.accountName}</strong></p>
-                      </div>
-                      <button
-                        type="button"
-                        onClick={() => handleCopy(activeAcc.accountNumber)}
-                        className="flex items-center gap-1.5 rounded-lg border border-surface-variant bg-surface-lowest px-3 py-2 text-xs font-bold text-primary shadow-xs transition-colors hover:bg-surface-high active:scale-95 shrink-0"
-                      >
-                        {copiedAccount === activeAcc.accountNumber ? (
-                          <>
-                            <IconCheck size={14} className="text-emerald-600" />
-                            <span className="text-emerald-600">Copied!</span>
-                          </>
-                        ) : (
-                          <>
-                            <IconCopy size={14} />
-                            <span>Copy</span>
-                          </>
-                        )}
-                      </button>
-                    </div>
-
-                    <p className="text-xs text-on-surface-variant leading-relaxed">
-                      💡 <strong>Instruction:</strong> {activeAcc.instruction}
-                    </p>
-                  </div>
-                )
-              })()}
+              <div className="flex items-center gap-3 rounded-2xl border border-gray-200 bg-white p-3.5 shadow-sm">
+                <div className="flex h-7 w-7 items-center justify-center rounded-full bg-gray-100 text-xs font-bold text-gray-700">3</div>
+                <div>
+                  <p className="text-xs font-bold text-gray-900">Fast Unlock</p>
+                  <p className="text-[11px] text-gray-500">~15 min verification</p>
+                </div>
+              </div>
             </div>
 
-            {/* Right: Receipt Upload Form */}
-            <div className="lg:col-span-5">
-              <form onSubmit={handleSubmit} className="sticky top-8 rounded-2xl border border-surface-variant bg-surface-lowest p-6 shadow-level-2 space-y-5">
+            <div className="grid grid-cols-1 gap-8 lg:grid-cols-12">
+              {/* Left Column: Account Selection & Transfer Guide */}
+              <div className="space-y-6 lg:col-span-7">
                 <div>
-                  <div className="inline-flex items-center gap-1.5 text-xs font-semibold text-primary">
-                    <IconShieldCheck size={16} className="text-emerald-600" />
-                    <span>Step 2: Upload Proof</span>
-                  </div>
-                  <h2 className="mt-1 text-xl font-bold font-display text-primary">
-                    Submit Payment Receipt
-                  </h2>
-                  <p className="text-xs text-on-surface-variant mt-0.5">
-                    Upload your transaction screenshot or transfer slip to unlock the note.
+                  <h1 className="text-2xl sm:text-3xl font-extrabold font-display text-[#041534] tracking-tight">
+                    Complete Your Payment
+                  </h1>
+                  <p className="mt-1 text-xs sm:text-sm text-gray-600">
+                    Send <strong className="text-gray-900">{note.priceEtb} ETB</strong> directly to any of the verified student/platform accounts below.
                   </p>
                 </div>
 
-                {/* Payer Name */}
-                <div className="space-y-1">
-                  <label className="text-xs font-semibold text-on-surface">Payer Name</label>
-                  <input
-                    type="text"
-                    required
-                    value={payerName}
-                    onChange={(e) => setPayerName(e.target.value)}
-                    placeholder="Daniel Gidey"
-                    className="w-full rounded-lg border border-surface-variant bg-surface-low px-3.5 py-2.5 text-sm text-on-surface placeholder:text-outline focus:border-primary focus:outline-none focus:ring-1 focus:ring-primary"
-                  />
+                {/* Note Order Summary Pill */}
+                <div className="rounded-2xl border border-gray-200 bg-white p-5 shadow-sm flex items-center justify-between gap-4">
+                  <div className="min-w-0">
+                    <span className="rounded-md bg-gray-100 px-2 py-0.5 text-[11px] font-bold text-gray-800">
+                      {note.course}
+                    </span>
+                    <h2 className="mt-1 text-sm sm:text-base font-bold text-[#041534] truncate">{note.title}</h2>
+                    <p className="text-xs text-gray-500">{note.tutorName} · {note.tutorUniversity}</p>
+                  </div>
+                  <div className="text-right shrink-0">
+                    <p className="text-xs text-gray-500">Total Due</p>
+                    <p className="text-2xl font-black text-[#041534] font-display">{note.priceEtb} ETB</p>
+                    <p className="text-[11px] text-gray-500">(${note.priceUsd.toFixed(2)} USD)</p>
+                  </div>
                 </div>
 
-                {/* Transaction Ref / Code */}
-                <div className="space-y-1">
-                  <label className="text-xs font-semibold text-on-surface">
-                    Transaction ID / Reference Number <span className="text-error">*</span>
-                  </label>
-                  <input
-                    type="text"
-                    required
-                    value={transactionRef}
-                    onChange={(e) => setTransactionRef(e.target.value)}
-                    placeholder="e.g. TLBR-98726514 / CBE Ref"
-                    className="w-full rounded-lg border border-surface-variant bg-surface-low px-3.5 py-2.5 text-sm text-on-surface placeholder:text-outline focus:border-primary focus:outline-none focus:ring-1 focus:ring-primary font-mono"
-                  />
+                {/* Account Selection Cards */}
+                <div className="space-y-3">
+                  <h3 className="text-xs font-bold uppercase tracking-wider text-gray-500">
+                    1. Choose Payment Method:
+                  </h3>
+                  <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
+                    {PAYMENT_ACCOUNTS.map((acc) => {
+                      const Icon = acc.icon
+                      const isSelected = selectedMethod === acc.id
+                      return (
+                        <button
+                          key={acc.id}
+                          type="button"
+                          onClick={() => setSelectedMethod(acc.id)}
+                          className={`flex flex-col items-start p-4 rounded-2xl border text-left transition-all ${
+                            isSelected
+                              ? 'border-[#041534] bg-blue-50/40 shadow-sm ring-2 ring-[#041534]'
+                              : 'border-gray-200 bg-white hover:border-gray-300'
+                          }`}
+                        >
+                          <div className="flex items-center justify-between w-full mb-2">
+                            <Icon size={22} className={isSelected ? 'text-[#041534]' : 'text-gray-400'} />
+                            {isSelected && <IconCheck size={16} className="text-[#041534] font-bold" />}
+                          </div>
+                          <span className="text-xs font-bold text-gray-900">{acc.name}</span>
+                          <span className="text-[10px] text-gray-500 mt-0.5">{acc.brandBadge}</span>
+                        </button>
+                      )
+                    })}
+                  </div>
                 </div>
 
-                {/* Receipt File Upload */}
-                <div className="space-y-1.5">
-                  <label className="text-xs font-semibold text-on-surface">
-                    Receipt Photo / Screenshot <span className="text-error">*</span>
-                  </label>
-                  {receiptPreview ? (
-                    <div className="relative rounded-xl border border-surface-variant bg-surface-low p-2">
-                      <img
-                        src={receiptPreview}
-                        alt="Receipt preview"
-                        className="h-36 w-full rounded-lg object-contain bg-surface-lowest"
-                      />
-                      <button
-                        type="button"
-                        onClick={() => {
-                          setReceiptFile(null)
-                          setReceiptPreview(null)
-                        }}
-                        className="absolute top-3 right-3 flex size-8 items-center justify-center rounded-full bg-rose-600 text-white shadow-md hover:bg-rose-700 transition-colors"
-                        title="Remove photo"
-                      >
-                        <IconTrash size={16} />
-                      </button>
-                      <p className="mt-1.5 text-center text-[11px] text-outline truncate px-2">
-                        {receiptFile?.name || 'receipt_screenshot.png'}
+                {/* Account Details Box */}
+                <div className="rounded-2xl border border-gray-200 bg-white p-5 sm:p-6 shadow-sm space-y-4">
+                  <div className="flex items-center justify-between">
+                    <span className="text-xs font-bold uppercase tracking-wider text-[#041534]">
+                      {activeAccount.name} Transfer Details
+                    </span>
+                    <span className="rounded-full bg-gray-100 px-2.5 py-0.5 text-[11px] font-semibold text-gray-700">
+                      Verified Account
+                    </span>
+                  </div>
+
+                  <div className="rounded-xl border border-gray-200 bg-gray-50 p-4 flex flex-col sm:flex-row sm:items-center justify-between gap-4">
+                    <div>
+                      <p className="text-[11px] text-gray-500">Account / Phone Number:</p>
+                      <p className="text-xl sm:text-2xl font-mono font-extrabold text-[#041534] tracking-wider">
+                        {activeAccount.accountNumber}
+                      </p>
+                      <p className="text-xs text-gray-600 mt-1">
+                        Holder: <strong className="text-gray-900">{activeAccount.accountName}</strong>
                       </p>
                     </div>
-                  ) : (
-                    <label className="flex flex-col items-center justify-center rounded-xl border-2 border-dashed border-surface-variant bg-surface-low p-6 cursor-pointer hover:border-primary hover:bg-surface-high transition-colors">
-                      <div className="flex size-10 items-center justify-center rounded-full bg-surface-high text-primary mb-2">
-                        <IconFileUpload size={20} />
-                      </div>
-                      <span className="text-xs font-bold text-primary">Click or drag screenshot</span>
-                      <span className="text-[11px] text-outline mt-0.5">PNG, JPG, JPEG or PDF (max 5MB)</span>
-                      <input
-                        type="file"
-                        accept="image/png,image/jpeg,image/jpg,application/pdf"
-                        onChange={handleFileChange}
-                        className="hidden"
-                      />
-                    </label>
-                  )}
+
+                    <button
+                      type="button"
+                      onClick={() => handleCopy(activeAccount.accountNumber)}
+                      className="flex items-center justify-center gap-1.5 rounded-full border border-gray-300 bg-white px-4 py-2 text-xs font-bold text-gray-800 shadow-xs transition-all hover:bg-gray-100 active:scale-95 shrink-0"
+                    >
+                      {copiedAccount === activeAccount.accountNumber ? (
+                        <>
+                          <IconCheck size={15} className="text-emerald-600" />
+                          <span className="text-emerald-600 font-bold">Copied!</span>
+                        </>
+                      ) : (
+                        <>
+                          <IconCopy size={15} />
+                          <span>Copy Number</span>
+                        </>
+                      )}
+                    </button>
+                  </div>
+
+                  <div className="rounded-xl bg-gray-50 p-3.5 text-xs text-gray-600 leading-relaxed space-y-1">
+                    <p className="font-bold text-gray-900">Transfer Instructions:</p>
+                    <p>{activeAccount.instruction}</p>
+                  </div>
                 </div>
+              </div>
 
-                {formError && (
-                  <p className="text-xs font-medium text-error bg-error/10 p-2.5 rounded-lg border border-error/20">
-                    {formError}
-                  </p>
-                )}
-
-                <button
-                  type="submit"
-                  disabled={isSubmitting}
-                  className="w-full flex items-center justify-center gap-2 rounded-xl bg-hustle-500 py-3.5 text-sm font-bold text-ink-contrast shadow-sm transition-all hover:bg-hustle-400 hover:shadow-md active:scale-95 disabled:opacity-50"
+              {/* Right Column: Receipt Upload & Proof Submission */}
+              <div className="lg:col-span-5">
+                <form
+                  onSubmit={handleSubmit}
+                  className="sticky top-24 rounded-3xl border border-gray-200 bg-white p-6 sm:p-7 shadow-sm space-y-5"
                 >
-                  <IconPhoto size={18} />
-                  <span>{isSubmitting ? 'Uploading & Submitting...' : 'Submit Receipt for Verification'}</span>
-                </button>
+                  <div>
+                    <div className="inline-flex items-center gap-1 text-xs font-bold text-amber-600">
+                      <IconReceipt size={16} />
+                      <span>Step 2: Upload Payment Proof</span>
+                    </div>
+                    <h2 className="mt-1 text-xl font-bold font-display text-[#041534]">
+                      Submit Receipt
+                    </h2>
+                    <p className="text-xs text-gray-500 mt-0.5">
+                      Upload your transaction slip or SMS screenshot to verify your payment.
+                    </p>
+                  </div>
 
-                <p className="text-center text-[11px] text-outline flex items-center justify-center gap-1">
-                  <IconShieldCheck size={14} className="text-emerald-600" />
-                  <span>Verified securely by Ethiopian campus peer tutors</span>
-                </p>
-              </form>
+                  {/* Payer Name */}
+                  <div className="space-y-1.5">
+                    <label className="text-xs font-semibold text-gray-700">Payer Full Name</label>
+                    <input
+                      type="text"
+                      required
+                      value={payerName}
+                      onChange={(e) => setPayerName(e.target.value)}
+                      placeholder="Daniel Gidey"
+                      className="w-full rounded-xl border border-gray-300 bg-gray-50 px-4 py-2.5 text-xs sm:text-sm text-gray-900 placeholder:text-gray-400 focus:border-[#041534] focus:bg-white focus:outline-none focus:ring-1 focus:ring-[#041534]"
+                    />
+                  </div>
+
+                  {/* Transaction Ref */}
+                  <div className="space-y-1.5">
+                    <label className="text-xs font-semibold text-gray-700">
+                      Transaction Reference / SMS Code <span className="text-rose-500">*</span>
+                    </label>
+                    <input
+                      type="text"
+                      required
+                      value={transactionRef}
+                      onChange={(e) => setTransactionRef(e.target.value)}
+                      placeholder="e.g. TLBR-98726514 / CBE Ref"
+                      className="w-full rounded-xl border border-gray-300 bg-gray-50 px-4 py-2.5 font-mono text-xs sm:text-sm text-gray-900 placeholder:text-gray-400 focus:border-[#041534] focus:bg-white focus:outline-none focus:ring-1 focus:ring-[#041534]"
+                    />
+                  </div>
+
+                  {/* Optional Phone */}
+                  <div className="space-y-1.5">
+                    <label className="text-xs font-semibold text-gray-700">Payer Phone Number (Optional)</label>
+                    <input
+                      type="tel"
+                      value={payerPhone}
+                      onChange={(e) => setPayerPhone(e.target.value)}
+                      placeholder="0911 00 00 00"
+                      className="w-full rounded-xl border border-gray-300 bg-gray-50 px-4 py-2.5 text-xs sm:text-sm text-gray-900 placeholder:text-gray-400 focus:border-[#041534] focus:bg-white focus:outline-none focus:ring-1 focus:ring-[#041534]"
+                    />
+                  </div>
+
+                  {/* Receipt Image / PDF Upload Dropzone */}
+                  <div className="space-y-1.5">
+                    <label className="text-xs font-semibold text-gray-700">
+                      Receipt Screenshot or PDF Slip <span className="text-rose-500">*</span>
+                    </label>
+                    {receiptPreview ? (
+                      <div className="relative rounded-2xl border border-gray-200 bg-gray-50 p-2.5">
+                        <img
+                          src={receiptPreview}
+                          alt="Receipt proof preview"
+                          className="h-36 w-full rounded-xl object-contain bg-white"
+                        />
+                        <button
+                          type="button"
+                          onClick={() => {
+                            setReceiptFile(null)
+                            setReceiptPreview(null)
+                          }}
+                          className="absolute top-4 right-4 flex h-8 w-8 items-center justify-center rounded-full bg-rose-600 text-white shadow-md hover:bg-rose-700 transition-colors"
+                          title="Remove file"
+                        >
+                          <IconTrash size={16} />
+                        </button>
+                        <p className="mt-2 text-center text-[11px] text-gray-500 truncate px-2 font-mono">
+                          {receiptFile?.name || 'receipt_screenshot.png'}
+                        </p>
+                      </div>
+                    ) : (
+                      <label className="flex flex-col items-center justify-center rounded-2xl border-2 border-dashed border-gray-300 bg-gray-50 p-6 cursor-pointer hover:border-[#041534] hover:bg-gray-100 transition-all text-center">
+                        <div className="flex h-11 w-11 items-center justify-center rounded-2xl bg-gray-200 text-gray-700 mb-2 shadow-xs">
+                          <IconFileUpload size={22} />
+                        </div>
+                        <span className="text-xs font-bold text-[#041534]">Click to upload receipt</span>
+                        <span className="text-[11px] text-gray-500 mt-0.5">Supports PNG, JPG, JPEG, PDF (max 10MB)</span>
+                        <input
+                          type="file"
+                          accept="image/png,image/jpeg,image/jpg,application/pdf"
+                          onChange={handleFileChange}
+                          className="hidden"
+                        />
+                      </label>
+                    )}
+                  </div>
+
+                  {formError && (
+                    <p className="text-xs font-semibold text-rose-600 bg-rose-50 p-3 rounded-xl border border-rose-200">
+                      {formError}
+                    </p>
+                  )}
+
+                  <button
+                    type="submit"
+                    disabled={isSubmitting}
+                    className="w-full flex items-center justify-center gap-2 rounded-xl bg-amber-500 py-3.5 text-xs sm:text-sm font-bold text-gray-950 shadow-md transition-all hover:bg-amber-400 hover:shadow-lg active:scale-95 disabled:opacity-50"
+                  >
+                    <IconPhoto size={18} />
+                    <span>{isSubmitting ? 'Submitting Receipt...' : 'Submit Receipt for Verification'}</span>
+                  </button>
+
+                  <div className="flex items-center justify-center gap-1.5 text-[11px] text-gray-500 text-center">
+                    <IconShieldCheck size={15} className="text-emerald-600" />
+                    <span>Instant document unlock upon payment confirmation</span>
+                  </div>
+                </form>
+              </div>
             </div>
           </div>
         )}

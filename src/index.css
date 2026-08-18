@@ -124,6 +124,21 @@
   box-shadow: var(--glass-shadow);
 }
 
+@utility glass-panel {
+  background: rgba(255, 255, 255, 0.7);
+  backdrop-filter: blur(12px);
+  -webkit-backdrop-filter: blur(12px);
+  border: 1px solid rgba(255, 255, 255, 0.5);
+}
+
+@utility shadow-glow-gold {
+  box-shadow: 0 4px 14px 0 rgba(254, 174, 44, 0.39);
+}
+
+@utility shadow-soft {
+  box-shadow: 0 4px 20px -2px rgba(4, 21, 52, 0.05);
+}
+
 @utility hide-scrollbar {
   -ms-overflow-style: none;
   scrollbar-width: none;
