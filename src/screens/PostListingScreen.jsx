@@ -186,10 +186,10 @@ export default function PostListingScreen({ user, onLogout, onNavigate }) {
                   onClick={() => fileInputRef.current?.click()}
                   className="group flex w-full cursor-pointer flex-col items-center justify-center rounded-xl border-2 border-dashed border-outline-variant bg-surface px-6 py-12 transition-colors hover:border-secondary-container hover:bg-surface-low"
                 >
-                  <div className="mb-4 flex size-16 items-center justify-center rounded-full bg-surface-container transition-colors group-hover:bg-secondary-fixed">
+                  <div className="mb-4 flex size-16 items-center justify-center rounded-full bg-surface-container transition-colors group-hover:bg-primary-container">
                     <IconCloudUpload
                       size={30}
-                      className="text-secondary"
+                      className="text-on-primary-container"
                       aria-hidden="true"
                     />
                   </div>

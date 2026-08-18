@@ -40,14 +40,14 @@ function Avatar({ user, className = 'w-32 h-32' }) {
       <img
         src={user.profilePicUrl}
         alt={user.name || 'Tutor avatar'}
-        className={`${className} rounded-xl object-cover border-2 border-primary-fixed shadow-level-1 shrink-0`}
+        className={`${className} rounded-xl object-cover border-2 border-primary shadow-level-1 shrink-0`}
       />
     )
   }
   return (
     <div
       aria-hidden="true"
-      className={`${className} flex items-center justify-center rounded-xl border-2 border-primary-fixed bg-primary-fixed text-4xl font-bold text-primary shadow-level-1 shrink-0`}
+      className={`${className} flex items-center justify-center rounded-xl border-2 border-primary bg-primary text-4xl font-bold text-on-primary shadow-level-1 shrink-0`}
     >
       {initialsOf(user?.name || 'Tutor')}
     </div>
@@ -91,7 +91,7 @@ function RatingBreakdown({ rating }) {
               <span className="font-medium text-on-surface">{row.label}</span>
               <span className="font-semibold text-primary">{row.value.toFixed(1)}</span>
             </div>
-            <div className="h-2 w-full rounded-full bg-surface-container">
+            <div className="h-2 w-full rounded-full bg-surface-container-highest">
               <div
                 className="h-2 rounded-full bg-primary"
                 style={{ width: `${Math.min(100, Math.max(0, row.value * 20))}%` }}
@@ -149,7 +149,7 @@ function AvailabilityGrid({ slots, selected, onSelect }) {
                 key={`${slot.day}-${slot.time}`}
                 aria-disabled="true"
                 title="Booked"
-                className="cursor-not-allowed rounded-md bg-surface-container-high p-2 text-center text-xs font-medium text-outline-variant"
+                className="cursor-not-allowed rounded-md bg-surface-container-highest p-2 text-center text-xs font-medium text-outline-variant border border-outline-variant"
               >
                 {slot.time}
               </div>
@@ -161,10 +161,10 @@ function AvailabilityGrid({ slots, selected, onSelect }) {
               type="button"
               onClick={() => onSelect({ day: slot.day, time: slot.time })}
               aria-pressed={isSelected}
-              className={`rounded-md p-2 text-center text-xs font-medium transition-colors ${
+              className={`rounded-md p-2 text-center text-xs font-medium transition-colors border ${
                 isSelected
-                  ? 'bg-secondary-container text-on-secondary-container ring-2 ring-secondary-container ring-offset-1'
-                  : 'bg-primary-fixed text-primary ring-1 ring-primary-fixed hover:bg-primary-fixed-dim'
+                  ? 'bg-primary text-on-primary border-primary shadow-level-1'
+                  : 'bg-primary-container text-on-primary-container border-primary hover:bg-primary hover:text-on-primary'
               }`}
             >
               {slot.time}
@@ -174,11 +174,11 @@ function AvailabilityGrid({ slots, selected, onSelect }) {
       </div>
 
       <div className="mt-5 flex items-center gap-4">
-        <span className="flex items-center gap-1.5 text-xs text-outline">
-          <span className="size-3 rounded-full bg-primary-fixed"></span> Available
+          <span className="flex items-center gap-1.5 text-xs text-outline">
+          <span className="size-3 rounded-full bg-primary-container border border-primary"></span> Available
         </span>
         <span className="flex items-center gap-1.5 text-xs text-outline">
-          <span className="size-3 rounded-full bg-surface-container-high"></span> Booked
+          <span className="size-3 rounded-full bg-surface-container-highest border border-outline-variant"></span> Booked
         </span>
       </div>
     </div>
@@ -354,7 +354,7 @@ function NotesSection({ tutor, onNavigate }) {
               <h3 className="line-clamp-2 text-left text-sm font-semibold text-on-surface transition-colors group-hover:text-primary">
                 {note.title}
               </h3>
-              <span className="shrink-0 rounded-md bg-secondary-fixed px-2 py-0.5 text-sm font-semibold text-primary">
+              <span className="shrink-0 rounded-md bg-primary-container px-2 py-0.5 text-sm font-semibold text-on-primary-container">
                 {note.price}
               </span>
             </div>
@@ -449,9 +449,9 @@ export default function TutorDetailScreen({ user, onLogout, onNavigate, initialB
                   </p>
                 </div>
                 <div className="flex shrink-0 flex-col items-end">
-                  <div className="flex items-center gap-1 rounded-full bg-secondary-fixed px-2.5 py-1">
-                    <IconStarFilled size={14} className="text-secondary" aria-hidden="true" />
-                    <span className="text-sm font-semibold text-secondary">
+                  <div className="flex items-center gap-1 rounded-full bg-primary-container px-2.5 py-1">
+                    <IconStarFilled size={14} className="text-on-primary-container" aria-hidden="true" />
+                    <span className="text-sm font-semibold text-on-primary-container">
                       {tutor.rating.knowledge.toFixed(1)}
                     </span>
                   </div>

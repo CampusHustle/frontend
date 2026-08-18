@@ -2,6 +2,8 @@ import { useState, useRef, useEffect } from 'react'
 import { motion, useReducedMotion, useScroll, useSpring, AnimatePresence } from 'motion/react'
 import {
   IconMenu2,
+  IconMoon,
+  IconSun,
   IconX,
   IconArrowRight,
   IconRocket,
@@ -9,6 +11,7 @@ import {
   IconChevronDown,
   IconCheck,
 } from '@tabler/icons-react'
+import { applyTheme } from '../utils/theme.js'
 
 const links = [
   { label: 'How it works', href: '#how-it-works' },
@@ -25,6 +28,9 @@ const languages = [
 
 export default function Navbar({ onNavigate }) {
   const [open, setOpen] = useState(false)
+  const [isDark, setIsDark] = useState(() =>
+    document.documentElement.classList.contains('dark'),
+  )
   const [langOpen, setLangOpen] = useState(false)
   const [selectedLang, setSelectedLang] = useState('en')
   const langRef = useRef(null)
@@ -36,6 +42,14 @@ export default function Navbar({ onNavigate }) {
     damping: 26,
     mass: 0.4,
   })
+
+  const toggleTheme = () => {
+    setIsDark((prev) => {
+      const next = !prev
+      applyTheme(next ? 'dark' : 'light')
+      return next
+    })
+  }
 
   // Close language dropdown on outside click
   useEffect(() => {
@@ -90,6 +104,21 @@ export default function Navbar({ onNavigate }) {
         </div>
 
         <div className="flex items-center gap-2.5 sm:gap-3">
+          {/* Theme toggle */}
+          <button
+            type="button"
+            id="landing-theme-toggle"
+            aria-label={isDark ? 'Switch to light mode' : 'Switch to dark mode'}
+            onClick={toggleTheme}
+            className="inline-flex size-9 items-center justify-center rounded-full border border-surface-variant text-on-surface-variant transition-colors hover:text-primary"
+          >
+            {isDark ? (
+              <IconSun size={18} aria-hidden="true" />
+            ) : (
+              <IconMoon size={18} aria-hidden="true" />
+            )}
+          </button>
+
           {/* Stylized Language Switcher */}
           <div className="relative" ref={langRef}>
             <button

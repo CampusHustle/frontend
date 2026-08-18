@@ -72,9 +72,9 @@ function TutorCard({ tutor, onView }) {
               </div>
               <p className="text-xs text-on-surface-variant truncate mt-0.5">{tutor.department}, {tutor.university}</p>
             </div>
-            <div className="flex items-center gap-1 bg-secondary-fixed px-2.5 py-1 rounded-full shrink-0">
-              <IconStarFilled size={14} className="text-secondary" aria-hidden="true" />
-              <span className="text-sm font-semibold text-secondary">{tutor.rating.knowledge.toFixed(1)}</span>
+            <div className="flex items-center gap-1 bg-primary-container px-2.5 py-1 rounded-full shrink-0">
+              <IconStarFilled size={14} className="text-on-primary-container" aria-hidden="true" />
+              <span className="text-sm font-semibold text-on-primary-container">{tutor.rating.knowledge.toFixed(1)}</span>
             </div>
           </div>
         </div>

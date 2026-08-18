@@ -27,22 +27,22 @@ export default function PurchaseCard({ note, onPurchaseSuccess, initialPurchased
   };
 
   return (
-    <div className="sticky top-8 rounded-2xl border border-gray-200 bg-white p-6 shadow-sm">
+    <div className="sticky top-8 rounded-2xl border border-outline-variant bg-surface-low p-6 shadow-sm">
       <div className="mb-4 flex items-start justify-between">
         <div>
-          <span className="inline-block rounded-full bg-gray-100 px-3 py-1 text-xs font-semibold text-gray-700">
+          <span className="inline-block rounded-full bg-surface-container px-3 py-1 text-xs font-semibold text-on-surface">
             {course}
           </span>
-          <h1 className="mt-3 text-2xl font-bold text-gray-900 leading-tight">{title}</h1>
-          <p className="mt-2 text-sm text-gray-600 font-medium">By {tutorName}</p>
+          <h1 className="mt-3 text-2xl font-bold text-on-surface leading-tight">{title}</h1>
+          <p className="mt-2 text-sm text-on-surface-variant font-medium">By {tutorName}</p>
         </div>
       </div>
 
-      <div className="mb-6 rounded-xl border border-gray-100 bg-gray-50 p-4">
+      <div className="mb-6 rounded-xl border border-outline-variant bg-surface p-4">
         <div className="flex items-end justify-between">
           <div>
-            <p className="text-sm font-medium text-gray-600 mb-1">Price</p>
-            <p className="text-3xl font-extrabold text-gray-900">${price.toFixed(2)}</p>
+            <p className="text-sm font-medium text-on-surface-variant mb-1">Price</p>
+            <p className="text-3xl font-extrabold text-on-surface">${price.toFixed(2)}</p>
           </div>
           <div className="text-right">
             <p className="text-sm font-medium text-gray-600 mb-1">Purchases</p>
@@ -54,8 +54,8 @@ export default function PurchaseCard({ note, onPurchaseSuccess, initialPurchased
       </div>
 
       <div className="mb-6">
-        <h3 className="text-sm font-bold uppercase tracking-wider text-gray-900 mb-3">Description</h3>
-        <p className="text-base text-gray-600 leading-relaxed">
+        <h3 className="text-sm font-bold uppercase tracking-wider text-on-surface mb-3">Description</h3>
+        <p className="text-base text-on-surface-variant leading-relaxed">
           {description}
         </p>
       </div>
