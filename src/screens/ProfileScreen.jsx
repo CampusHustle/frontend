@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'react'
+import { useState } from 'react'
 import { IconCircleCheckFilled, IconStarFilled, IconEdit } from '@tabler/icons-react'
 import AppNavbar from '../components/AppNavbar.jsx'
 import Footer from '../components/Footer.jsx'
@@ -158,18 +158,14 @@ function ProfileCard({ user }) {
 }
 
 export default function ProfileScreen({ user, onNavigate, onLogout, onUpdateProfile }) {
-  const [activeUser, setActiveUser] = useState(user || null)
+  const [localUser, setLocalUser] = useState(null)
   const [isEditing, setIsEditing] = useState(false)
   const [savedToast, setSavedToast] = useState(false)
 
-  useEffect(() => {
-    if (user) {
-      setActiveUser(user)
-    }
-  }, [user])
+  const activeUser = localUser || user || null
 
   const handleSaveProfile = (updatedUser) => {
-    setActiveUser(updatedUser)
+    setLocalUser(updatedUser)
     onUpdateProfile?.(updatedUser)
     setSavedToast(true)
     setTimeout(() => setSavedToast(false), 3000)

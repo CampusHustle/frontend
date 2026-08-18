@@ -37,7 +37,7 @@ function welcomeMessage() {
   }
 }
 
-export default function FloatingAiAssistant({ user }) {
+export default function FloatingAiAssistant() {
   const [isOpen, setIsOpen] = useState(false)
   const [messages, setMessages] = useState(() => [welcomeMessage()])
   const [draft, setDraft] = useState('')

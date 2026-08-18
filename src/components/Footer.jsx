@@ -15,7 +15,7 @@ const resourceLinks = [
   { label: 'Campus Ambassadors', href: '#' },
 ]
 
-export default function Footer({ onNavigate, user, isLanding = false }) {
+export default function Footer({ onNavigate, isLanding = false }) {
   const reduce = useReducedMotion()
   const isLandingPage = Boolean(isLanding)
 
