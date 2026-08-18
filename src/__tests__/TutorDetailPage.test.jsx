@@ -89,4 +89,97 @@ describe('TutorDetailPage', () => {
 
     expect(screen.getByRole('heading', { name: 'Tutor not found' })).toBeInTheDocument()
   })
+
+  it('renders all four booking status states distinctly (pending, confirmed, completed, cancelled)', () => {
+    const onLogout = vi.fn()
+    const onNavigate = vi.fn()
+
+    // 1. Pending Status
+    const { unmount: unmountPending } = render(
+      <MemoryRouter initialEntries={[`/tutor/${tutors[0].id}`]}>
+        <Routes>
+          <Route
+            path="/tutor/:id"
+            element={
+              <TutorDetailPage
+                user={tutors[0]}
+                onLogout={onLogout}
+                onNavigate={onNavigate}
+                initialBookingStatus="pending"
+              />
+            }
+          />
+        </Routes>
+      </MemoryRouter>,
+    )
+    expect(screen.getByTestId('booking-status-pending')).toBeInTheDocument()
+    expect(screen.getByText(/Status: Pending Tutor Confirmation/i)).toBeInTheDocument()
+    unmountPending()
+
+    // 2. Confirmed Status
+    const { unmount: unmountConfirmed } = render(
+      <MemoryRouter initialEntries={[`/tutor/${tutors[0].id}`]}>
+        <Routes>
+          <Route
+            path="/tutor/:id"
+            element={
+              <TutorDetailPage
+                user={tutors[0]}
+                onLogout={onLogout}
+                onNavigate={onNavigate}
+                initialBookingStatus="confirmed"
+              />
+            }
+          />
+        </Routes>
+      </MemoryRouter>,
+    )
+    expect(screen.getByTestId('booking-status-confirmed')).toBeInTheDocument()
+    expect(screen.getByText(/Status: Booking Confirmed \(Chat Unlocked\)/i)).toBeInTheDocument()
+    expect(screen.getByRole('button', { name: /Join Live Chat/i })).toBeInTheDocument()
+    unmountConfirmed()
+
+    // 3. Completed Status
+    const { unmount: unmountCompleted } = render(
+      <MemoryRouter initialEntries={[`/tutor/${tutors[0].id}`]}>
+        <Routes>
+          <Route
+            path="/tutor/:id"
+            element={
+              <TutorDetailPage
+                user={tutors[0]}
+                onLogout={onLogout}
+                onNavigate={onNavigate}
+                initialBookingStatus="completed"
+              />
+            }
+          />
+        </Routes>
+      </MemoryRouter>,
+    )
+    expect(screen.getByTestId('booking-status-completed')).toBeInTheDocument()
+    expect(screen.getByText(/Status: Session Completed/i)).toBeInTheDocument()
+    unmountCompleted()
+
+    // 4. Cancelled Status
+    render(
+      <MemoryRouter initialEntries={[`/tutor/${tutors[0].id}`]}>
+        <Routes>
+          <Route
+            path="/tutor/:id"
+            element={
+              <TutorDetailPage
+                user={tutors[0]}
+                onLogout={onLogout}
+                onNavigate={onNavigate}
+                initialBookingStatus="cancelled"
+              />
+            }
+          />
+        </Routes>
+      </MemoryRouter>,
+    )
+    expect(screen.getByTestId('booking-status-cancelled')).toBeInTheDocument()
+    expect(screen.getByText(/Status: Booking Cancelled/i)).toBeInTheDocument()
+  })
 })

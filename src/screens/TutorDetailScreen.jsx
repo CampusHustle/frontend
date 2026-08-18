@@ -2,14 +2,17 @@ import { useMemo, useState } from 'react'
 import { useParams } from 'react-router-dom'
 import {
   IconArrowLeft,
+  IconAward,
   IconBinaryTree2,
   IconBook2,
-  IconCheck,
   IconChevronLeft,
   IconChevronRight,
   IconCircleCheckFilled,
+  IconCircleX,
+  IconClock,
   IconCode,
   IconFileText,
+  IconMessageCircle,
   IconStarFilled,
 } from '@tabler/icons-react'
 import { tutors } from '../api/mockUsers.js'
@@ -182,34 +185,119 @@ function AvailabilityGrid({ slots, selected, onSelect }) {
   )
 }
 
-function BookingPanel({ tutor, selected, onRequestBooking, confirmation }) {
+export function BookingStatusBadge({ status }) {
+  switch (status) {
+    case 'pending':
+      return (
+        <div
+          data-testid="booking-status-pending"
+          className="flex items-center gap-2 rounded-lg border border-amber-500/30 bg-amber-500/10 px-3 py-2 text-xs sm:text-sm font-semibold text-amber-700 dark:text-amber-400"
+        >
+          <IconClock size={16} className="shrink-0 text-amber-600 animate-pulse" aria-hidden="true" />
+          <span>Status: Pending Tutor Confirmation</span>
+        </div>
+      )
+    case 'confirmed':
+      return (
+        <div
+          data-testid="booking-status-confirmed"
+          className="flex items-center gap-2 rounded-lg border border-emerald-500/30 bg-emerald-500/10 px-3 py-2 text-xs sm:text-sm font-semibold text-emerald-700 dark:text-emerald-400"
+        >
+          <IconCircleCheckFilled size={16} className="shrink-0 text-emerald-600" aria-hidden="true" />
+          <span>Status: Booking Confirmed (Chat Unlocked)</span>
+        </div>
+      )
+    case 'completed':
+      return (
+        <div
+          data-testid="booking-status-completed"
+          className="flex items-center gap-2 rounded-lg border border-blue-500/30 bg-blue-500/10 px-3 py-2 text-xs sm:text-sm font-semibold text-blue-700 dark:text-blue-400"
+        >
+          <IconAward size={16} className="shrink-0 text-blue-600" aria-hidden="true" />
+          <span>Status: Session Completed</span>
+        </div>
+      )
+    case 'cancelled':
+      return (
+        <div
+          data-testid="booking-status-cancelled"
+          className="flex items-center gap-2 rounded-lg border border-rose-500/30 bg-rose-500/10 px-3 py-2 text-xs sm:text-sm font-semibold text-rose-700 dark:text-rose-400"
+        >
+          <IconCircleX size={16} className="shrink-0 text-rose-600" aria-hidden="true" />
+          <span>Status: Booking Cancelled</span>
+        </div>
+      )
+    default:
+      return null
+  }
+}
+
+function BookingPanel({
+  tutor,
+  selected,
+  onRequestBooking,
+  confirmation,
+  bookingStatus = 'idle',
+  onSendMessage,
+}) {
   return (
     <div className="flex flex-col justify-center rounded-xl border border-surface-variant bg-surface p-6 shadow-level-1">
       <div className="mb-4 text-center">
         <span className="font-display text-3xl font-bold text-primary">${tutor.hourlyRate}</span>
         <span className="text-base text-outline"> / hour</span>
       </div>
-      <p className="mb-5 text-center text-sm text-on-surface-variant">
-        {selected
-          ? `You selected ${selected.day} at ${selected.time}. Request a booking to confirm.`
-          : 'Select a time slot from the grid to request a booking. Sessions are held via campus library or Zoom.'}
-      </p>
-      {confirmation && (
-        <div className="mb-4 flex items-center gap-2 rounded-lg bg-surface-container px-3 py-2 text-sm font-medium text-on-surface">
-          <IconCheck size={16} className="shrink-0 text-secondary-container" aria-hidden="true" />
-          {confirmation}
+
+      {bookingStatus !== 'idle' ? (
+        <div className="mb-5 space-y-3">
+          <BookingStatusBadge status={bookingStatus} />
+          {confirmation && (
+            <p className="text-center text-xs text-on-surface-variant">{confirmation}</p>
+          )}
         </div>
+      ) : (
+        <p className="mb-5 text-center text-sm text-on-surface-variant">
+          {selected
+            ? `You selected ${selected.day} at ${selected.time}. Request a booking to confirm.`
+            : 'Select a time slot from the grid to request a booking. Sessions are held via campus library or Zoom.'}
+        </p>
       )}
+
+      {bookingStatus === 'idle' && (
+        <button
+          type="button"
+          disabled={!selected}
+          onClick={onRequestBooking}
+          className="w-full rounded-lg bg-secondary-container py-3 text-sm font-semibold text-on-secondary-container shadow-level-1 transition-all hover:shadow-level-2 hover:-translate-y-px disabled:cursor-not-allowed disabled:opacity-50 disabled:hover:shadow-level-1 disabled:hover:translate-y-0"
+        >
+          Request Booking
+        </button>
+      )}
+
+      {bookingStatus === 'confirmed' && (
+        <button
+          type="button"
+          onClick={onSendMessage}
+          className="w-full rounded-lg bg-emerald-600 py-3 text-sm font-semibold text-white shadow-level-1 transition-all hover:bg-emerald-500 hover:shadow-level-2 flex items-center justify-center gap-2"
+        >
+          <IconMessageCircle size={18} />
+          <span>Join Live Chat</span>
+        </button>
+      )}
+
+      {bookingStatus === 'cancelled' && (
+        <button
+          type="button"
+          disabled={!selected}
+          onClick={onRequestBooking}
+          className="w-full rounded-lg bg-secondary-container py-3 text-sm font-semibold text-on-secondary-container shadow-level-1 transition-all hover:shadow-level-2 hover:-translate-y-px disabled:cursor-not-allowed disabled:opacity-50"
+        >
+          Request New Slot
+        </button>
+      )}
+
       <button
         type="button"
-        disabled={!selected}
-        onClick={onRequestBooking}
-        className="w-full rounded-lg bg-secondary-container py-3 text-sm font-semibold text-on-secondary-container shadow-level-1 transition-all hover:shadow-level-2 hover:-translate-y-px disabled:cursor-not-allowed disabled:opacity-50 disabled:hover:shadow-level-1 disabled:hover:translate-y-0"
-      >
-        Request Booking
-      </button>
-      <button
-        type="button"
+        onClick={onSendMessage}
         className="mt-2 w-full rounded-lg border border-primary py-3 text-sm font-semibold text-primary transition-colors hover:bg-surface-container-low"
       >
         Send Message
@@ -280,10 +368,11 @@ function NotesSection({ tutor, onNavigate }) {
   )
 }
 
-export default function TutorDetailScreen({ user, onLogout, onNavigate }) {
+export default function TutorDetailScreen({ user, onLogout, onNavigate, initialBookingStatus = 'idle' }) {
   const { id } = useParams()
   const [selected, setSelected] = useState(null)
   const [confirmation, setConfirmation] = useState('')
+  const [bookingStatus, setBookingStatus] = useState(initialBookingStatus)
 
   const tutor = useMemo(() => tutors.find((t) => t.id === id), [id])
   const slots = useMemo(() => buildSlots(id ?? 'unknown'), [id])
@@ -312,7 +401,12 @@ export default function TutorDetailScreen({ user, onLogout, onNavigate }) {
 
   const handleRequestBooking = () => {
     if (!selected) return
+    setBookingStatus('pending')
     setConfirmation(`Booking request sent for ${selected.day} at ${selected.time}.`)
+  }
+
+  const handleSendMessage = () => {
+    onNavigate?.('assistant')
   }
 
   return (
@@ -393,6 +487,8 @@ export default function TutorDetailScreen({ user, onLogout, onNavigate }) {
             selected={selected}
             onRequestBooking={handleRequestBooking}
             confirmation={confirmation}
+            bookingStatus={bookingStatus}
+            onSendMessage={handleSendMessage}
           />
         </section>
 
