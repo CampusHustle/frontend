@@ -14,6 +14,7 @@ import AiAssistantScreen from './screens/AiAssistantScreen.jsx'
 import TermsScreen from './screens/TermsScreen.jsx'
 import PrivacyScreen from './screens/PrivacyScreen.jsx'
 import NoteDetailPage from './pages/NoteDetailPage.jsx'
+import NotePaymentPage from './pages/NotePaymentPage.jsx'
 import { mockUpdateProfile } from './api/mockAuthApi.js'
 import {
   clearSession,
@@ -193,6 +194,16 @@ export function AppRoutes() {
          path="/notes/:id" 
          element={
         <NoteDetailPage 
+         user={currentUser} 
+         onNavigate={handleNavigate} 
+         onLogout={handleLogout} 
+        />
+      } 
+    />
+      <Route 
+         path="/notes/:id/payment" 
+         element={
+        <NotePaymentPage 
          user={currentUser} 
          onNavigate={handleNavigate} 
          onLogout={handleLogout} 
