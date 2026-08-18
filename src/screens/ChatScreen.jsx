@@ -405,7 +405,7 @@ export default function ChatScreen({ user, onLogout, onNavigate }) {
         />
       </div>
 
-      <Footer onNavigate={onNavigate} />
+      <Footer onNavigate={onNavigate} user={user} />
 
       <ConsentModal
         isOpen={consentOpen}

@@ -1,12 +1,14 @@
-import { IconCircleCheckFilled, IconStarFilled } from '@tabler/icons-react'
+import { useState, useEffect } from 'react'
+import { IconCircleCheckFilled, IconStarFilled, IconEdit } from '@tabler/icons-react'
 import AppNavbar from '../components/AppNavbar.jsx'
 import Footer from '../components/Footer.jsx'
+import EditProfileModal from '../components/EditProfileModal.jsx'
 
 function initialsOf(name) {
   return (name || '')
     .split(' ')
     .filter(Boolean)
-    .slice(0, 2)
+    .slice(0, 1)
     .map((part) => part[0]?.toUpperCase())
     .join('')
 }
@@ -155,40 +157,88 @@ function ProfileCard({ user }) {
   )
 }
 
-export default function ProfileScreen({ user, onNavigate, onLogout }) {
+export default function ProfileScreen({ user, onNavigate, onLogout, onUpdateProfile }) {
+  const [activeUser, setActiveUser] = useState(user || null)
+  const [isEditing, setIsEditing] = useState(false)
+  const [savedToast, setSavedToast] = useState(false)
+
+  useEffect(() => {
+    if (user) {
+      setActiveUser(user)
+    }
+  }, [user])
+
+  const handleSaveProfile = (updatedUser) => {
+    setActiveUser(updatedUser)
+    onUpdateProfile?.(updatedUser)
+    setSavedToast(true)
+    setTimeout(() => setSavedToast(false), 3000)
+  }
+
   return (
     <div className="flex min-h-screen flex-col bg-surface font-body text-on-surface">
       <AppNavbar
-        user={user}
+        user={activeUser}
         activeView="profile"
         onNavigate={onNavigate}
         onLogout={onLogout}
       />
 
       <main className="mx-auto w-full max-w-5xl flex-grow px-4 py-8 sm:px-6 md:py-10 lg:px-8">
-        <header className="mb-6">
-          <h1 className="font-display text-2xl font-bold tracking-tight text-primary sm:text-3xl">
-            My Profile
-          </h1>
-          <p className="mt-1 text-sm font-medium text-on-surface-variant">
-            {user ? `Welcome back, ${user.name}.` : 'Your CampusHustle profile.'}
-          </p>
+        {/* Feedback Toast */}
+        {savedToast && (
+          <div
+            role="status"
+            className="mb-4 flex items-center gap-2 rounded-xl border border-emerald-500/30 bg-emerald-500/10 px-4 py-2.5 text-xs font-semibold text-emerald-700 dark:text-emerald-400 animate-in fade-in duration-200"
+          >
+            <IconCircleCheckFilled size={18} />
+            <span>Profile updated successfully!</span>
+          </div>
+        )}
+
+        <header className="mb-6 flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
+          <div>
+            <h1 className="font-display text-2xl font-bold tracking-tight text-primary sm:text-3xl">
+              My Profile
+            </h1>
+            <p className="mt-1 text-sm font-medium text-on-surface-variant">
+              {activeUser ? `Welcome back, ${activeUser.name}.` : 'Your CampusHustle profile.'}
+            </p>
+          </div>
+
+          <button
+            type="button"
+            onClick={() => setIsEditing(true)}
+            aria-label="Edit Profile"
+            className="inline-flex items-center gap-2 self-start rounded-lg bg-primary px-4 py-2 text-sm font-semibold text-on-primary shadow-level-1 transition-all hover:bg-primary-container hover:shadow-level-2 active:scale-95 sm:self-auto cursor-pointer"
+          >
+            <IconEdit size={16} stroke={2.2} />
+            <span>Edit Profile</span>
+          </button>
         </header>
 
-        <ProfileCard user={user} />
+        <ProfileCard user={activeUser} />
 
         <div className="mt-6 flex justify-center">
           <button
             type="button"
             onClick={() => onNavigate?.('tutor')}
-            className="rounded-lg border border-outline-variant px-6 py-2.5 text-sm font-semibold text-on-surface-variant transition-colors hover:border-primary hover:text-primary"
+            className="rounded-lg border border-outline-variant px-6 py-2.5 text-sm font-semibold text-on-surface-variant transition-colors hover:border-primary hover:text-primary cursor-pointer"
           >
             Back to Find Tutors
           </button>
         </div>
       </main>
 
-      <Footer onNavigate={onNavigate} />
+      <Footer onNavigate={onNavigate} user={activeUser} />
+
+      {/* Edit Profile Modal */}
+      <EditProfileModal
+        isOpen={isEditing}
+        user={activeUser}
+        onClose={() => setIsEditing(false)}
+        onSave={handleSaveProfile}
+      />
     </div>
   )
 }

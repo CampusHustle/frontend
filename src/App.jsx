@@ -10,13 +10,14 @@ import MarketplaceScreen from './screens/MarketplaceScreen.jsx'
 import ProfileScreen from './screens/ProfileScreen.jsx'
 import TutorDetailScreen from './screens/TutorDetailScreen.jsx'
 import PostListingScreen from './screens/PostListingScreen.jsx'
-import AiAssistantScreen from './screens/AiAssistantScreen.jsx'
 import BookingScreen from './screens/BookingScreen.jsx'
 import ChatScreen from './screens/ChatScreen.jsx'
 import TermsScreen from './screens/TermsScreen.jsx'
 import PrivacyScreen from './screens/PrivacyScreen.jsx'
 import NoteDetailPage from './pages/NoteDetailPage.jsx'
 import NotePaymentPage from './pages/NotePaymentPage.jsx'
+import LogoutWarningModal from './components/LogoutWarningModal.jsx'
+import FloatingAiAssistant from './components/FloatingAiAssistant.jsx'
 import { mockUpdateProfile } from './api/mockAuthApi.js'
 import {
   clearSession,
@@ -35,7 +36,6 @@ function getInitialPath() {
     if (savedView === 'marketplace' || savedView === 'market') return '/market'
     if (savedView === 'profile') return '/profile'
     if (savedView === 'post-listing') return '/post-listing'
-    if (savedView === 'assistant') return '/assistant'
     if (savedView === 'bookings') return '/bookings'
     if (savedView === 'chat') return '/chat'
     if (savedView === 'terms') return '/terms'
@@ -53,7 +53,6 @@ function getInitialPath() {
       marketplace: '/market',
       market: '/market',
       home: '/',
-      assistant: '/assistant',
       bookings: '/bookings',
       chat: '/chat',
       terms: '/terms',
@@ -70,6 +69,7 @@ export function AppRoutes() {
   const [currentUser, setCurrentUser] = useState(() => loadSessionUser())
   const [pendingUser, setPendingUser] = useState(null)
   const [pendingEmail, setPendingEmail] = useState('')
+  const [showLogoutWarning, setShowLogoutWarning] = useState(false)
 
   useEffect(() => {
     const initialPath = getInitialPath()
@@ -80,6 +80,10 @@ export function AppRoutes() {
   }, [])
 
   const handleNavigate = (targetView) => {
+    if (targetView === 'assistant') {
+      window.dispatchEvent(new CustomEvent('open-ai-assistant'))
+      return
+    }
     const routeMap = {
       home: '/',
       login: '/login',
@@ -92,7 +96,6 @@ export function AppRoutes() {
       market: '/market',
       profile: '/profile',
       'post-listing': '/post-listing',
-      assistant: '/assistant',
       bookings: '/bookings',
       chat: '/chat',
       terms: '/terms',
@@ -104,13 +107,31 @@ export function AppRoutes() {
   }
 
   const handleLogout = () => {
+    setShowLogoutWarning(true)
+  }
+
+  const handleConfirmLogout = () => {
+    setShowLogoutWarning(false)
     clearSession()
     setCurrentUser(null)
     setPendingUser(null)
     handleNavigate('home')
   }
 
+  const handleCancelLogout = () => {
+    setShowLogoutWarning(false)
+  }
+
+  const handleUpdateProfile = (updatedUser) => {
+    setCurrentUser(updatedUser)
+    saveSessionUser(updatedUser)
+    if (updatedUser?.email) {
+      mockUpdateProfile(updatedUser.email, updatedUser).catch(() => {})
+    }
+  }
+
   return (
+    <>
     <Routes>
       <Route path="/" element={<HomeScreen onNavigate={handleNavigate} />} />
       <Route path="/terms" element={<TermsScreen onNavigate={handleNavigate} />} />
@@ -221,31 +242,18 @@ export function AppRoutes() {
       <Route
         path="/profile"
         element={
-          currentUser ? (
-            <ProfileScreen
-              user={currentUser}
-              onLogout={handleLogout}
-              onNavigate={handleNavigate}
-            />
-          ) : (
-            <Navigate to="/" replace />
-          )
+          <ProfileScreen
+            user={currentUser}
+            onLogout={handleLogout}
+            onNavigate={handleNavigate}
+            onUpdateProfile={handleUpdateProfile}
+          />
         }
       />
       <Route
         path="/post-listing"
         element={
           <PostListingScreen
-            user={currentUser}
-            onLogout={handleLogout}
-            onNavigate={handleNavigate}
-          />
-        }
-      />
-      <Route
-        path="/assistant"
-        element={
-          <AiAssistantScreen
             user={currentUser}
             onLogout={handleLogout}
             onNavigate={handleNavigate}
@@ -274,6 +282,15 @@ export function AppRoutes() {
       />
       <Route path="*" element={<Navigate to="/" replace />} />
     </Routes>
+    <FloatingAiAssistant user={currentUser} />
+    {showLogoutWarning && (
+      <LogoutWarningModal
+        user={currentUser}
+        onConfirm={handleConfirmLogout}
+        onCancel={handleCancelLogout}
+      />
+    )}
+    </>
   )
 }
 

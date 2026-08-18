@@ -48,13 +48,11 @@ describe('FindTutorPage', () => {
   })
 
   it('fires onLogout when the logout button is clicked', async () => {
-    vi.spyOn(window, 'confirm').mockReturnValue(true)
     const { user, onLogout } = setup()
 
     await user.click(screen.getByRole('button', { name: 'Log out' }))
 
     expect(onLogout).toHaveBeenCalledTimes(1)
-    window.confirm.mockRestore()
   })
 
   it('navigates to the AI Assistant when Try AI Assistant is clicked', async () => {
