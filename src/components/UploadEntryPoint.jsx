@@ -7,13 +7,6 @@ export default function UploadEntryPoint({ onFileSelect }) {
   const [coverImage, setCoverImage] = useState(null);
   const [previewImages, setPreviewImages] = useState([]);
 
-  const formatFileSize = (bytes) => {
-    if (!bytes) return '0 Bytes';
-    if (bytes < 1024) return bytes + ' Bytes';
-    else if (bytes < 1048576) return (bytes / 1024).toFixed(1) + ' KB';
-    else return (bytes / 1048576).toFixed(1) + ' MB';
-  };
-
   const simulateUploadProgress = () => {
     setUploadStatus('queued');
     

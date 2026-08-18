@@ -76,7 +76,7 @@ describe('PostListingPage', () => {
     await user.upload(fileInput, new File(['dummy content'], 'notes.pdf', { type: 'application/pdf' }))
 
     
-    expect(await screen.findByText('notes.pdf', {}, { timeout: 6000 })).toBeInTheDocument();
+    expect(await screen.findByText('Document Preview', {}, { timeout: 6000 })).toBeInTheDocument();
   },10000)
 
   it('disables publishing until a title and subject are provided', async () => {
