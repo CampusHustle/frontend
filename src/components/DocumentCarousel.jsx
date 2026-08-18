@@ -13,15 +13,15 @@ export default function DocumentCarousel({ previewPages }) {
 
   if (!previewPages || previewPages.length === 0) {
     return (
-      <div className="flex h-96 items-center justify-center rounded-2xl bg-white border border-gray-200 shadow-sm text-gray-600">
+      <div className="flex h-96 items-center justify-center rounded-2xl bg-surface-low border border-outline-variant shadow-sm text-on-surface-variant">
         No preview pages available
       </div>
     );
   }
 
   return (
-    <div className="relative w-full overflow-hidden rounded-2xl bg-white border border-gray-200 shadow-sm group">
-      <div className="relative aspect-[3/4] w-full max-h-[800px] flex items-center justify-center bg-gray-50 mx-auto">
+    <div className="relative w-full overflow-hidden rounded-2xl bg-surface-low border border-outline-variant shadow-sm group">
+      <div className="relative aspect-[3/4] w-full max-h-[800px] flex items-center justify-center bg-surface mx-auto">
         <img 
           src={previewPages[currentIndex]} 
           alt={`Preview page ${currentIndex + 1}`} 
@@ -32,7 +32,7 @@ export default function DocumentCarousel({ previewPages }) {
           <>
             <button 
               onClick={goPrev}
-              className="absolute left-4 top-1/2 -translate-y-1/2 rounded-full bg-white/90 p-3 text-gray-800 opacity-0 shadow-lg backdrop-blur-sm transition-all hover:bg-white hover:scale-110 group-hover:opacity-100 focus:opacity-100"
+              className="absolute left-4 top-1/2 -translate-y-1/2 rounded-full bg-surface-low/90 p-3 text-on-surface opacity-0 shadow-lg backdrop-blur-sm transition-all hover:bg-surface-low hover:scale-110 group-hover:opacity-100 focus:opacity-100"
               aria-label="Previous page"
             >
               <svg className="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
@@ -41,7 +41,7 @@ export default function DocumentCarousel({ previewPages }) {
             </button>
             <button 
               onClick={goNext}
-              className="absolute right-4 top-1/2 -translate-y-1/2 rounded-full bg-white/90 p-3 text-gray-800 opacity-0 shadow-lg backdrop-blur-sm transition-all hover:bg-white hover:scale-110 group-hover:opacity-100 focus:opacity-100"
+              className="absolute right-4 top-1/2 -translate-y-1/2 rounded-full bg-surface-low/90 p-3 text-on-surface opacity-0 shadow-lg backdrop-blur-sm transition-all hover:bg-surface-low hover:scale-110 group-hover:opacity-100 focus:opacity-100"
               aria-label="Next page"
             >
               <svg className="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
@@ -53,7 +53,7 @@ export default function DocumentCarousel({ previewPages }) {
       </div>
 
       {/* Page Indicator */}
-      <div className="absolute bottom-4 left-1/2 -translate-x-1/2 rounded-full bg-gray-900/80 px-4 py-1.5 text-sm font-semibold text-white backdrop-blur-md shadow-md">
+      <div className="absolute bottom-4 left-1/2 -translate-x-1/2 rounded-full bg-ink-900/80 px-4 py-1.5 text-sm font-semibold text-on-surface backdrop-blur-md shadow-md">
         {currentIndex + 1} / {previewPages.length}
       </div>
     </div>
