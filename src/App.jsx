@@ -11,6 +11,8 @@ import ProfileScreen from './screens/ProfileScreen.jsx'
 import TutorDetailScreen from './screens/TutorDetailScreen.jsx'
 import PostListingScreen from './screens/PostListingScreen.jsx'
 import AiAssistantScreen from './screens/AiAssistantScreen.jsx'
+import BookingScreen from './screens/BookingScreen.jsx'
+import ChatScreen from './screens/ChatScreen.jsx'
 import TermsScreen from './screens/TermsScreen.jsx'
 import PrivacyScreen from './screens/PrivacyScreen.jsx'
 import NoteDetailPage from './pages/NoteDetailPage.jsx'
@@ -34,6 +36,8 @@ function getInitialPath() {
     if (savedView === 'profile') return '/profile'
     if (savedView === 'post-listing') return '/post-listing'
     if (savedView === 'assistant') return '/assistant'
+    if (savedView === 'bookings') return '/bookings'
+    if (savedView === 'chat') return '/chat'
     if (savedView === 'terms') return '/terms'
     if (savedView === 'privacy') return '/privacy'
     return '/tutor'
@@ -50,6 +54,8 @@ function getInitialPath() {
       market: '/market',
       home: '/',
       assistant: '/assistant',
+      bookings: '/bookings',
+      chat: '/chat',
       terms: '/terms',
       privacy: '/privacy',
     }
@@ -87,6 +93,8 @@ export function AppRoutes() {
       profile: '/profile',
       'post-listing': '/post-listing',
       assistant: '/assistant',
+      bookings: '/bookings',
+      chat: '/chat',
       terms: '/terms',
       privacy: '/privacy',
     }
@@ -155,7 +163,7 @@ export function AppRoutes() {
               setCurrentUser(updated)
               saveSessionUser(updated)
               handleNavigate('tutor')
-              mockUpdateProfile(updated.email, profile).catch(() => {})
+              mockUpdateProfile(updated.email, profile).catch(() => { })
             }}
           />
         }
@@ -244,6 +252,26 @@ export function AppRoutes() {
           />
         }
       />
+      <Route
+        path="/bookings"
+        element={
+          <BookingScreen
+            user={currentUser}
+            onLogout={handleLogout}
+            onNavigate={handleNavigate}
+          />
+        }
+      />
+      <Route
+        path="/chat"
+        element={
+          <ChatScreen
+            user={currentUser}
+            onLogout={handleLogout}
+            onNavigate={handleNavigate}
+          />
+        }
+      />
       <Route path="*" element={<Navigate to="/" replace />} />
     </Routes>
   )
@@ -256,5 +284,3 @@ export default function App() {
     </BrowserRouter>
   )
 }
-
-
