@@ -24,7 +24,7 @@ function Avatar({ user, className = 'size-24' }) {
   return (
     <div
       aria-hidden="true"
-      className={`${className} flex items-center justify-center rounded-full border-4 border-surface bg-primary-fixed text-3xl font-bold text-primary shadow-md`}
+      className={`${className} flex items-center justify-center rounded-full border-4 border-outline-variant bg-primary text-3xl font-bold text-on-primary shadow-md`}
     >
       {initialsOf(user?.name || 'Student')}
     </div>
@@ -56,7 +56,7 @@ function RatingBar({ label, value, count }) {
       <span className="w-36 shrink-0 text-sm font-medium text-on-surface-variant">{label}</span>
       <div className="h-2 flex-1 overflow-hidden rounded-full bg-surface-container">
         <div
-          className="h-full rounded-full bg-secondary-container transition-all"
+          className="h-full rounded-full bg-primary-container transition-all"
           style={{ width: `${pct}%` }}
         />
       </div>
@@ -115,7 +115,7 @@ function ProfileCard({ user }) {
               )}
 
               <span className="inline-flex items-center gap-1.5 rounded-full bg-surface-high px-4 py-1.5 text-sm font-semibold text-on-surface">
-                <IconStarFilled size={16} className="text-secondary-container" aria-hidden="true" />
+                <IconStarFilled size={16} className="text-primary-container" aria-hidden="true" />
                 {hasRatings ? `${average.toFixed(1)} (${rating.count} ratings)` : 'No ratings yet'}
               </span>
             </div>

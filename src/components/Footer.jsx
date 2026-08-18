@@ -139,10 +139,18 @@ export default function Footer({ onNavigate }) {
             <a href="#" className="transition-colors hover:text-primary">
               About
             </a>
-            <a href="#" className="transition-colors hover:text-primary">
+            <a
+              href="#"
+              onClick={handleNav('privacy')}
+              className="transition-colors hover:text-primary"
+            >
               Privacy Policy
             </a>
-            <a href="#" className="transition-colors hover:text-primary">
+            <a
+              href="#"
+              onClick={handleNav('terms')}
+              className="transition-colors hover:text-primary"
+            >
               Terms of Service
             </a>
           </div>

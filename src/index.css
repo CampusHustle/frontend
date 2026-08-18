@@ -74,6 +74,7 @@
 
   --font-display: "Montserrat Variable", "Montserrat", sans-serif;
   --font-body: "Inter Variable", "Inter", sans-serif;
+  --font-poppins: "Poppins", sans-serif;
 
   --animate-marquee: marquee 34s linear infinite;
   --animate-float: float 6s ease-in-out infinite;
@@ -101,6 +102,10 @@
 
 @utility font-display {
   font-family: var(--font-display);
+}
+
+@utility font-poppins {
+  font-family: var(--font-poppins);
 }
 
 @utility mesh-bg {

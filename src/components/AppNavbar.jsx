@@ -24,7 +24,7 @@ function Avatar({ user, className = 'size-9' }) {
   return (
     <div
       aria-hidden="true"
-      className={`${className} flex items-center justify-center rounded-full border-2 border-surface bg-primary-fixed text-sm font-semibold text-primary shadow-sm`}
+      className={`${className} flex items-center justify-center rounded-full border-2 border-outline-variant bg-primary text-sm font-semibold text-on-primary shadow-sm`}
     >
       {initialsOf(user?.name || 'Student')}
     </div>
@@ -54,7 +54,7 @@ export default function AppNavbar({
   }
 
   return (
-    <nav className="sticky top-0 z-50 bg-surface-lowest shadow-level-1">
+    <nav className="sticky top-0 z-50 border-b border-surface-variant/50 bg-surface-lowest/80 shadow-sm backdrop-blur-xl">
       <div className="mx-auto flex h-16 w-full max-w-7xl items-center justify-between gap-4 px-4 sm:px-6 lg:px-8">
         <a
           href="#"
@@ -178,7 +178,11 @@ export default function AppNavbar({
           {onLogout && (
             <button
               type="button"
-              onClick={onLogout}
+              onClick={() => {
+                if (window.confirm('Are you sure you want to log out?')) {
+                  onLogout()
+                }
+              }}
               aria-label="Log out"
               className="inline-flex size-9 items-center justify-center rounded-full border border-outline-variant text-on-surface-variant transition-colors hover:text-primary"
             >
