@@ -406,7 +406,7 @@ export default function TutorDetailScreen({ user, onLogout, onNavigate, initialB
   }
 
   const handleSendMessage = () => {
-    onNavigate?.('assistant')
+    onNavigate?.(`/chat/${tutor?.id || 'sarah-jenkins'}`)
   }
 
   return (

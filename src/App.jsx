@@ -15,6 +15,7 @@ import TermsScreen from './screens/TermsScreen.jsx'
 import PrivacyScreen from './screens/PrivacyScreen.jsx'
 import NoteDetailPage from './pages/NoteDetailPage.jsx'
 import NotePaymentPage from './pages/NotePaymentPage.jsx'
+import ChatPage from './pages/ChatPage.jsx'
 import { mockUpdateProfile } from './api/mockAuthApi.js'
 import {
   clearSession,
@@ -34,6 +35,7 @@ function getInitialPath() {
     if (savedView === 'profile') return '/profile'
     if (savedView === 'post-listing') return '/post-listing'
     if (savedView === 'assistant') return '/assistant'
+    if (savedView === 'chat') return '/chat'
     if (savedView === 'terms') return '/terms'
     if (savedView === 'privacy') return '/privacy'
     return '/tutor'
@@ -50,6 +52,7 @@ function getInitialPath() {
       market: '/market',
       home: '/',
       assistant: '/assistant',
+      chat: '/chat',
       terms: '/terms',
       privacy: '/privacy',
     }
@@ -238,6 +241,26 @@ export function AppRoutes() {
         path="/assistant"
         element={
           <AiAssistantScreen
+            user={currentUser}
+            onLogout={handleLogout}
+            onNavigate={handleNavigate}
+          />
+        }
+      />
+      <Route
+        path="/chat"
+        element={
+          <ChatPage
+            user={currentUser}
+            onLogout={handleLogout}
+            onNavigate={handleNavigate}
+          />
+        }
+      />
+      <Route
+        path="/chat/:id"
+        element={
+          <ChatPage
             user={currentUser}
             onLogout={handleLogout}
             onNavigate={handleNavigate}
