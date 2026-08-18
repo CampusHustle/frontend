@@ -27,7 +27,15 @@ export async function mockLogin({ email, password }) {
   }
 }
 
-export async function mockSignup({ name, email, password }) {
+export async function mockSignup({
+  name,
+  email,
+  password,
+  university = 'Addis Ababa University',
+  department = '',
+  year = 1,
+  role = 'student',
+}) {
   await delay(DELAY)
   if (findMockUser(email)) {
     throw { message: 'That email is already registered' }
@@ -37,10 +45,10 @@ export async function mockSignup({ name, email, password }) {
     name,
     email,
     password,
-    role: ['student'],
-    university: '',
-    department: '',
-    year: '',
+    role: Array.isArray(role) ? role : [role],
+    university,
+    department,
+    year: Number(year) || 1,
     bio: '',
     skillsTeaching: [],
     skillsLearning: [],

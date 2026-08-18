@@ -19,7 +19,7 @@ export function validateEduEmail(email) {
     return 'Email is required'
   }
   if (!EDU_ET_REGEX.test(email.trim())) {
-    return 'Email must end with .edu.et'
+    return 'Enter valid student email'
   }
   return null
 }
@@ -54,4 +54,12 @@ export function validateTerms(checked) {
   }
   return null
 }
+
+export function validateUniversity(university) {
+  if (!university || university.trim() === '') {
+    return 'University is required'
+  }
+  return null
+}
+
 
