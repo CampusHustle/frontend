@@ -15,6 +15,7 @@ import {
   fetchBookings,
   updateBookingStatus,
 } from '../api/mockBookingApi.js'
+import { sanitizeMessage, MAX_MESSAGE_LENGTH } from '../utils/sanitize.js'
 
 
 
@@ -80,7 +81,7 @@ function ChatPanel({ booking }) {
   }, [messages])
 
   function handleSend() {
-    const text = draft.trim()
+    const text = sanitizeMessage(draft)
     if (!text) return
     setMessages((prev) => [
       ...prev,
@@ -178,6 +179,7 @@ function ChatPanel({ booking }) {
           onChange={(e) => setDraft(e.target.value)}
           onKeyDown={handleKey}
           placeholder="Type a message…"
+          maxLength={MAX_MESSAGE_LENGTH}
           aria-label="Message input"
           className="flex-grow bg-white/60 border border-white/50 rounded-full py-2.5 px-4 text-sm focus:ring-2 focus:ring-primary/50 focus:border-primary/50 focus:outline-none placeholder-on-surface-variant/70 shadow-inner text-on-surface"
         />
