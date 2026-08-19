@@ -11,7 +11,7 @@ import {
 import AuthTextField from '../components/AuthTextField.jsx'
 import PrimaryButton from '../components/PrimaryButton.jsx'
 import Toast from '../components/Toast.jsx'
-import { mockSignup } from '../api/mockAuthApi.js'
+import { registerUser } from '../api/authApi.js'
 import {
   validateName,
   validateEmail,
@@ -93,17 +93,30 @@ export default function SignupScreen({ onSwitchToLogin, onSignupSuccess, onNavig
 
     setStatus('loading')
     try {
-      const { user } = await mockSignup({
-        ...values,
+      const result = await registerUser({
+        email: values.email,
+        password: values.password,
+        name: values.name,
         university: effectiveUniversity,
+        department: values.department || '',
+        year: values.year ? parseInt(values.year, 10) : 1,
+        role: values.role || 'student',
       })
+      const userObj = result.user || result
       setStatus('success')
-      onSignupSuccess?.(user)
+      onSignupSuccess?.({
+        ...userObj,
+        verificationToken: result.verificationToken || userObj.verificationToken,
+      })
     } catch (err) {
       setStatus('error')
+      const errorMessage =
+        typeof err?.message === 'string'
+          ? err.message
+          : err?.data?.error?.message || err?.data?.message || 'Something went wrong. Please try again.'
       setErrors((prev) => ({
         ...prev,
-        form: err?.message ?? 'Something went wrong. Please try again.',
+        form: errorMessage,
       }))
     }
   }
