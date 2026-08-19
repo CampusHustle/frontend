@@ -2,13 +2,8 @@ import { useState } from 'react'
 import { IconLogout, IconMoon, IconPlus, IconSearch, IconSun } from '@tabler/icons-react'
 import { applyTheme } from '../utils/theme.js'
 
-function initialsOf(name) {
-  return (name || '')
-    .split(' ')
-    .filter(Boolean)
-    .slice(0, 2)
-    .map((part) => part[0]?.toUpperCase())
-    .join('')
+function getInitial(name) {
+  return (name || 'Student').trim().charAt(0).toUpperCase() || 'S'
 }
 
 function Avatar({ user, className = 'size-9' }) {
@@ -26,7 +21,7 @@ function Avatar({ user, className = 'size-9' }) {
       aria-hidden="true"
       className={`${className} flex items-center justify-center rounded-full border-2 border-outline-variant bg-primary text-sm font-semibold text-on-primary shadow-sm`}
     >
-      {initialsOf(user?.name || 'Student')}
+      {getInitial(user?.name)}
     </div>
   )
 }
@@ -120,20 +115,6 @@ export default function AppNavbar({
           >
             Tutors
           </a>
-          <a
-            href="#"
-            onClick={(e) => {
-              e.preventDefault()
-              onNavigate?.('assistant')
-            }}
-            className={
-              activeView === 'assistant'
-                ? 'border-b-2 border-secondary-container pb-1 text-primary font-bold'
-                : 'text-on-surface-variant transition-colors hover:text-primary'
-            }
-          >
-            AI Assistant
-          </a>
         </div>
 
         <div className="flex items-center gap-3">
@@ -168,23 +149,16 @@ export default function AppNavbar({
             type="button"
             aria-label="View my profile"
             onClick={() => onNavigate?.('profile')}
-            className="flex items-center gap-2 rounded-full transition-opacity hover:opacity-80"
+            className="flex items-center rounded-full transition-opacity hover:opacity-80 focus:outline-none focus:ring-2 focus:ring-primary/20 cursor-pointer"
           >
             <Avatar user={user} className="size-9" />
-            <span className="hidden text-sm font-semibold text-primary sm:inline">
-              {user?.name?.split(' ')[0] ?? 'Student'}
-            </span>
           </button>
           {onLogout && (
             <button
               type="button"
-              onClick={() => {
-                if (window.confirm('Are you sure you want to log out?')) {
-                  onLogout()
-                }
-              }}
+              onClick={onLogout}
               aria-label="Log out"
-              className="inline-flex size-9 items-center justify-center rounded-full border border-outline-variant text-on-surface-variant transition-colors hover:text-primary"
+              className="inline-flex size-9 items-center justify-center rounded-full border border-outline-variant text-on-surface-variant transition-colors hover:text-primary cursor-pointer"
             >
               <IconLogout size={18} aria-hidden="true" />
             </button>

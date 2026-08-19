@@ -21,7 +21,7 @@ export default function HomeScreen({ onNavigate }) {
         <Testimonial />
         <FinalCta onNavigate={onNavigate} />
       </main>
-      <Footer onNavigate={onNavigate} />
+      <Footer onNavigate={onNavigate} isLanding={true} />
     </div>
   )
 }

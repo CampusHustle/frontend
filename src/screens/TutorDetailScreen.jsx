@@ -394,7 +394,7 @@ export default function TutorDetailScreen({ user, onLogout, onNavigate, initialB
             Browse Tutors
           </button>
         </main>
-        <Footer onNavigate={onNavigate} />
+        <Footer onNavigate={onNavigate} user={user} />
       </div>
     )
   }
@@ -496,7 +496,7 @@ export default function TutorDetailScreen({ user, onLogout, onNavigate, initialB
         <NotesSection tutor={tutor} onNavigate={onNavigate} />
       </main>
 
-      <Footer onNavigate={onNavigate} />
+      <Footer onNavigate={onNavigate} user={user} />
     </div>
   )
 }

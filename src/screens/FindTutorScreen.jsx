@@ -313,7 +313,7 @@ export default function FindTutorScreen({ user, onLogout, onNavigate }) {
         </section>
       </main>
 
-      <Footer onNavigate={onNavigate} />
+      <Footer onNavigate={onNavigate} user={user} />
     </div>
   )
 }

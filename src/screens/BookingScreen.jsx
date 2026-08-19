@@ -460,7 +460,7 @@ export default function BookingScreen({ user, onLogout, onNavigate }) {
         )}
       </main>
 
-      <Footer onNavigate={onNavigate} />
+      <Footer onNavigate={onNavigate} user={user} />
 
       {/* toast */}
       {toastMsg && (

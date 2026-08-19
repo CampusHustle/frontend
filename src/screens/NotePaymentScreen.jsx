@@ -243,10 +243,10 @@ export default function NotePaymentScreen({ user, onNavigate, onLogout, initialS
               </button>
               <button
                 type="button"
-                onClick={() => onNavigate ? onNavigate('assistant') : window.location.assign('/assistant')}
-                className="w-full sm:w-auto rounded-full border border-gray-300 bg-white px-6 py-3 text-xs sm:text-sm font-semibold text-gray-900 transition-colors hover:bg-gray-100"
+                onClick={() => onNavigate ? onNavigate('assistant') : window.dispatchEvent(new CustomEvent('open-ai-assistant'))}
+                className="w-full sm:w-auto rounded-full border border-gray-300 bg-white px-6 py-3 text-xs sm:text-sm font-semibold text-gray-900 transition-colors hover:bg-gray-100 cursor-pointer"
               >
-                Go to AI Assistant
+                Ask AI Assistant
               </button>
             </div>
           </div>
@@ -519,7 +519,7 @@ export default function NotePaymentScreen({ user, onNavigate, onLogout, initialS
         )}
       </main>
 
-      <Footer onNavigate={onNavigate} />
+      <Footer onNavigate={onNavigate} user={user} />
     </div>
   )
 }
