@@ -112,7 +112,7 @@ export default function NoteDetailScreen({ user, onNavigate, onLogout }) {
 
   return (
     <div
-      className="flex min-h-screen w-screen flex-col bg-gray-50 font-poppins text-gray-900 antialiased"
+      className="flex min-h-screen w-full overflow-x-hidden flex-col bg-gray-50 font-poppins text-gray-900 antialiased"
       style={{
         backgroundImage: `
           radial-gradient(circle at 15% 50%, rgba(4, 21, 52, 0.03), transparent 25%),
@@ -131,8 +131,8 @@ export default function NoteDetailScreen({ user, onNavigate, onLogout }) {
       {/* Main Content */}
       <main className="mx-auto flex flex-1 flex-col w-full max-w-7xl px-4 py-6 sm:px-6 lg:px-8">
         {/* Top Breadcrumb & Header Row */}
-        <div className="mb-2 flex shrink-0 flex-wrap items-center justify-between gap-2 text-xs">
-          <nav className="flex items-center gap-1.5 text-gray-500 font-medium">
+        <div className="mb-4 flex shrink-0 flex-col sm:flex-row sm:items-center justify-between gap-3 text-xs sm:text-sm">
+          <nav className="flex flex-wrap items-center gap-1.5 text-gray-500 font-medium">
             <button
               type="button"
               onClick={() => (onNavigate ? onNavigate('marketplace') : window.location.assign('/market'))}
@@ -146,7 +146,7 @@ export default function NoteDetailScreen({ user, onNavigate, onLogout }) {
             <span className="font-semibold text-gray-900 truncate max-w-xs">{note.title}</span>
           </nav>
 
-          <div className="flex items-center gap-2">
+          <div className="flex flex-wrap items-center gap-2">
             <span className="inline-flex items-center gap-1 rounded-full border border-gray-200 bg-white px-2.5 py-0.5 text-[11px] font-semibold text-gray-800 shadow-2xs">
               <IconStarFilled size={12} className="text-amber-500" />
               <span>{note.tutorRating} ({note.tutorReviewsCount})</span>
@@ -154,23 +154,23 @@ export default function NoteDetailScreen({ user, onNavigate, onLogout }) {
             <span className="rounded-full bg-[#1b2a4a] px-2.5 py-0.5 text-[11px] font-bold text-white">
               {note.code}
             </span>
-            <span className="text-[11px] text-gray-400 hidden sm:inline">Updated {note.lastUpdated}</span>
+            <span className="text-[11px] text-gray-400">Updated {note.lastUpdated}</span>
           </div>
         </div>
 
         {/* 2-Column Bento Grid */}
-        <div className="grid flex-1 grid-cols-1 gap-4 lg:grid-cols-12 pb-1">
+        <div className="grid flex-1 grid-cols-1 gap-6 lg:grid-cols-12 pb-1">
           {/* Left Column: 3-Image Slide Preview Stage & Quick Highlights (7 Cols) */}
           <DocumentCarousel note={note} handleMakePayment={handleMakePayment} />
 
           {/* Right Column: Clean Purchase & Seller Details (5 Cols) */}
-          <div className="flex min-h-0 flex-col justify-between gap-3 lg:col-span-5 overflow-hidden">
+          <div className="flex w-full flex-col justify-between gap-3 lg:col-span-5">
             {/* Purchase & Specs Card */}
             <PurchaseCard note={note} handleMakePayment={handleMakePayment} />
 
             {/* Seller Profile Card (Below Payment Card) */}
-            <div className="flex flex-col items-center rounded-2xl border border-gray-200 bg-white p-3.5 text-center shadow-sm">
-              <div className="relative mb-2 h-14 w-14 overflow-hidden rounded-full border-2 border-amber-400">
+            <div className="flex flex-col items-center rounded-2xl border border-gray-200 bg-white p-4 text-center shadow-sm">
+              <div className="relative mb-2 h-16 w-16 overflow-hidden rounded-full border-2 border-amber-400">
                 <img
                   src={note.tutorAvatar}
                   alt={note.tutorName}
@@ -181,10 +181,10 @@ export default function NoteDetailScreen({ user, onNavigate, onLogout }) {
                 </div>
               </div>
               <h2 className="text-sm font-bold text-[#041534] leading-tight">{note.tutorName}</h2>
-              <p className="text-[11px] text-gray-500 mt-0.5">
+              <p className="text-xs text-gray-500 mt-0.5">
                 {note.tutorRole} · {note.tutorUniversity}
               </p>
-              <div className="my-1.5 flex items-center justify-center gap-1 text-[11px] text-gray-600">
+              <div className="my-2 flex items-center justify-center gap-1 text-xs text-gray-600">
                 <IconStarFilled size={13} className="text-amber-500" />
                 <span className="font-semibold text-gray-900">{note.tutorRating}</span>
                 <span>({note.tutorReviewsCount} ratings)</span>
@@ -192,7 +192,7 @@ export default function NoteDetailScreen({ user, onNavigate, onLogout }) {
               <button
                 type="button"
                 onClick={() => (onNavigate ? onNavigate('/chat/sarah-jenkins') : window.location.assign('/chat/sarah-jenkins'))}
-                className="w-full flex items-center justify-center gap-1.5 rounded-xl bg-gray-100 py-2 text-xs font-bold text-gray-800 hover:bg-gray-200 transition-colors active:scale-95"
+                className="w-full flex items-center justify-center gap-1.5 rounded-xl bg-gray-100 py-2.5 text-xs font-bold text-gray-800 hover:bg-gray-200 transition-colors active:scale-95"
               >
                 <IconMessageCircle size={15} />
                 <span>Message Seller</span>
@@ -201,7 +201,7 @@ export default function NoteDetailScreen({ user, onNavigate, onLogout }) {
           </div>
         </div>
       </main>
-      <Footer onNavigate={onNavigate} user={user}/>
+      <Footer onNavigate={onNavigate} user={user} />
     </div>
   )
 }
