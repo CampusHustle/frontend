@@ -12,7 +12,7 @@ describe('App navigation and session persistence', () => {
 
   it('renders landing page by default when not logged in', () => {
     render(<App />)
-    expect(screen.getByRole('heading', { level: 1 })).toHaveTextContent(/Your campus/i)
+    expect(screen.getByRole('heading', { level: 1 })).toHaveTextContent(/Trade your notes/i)
   })
 
   it('restores find-tutor page on refresh when user is logged in', () => {
@@ -195,7 +195,7 @@ describe('App navigation and session persistence', () => {
 
     // Overlay is closed, user is logged out and back to landing page
     expect(screen.queryByRole('alertdialog')).not.toBeInTheDocument()
-    expect(screen.getByRole('heading', { level: 1 })).toHaveTextContent(/Your campus/i)
+    expect(screen.getByRole('heading', { level: 1 })).toHaveTextContent(/Trade your notes/i)
   })
 
   it('navigates to Profile page on avatar click even without active session user', async () => {
