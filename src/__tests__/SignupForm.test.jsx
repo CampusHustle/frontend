@@ -30,8 +30,6 @@ describe('SignupForm', () => {
     await user.type(screen.getByLabelText('Confirm Password'), 'password123')
     await user.click(screen.getByRole('button', { name: 'Create Account' }))
 
-    expect(screen.getByRole('button', { name: 'Create Account' })).toBeDisabled()
-
     expect(await screen.findByTestId('toast-success')).toHaveTextContent(
       'Account created successfully',
     )

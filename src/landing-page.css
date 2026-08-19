@@ -1,0 +1,451 @@
+/* ============================================================
+   LANDING PAGE ONLY — scoped under .landing-page
+   ============================================================ */
+
+/* Typography vars scoped to landing page */
+.landing-page {
+  --font-open-sans: 'Open Sans', ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+  --font-montserrat: 'Montserrat', ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+  font-family: var(--font-montserrat), ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+}
+
+/* Ensure Landing Page Navbar text, links, buttons and brand are solid pure white */
+.landing-page header,
+.landing-page header nav,
+.landing-page header nav a,
+.landing-page header nav a span,
+.landing-page header nav button,
+.landing-page header nav span,
+.landing-page header nav svg {
+  color: #ffffff !important;
+}
+
+.landing-page header nav a:hover,
+.landing-page header nav a:hover span,
+.landing-page header nav button:hover {
+  color: #ffffff !important;
+}
+
+/* CTA Join Now button text inside navbar stays dark contrast */
+.landing-page header a[class*="from-hustle"],
+.landing-page header a[class*="from-hustle"] span,
+.landing-page header a[class*="from-hustle"] svg {
+  color: #1a1200 !important;
+}
+
+/* Ensure all elements from the reference template are fully visible */
+.landing-page .feature-visual,
+.landing-page .feature-text,
+.landing-page .growth-pipeline-step,
+.landing-page .campus-section-label,
+.landing-page .campus-section-inner,
+.landing-page .campus-name-display,
+.landing-page .blue-section-copy,
+.landing-page .app-showcase-left,
+.landing-page .app-showcase-phone,
+.landing-page .app-showcase-right-col,
+.landing-page .shop-showcase-heading,
+.landing-page .shop-showcase-subtext,
+.landing-page .shop-grid,
+.landing-page .features-header,
+.landing-page .feature-quote,
+.landing-page .launch-cta-wrap,
+.landing-page .growth-pipeline-header,
+.landing-page .ecosystem-label,
+.landing-page .ecosystem-title,
+.landing-page .ecosystem-grid {
+  opacity: 1 !important;
+  transform: none !important;
+}
+
+/* Campus Marquee Section Styling, Spacing & High Visibility */
+.landing-page .campus-sticky-group {
+  position: relative;
+  z-index: 15;
+  width: 100%;
+}
+
+.landing-page .campus-section {
+  background: var(--bg, #dae0ec);
+  padding: 52px 28px 44px !important;
+  width: 100%;
+  position: relative;
+  overflow: hidden;
+}
+
+.landing-page .campus-section-label {
+  letter-spacing: 0.12em !important;
+  text-transform: uppercase !important;
+  color: #334155 !important;
+  text-align: center !important;
+  opacity: 0.9 !important;
+  margin: 0 0 18px !important;
+  font-size: 0.82rem !important;
+  font-weight: 700 !important;
+}
+
+.landing-page .campus-name-display {
+  color: #0f172a !important;
+  width: 100%;
+  font-size: clamp(1.25rem, 2.2vw, 2rem) !important;
+  font-weight: 800 !important;
+  line-height: 1.2 !important;
+  overflow: hidden !important;
+  opacity: 1 !important;
+  -webkit-mask-image: linear-gradient(90deg, transparent, #000 6% 94%, transparent) !important;
+  mask-image: linear-gradient(90deg, transparent, #000 6% 94%, transparent) !important;
+}
+
+.landing-page .campus-school-slider {
+  width: 100%;
+  overflow: hidden;
+  display: flex;
+}
+
+.landing-page .campus-marquee-track {
+  display: flex;
+  width: max-content;
+  animation: landing-marquee-scroll 38s linear infinite;
+}
+
+.landing-page .campus-marquee-track:hover {
+  animation-play-state: paused;
+}
+
+.landing-page .campus-marquee-sequence {
+  display: flex;
+  align-items: center;
+  flex-shrink: 0;
+  white-space: nowrap;
+}
+
+.landing-page .campus-item {
+  display: inline-flex;
+  align-items: center;
+  white-space: nowrap;
+  font-weight: 700;
+  color: #1e293b;
+  padding: 0 8px;
+}
+
+.landing-page .campus-dot {
+  color: #64748b;
+  opacity: 0.8;
+  margin: 0 20px;
+  font-size: 1.4rem;
+  line-height: 1;
+}
+
+@keyframes landing-marquee-scroll {
+  from {
+    transform: translateX(0);
+  }
+  to {
+    transform: translateX(-50%);
+  }
+}
+
+/* Heading fonts */
+.landing-page h1,
+.landing-page h2,
+.landing-page h3,
+.landing-page h4,
+.landing-page h5,
+.landing-page h6,
+.landing-page .hero-title,
+.landing-page .blue-section-copy,
+.landing-page .shop-showcase-heading,
+.landing-page .ecosystem-title,
+.landing-page .feature-title,
+.landing-page .launch-cta-title,
+.landing-page .nav-link,
+.landing-page .action-link,
+.landing-page .hero-button,
+.landing-page .btn,
+.landing-page .mobile-link,
+.landing-page .campus-name-display,
+.landing-page .hero-shop-meta-title,
+.landing-page .feature-label,
+.landing-page .ecosystem-label,
+.landing-page .eco-card-title,
+.landing-page .growth-pipeline-title,
+.landing-page .growth-pipeline-step-label,
+.landing-page .feature-quote-attr strong {
+  font-family: 'Open Sans', ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+}
+
+/* Footer typography */
+.landing-page footer {
+  font-family: var(--font-body), 'DM Sans', sans-serif !important;
+}
+
+.landing-page footer .font-display,
+.landing-page footer h4,
+.landing-page footer h4 * {
+  font-family: var(--font-display), 'Space Grotesk', sans-serif !important;
+}
+
+/* Hero Typographic Scale & Positioning */
+.landing-page .hero-content {
+  min-height: inherit !important;
+  justify-content: space-between !important;
+  padding: 28px 40px 34px !important;
+}
+
+.landing-page .hero-header {
+  transform: translateY(40px) !important;
+  max-width: min(100%, 650px) !important;
+  margin-left: 0 !important;
+  margin-top: 0 !important;
+}
+
+.landing-page .hero-title {
+  font-size: clamp(3.2rem, 5.8vw, 5.2rem) !important;
+  line-height: 0.94 !important;
+  letter-spacing: -0.02em !important;
+  font-weight: 700 !important;
+  color: #fff !important;
+  text-shadow: 0 10px 30px rgba(10, 18, 32, 0.28) !important;
+}
+
+.landing-page .hero-title-line {
+  display: block !important;
+  white-space: nowrap !important;
+}
+
+.landing-page .hero-copy {
+  margin-top: 18px !important;
+  max-width: 580px !important;
+}
+
+.landing-page .hero-description {
+  font-size: clamp(1.15rem, 1.6vw, 1.45rem) !important;
+  line-height: 1.25 !important;
+  font-weight: 500 !important;
+  color: #ffffff !important;
+  text-shadow: 0 8px 22px rgba(10, 18, 32, 0.35) !important;
+}
+
+.landing-page .hero-description-line {
+  display: block !important;
+  white-space: nowrap !important;
+}
+
+.landing-page .hero-cta-row {
+  margin-top: 32px !important;
+  display: flex !important;
+  align-items: center !important;
+  gap: 16px !important;
+  flex-wrap: wrap !important;
+}
+
+.landing-page .hero-cta-signin .hero-button-tertiary {
+  min-height: 52px !important;
+  padding: 0 24px !important;
+  font-size: 0.97rem !important;
+  font-weight: 600 !important;
+  border: 2px solid rgba(255, 255, 255, 0.4) !important;
+  border-radius: 9999px !important;
+  background: rgba(255, 255, 255, 0.08) !important;
+  color: #fff !important;
+  backdrop-filter: blur(8px) !important;
+  transition: all 0.25s ease !important;
+  cursor: pointer !important;
+}
+
+.landing-page .hero-cta-signin .hero-button-tertiary:hover {
+  background: rgba(255, 255, 255, 0.18) !important;
+  border-color: rgba(255, 255, 255, 0.65) !important;
+  box-shadow: 0 0 20px rgba(255, 255, 255, 0.15) !important;
+}
+
+.landing-page .hero-button {
+  min-height: 52px !important;
+  padding: 0 24px !important;
+  font-size: 0.97rem !important;
+  font-weight: 600 !important;
+}
+
+.landing-page .hero-icon-link {
+  width: 52px !important;
+  height: 52px !important;
+  min-width: 52px !important;
+  min-height: 52px !important;
+}
+
+.landing-page .hero-bottom {
+  margin-top: auto !important;
+  margin-bottom: 24px !important;
+  margin-right: 0 !important;
+  justify-content: flex-end !important;
+  align-items: flex-end !important;
+}
+
+.landing-page .hero-shop-meta-stage {
+  width: 280px !important;
+  min-height: 64px !important;
+}
+
+.landing-page .hero-shop-meta-title {
+  font-size: 1rem !important;
+  font-weight: 700 !important;
+  line-height: 1.1 !important;
+}
+
+.landing-page .hero-shop-meta-owner {
+  font-size: 0.92rem !important;
+  line-height: 1.1 !important;
+  color: rgba(255, 255, 255, 0.92) !important;
+}
+
+.landing-page .hero-shop-meta-campus {
+  font-size: 0.86rem !important;
+  line-height: 1.1 !important;
+  color: rgba(255, 255, 255, 0.88) !important;
+}
+
+.landing-page .blue-section-copy {
+  font-size: clamp(1.35rem, 2.4vw, 2.15rem) !important;
+  line-height: 1.4 !important;
+  font-weight: 500 !important;
+  max-width: 980px !important;
+  margin: 0 auto !important;
+  padding: 0 32px !important;
+}
+
+.landing-page .blue-section-copy-muted {
+  font-size: inherit !important;
+  line-height: inherit !important;
+  color: rgba(255, 255, 255, 0.76) !important;
+}
+
+.landing-page .blue-section-copy-strong {
+  font-size: inherit !important;
+  line-height: inherit !important;
+  color: #ffffff !important;
+  font-weight: 600 !important;
+  margin-top: 6px;
+}
+
+.landing-page .app-showcase-left {
+  font-size: clamp(1.4rem, 2.1vw, 1.95rem) !important;
+  line-height: 1.25 !important;
+  font-weight: 700 !important;
+  letter-spacing: -0.02em !important;
+}
+
+.landing-page .app-showcase-right {
+  font-size: 0.95rem !important;
+  line-height: 1.6 !important;
+  font-weight: 400 !important;
+}
+
+.landing-page .shop-showcase-heading {
+  font-size: clamp(1.65rem, 2.4vw, 2.2rem) !important;
+  line-height: 1.2 !important;
+  font-weight: 700 !important;
+  letter-spacing: -0.02em !important;
+  padding-bottom: 8px !important;
+}
+
+.landing-page .shop-showcase-subtext {
+  font-size: 0.9375rem !important;
+  line-height: 1.6 !important;
+  max-width: 580px !important;
+  margin: 0 auto 36px !important;
+}
+
+.landing-page .features-header-title {
+  font-size: clamp(1.65rem, 2.4vw, 2.2rem) !important;
+  line-height: 1.2 !important;
+  font-weight: 700 !important;
+  letter-spacing: -0.02em !important;
+}
+
+.landing-page .features-header-desc {
+  font-size: 0.9375rem !important;
+  line-height: 1.65 !important;
+  max-width: 520px !important;
+  margin: 0 auto !important;
+}
+
+.landing-page .feature-title {
+  font-size: clamp(1.35rem, 1.9vw, 1.75rem) !important;
+  line-height: 1.25 !important;
+  font-weight: 700 !important;
+  letter-spacing: -0.015em !important;
+}
+
+.landing-page .feature-desc {
+  font-size: 0.9375rem !important;
+  line-height: 1.65 !important;
+}
+
+.landing-page .feature-quote-text {
+  font-size: clamp(1.05rem, 1.35vw, 1.25rem) !important;
+  line-height: 1.6 !important;
+  font-weight: 500 !important;
+}
+
+.landing-page .feature-quote-attr {
+  font-size: 0.925rem !important;
+  line-height: 1.5 !important;
+  margin-top: 10px !important;
+}
+
+.landing-page .launch-cta-title {
+  font-size: clamp(1.65rem, 2.8vw, 2.35rem) !important;
+  line-height: 1.2 !important;
+  font-weight: 700 !important;
+}
+
+.landing-page .launch-cta-sub {
+  font-size: 0.9375rem !important;
+  line-height: 1.6 !important;
+}
+
+.landing-page .growth-pipeline-title {
+  font-size: clamp(1.65rem, 2.4vw, 2.2rem) !important;
+  line-height: 1.2 !important;
+  font-weight: 700 !important;
+}
+
+.landing-page .growth-pipeline-sub {
+  font-size: 0.9375rem !important;
+  line-height: 1.65 !important;
+}
+
+.landing-page .growth-pipeline-step-label {
+  font-size: 0.85rem !important;
+  font-weight: 600 !important;
+  line-height: 1.3 !important;
+}
+
+.landing-page .ecosystem-title {
+  font-size: clamp(1.5rem, 2.2vw, 2rem) !important;
+  line-height: 1.25 !important;
+  font-weight: 700 !important;
+  letter-spacing: -0.015em !important;
+}
+
+.landing-page .eco-card-title {
+  font-size: 1.1rem !important;
+  font-weight: 600 !important;
+  line-height: 1.3 !important;
+}
+
+.landing-page .eco-card-desc {
+  font-size: 0.85rem !important;
+  line-height: 1.55 !important;
+}
+
+/* Footer override */
+.landing-page footer,
+.landing-page footer * {
+  font-family: inherit;
+}
+
+/* Smooth scroll for anchor links on landing page */
+.landing-page a[href^="#"] {
+  scroll-behavior: smooth;
+}

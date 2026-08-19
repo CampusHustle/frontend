@@ -127,7 +127,7 @@ export default function MarketplaceScreen({ user, onLogout, onNavigate }) {
         </div>
       </main>
 
-      <Footer onNavigate={onNavigate} />
+      <Footer onNavigate={onNavigate} user={user} />
     </div>
   )
 }

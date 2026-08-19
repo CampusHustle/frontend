@@ -2,6 +2,8 @@ import { useState, useRef, useEffect } from 'react'
 import { motion, useReducedMotion, useScroll, useSpring, AnimatePresence } from 'motion/react'
 import {
   IconMenu2,
+  IconMoon,
+  IconSun,
   IconX,
   IconArrowRight,
   IconRocket,
@@ -9,11 +11,12 @@ import {
   IconChevronDown,
   IconCheck,
 } from '@tabler/icons-react'
+import { applyTheme } from '../utils/theme.js'
 
 const links = [
-  { label: 'How it works', href: '#how-it-works' },
-  { label: 'Gigs', href: '#gigs' },
-  { label: 'Community', href: '#community' },
+  { label: 'How it works', href: '#features' },
+  { label: 'Notes', href: '#gallery' },
+  { label: 'Community', href: '#ecosystem' },
 ]
 
 const languages = [
@@ -25,6 +28,9 @@ const languages = [
 
 export default function Navbar({ onNavigate }) {
   const [open, setOpen] = useState(false)
+  const [isDark, setIsDark] = useState(() =>
+    document.documentElement.classList.contains('dark'),
+  )
   const [langOpen, setLangOpen] = useState(false)
   const [selectedLang, setSelectedLang] = useState('en')
   const langRef = useRef(null)
@@ -36,6 +42,14 @@ export default function Navbar({ onNavigate }) {
     damping: 26,
     mass: 0.4,
   })
+
+  const toggleTheme = () => {
+    setIsDark((prev) => {
+      const next = !prev
+      applyTheme(next ? 'dark' : 'light')
+      return next
+    })
+  }
 
   // Close language dropdown on outside click
   useEffect(() => {
@@ -77,19 +91,38 @@ export default function Navbar({ onNavigate }) {
           </span>
         </a>
 
-        <div className="hidden items-center gap-8 md:flex">
+        <div className="hidden items-center gap-1.5 lg:gap-2 md:flex">
           {links.map((link) => (
             <a
               key={link.href}
               href={link.href}
-              className="text-sm font-medium text-white/80 transition-all hover:text-white hover:drop-shadow-sm"
+              className="group relative rounded-full px-3.5 py-1.5 text-sm font-semibold text-white transition-all duration-200 hover:-translate-y-0.5 hover:bg-white/15 hover:text-white hover:shadow-[0_2px_12px_rgba(255,255,255,0.12)] active:scale-95"
             >
-              {link.label}
+              <span>{link.label}</span>
+              <span
+                aria-hidden="true"
+                className="absolute bottom-1 left-3.5 right-3.5 h-[2px] origin-left scale-x-0 rounded-full bg-white transition-transform duration-250 ease-out group-hover:scale-x-100"
+              />
             </a>
           ))}
         </div>
 
         <div className="flex items-center gap-2.5 sm:gap-3">
+          {/* Theme toggle */}
+          <button
+            type="button"
+            id="landing-theme-toggle"
+            aria-label={isDark ? 'Switch to light mode' : 'Switch to dark mode'}
+            onClick={toggleTheme}
+            className="inline-flex size-9 items-center justify-center rounded-full border border-white/20 bg-white/10 text-white transition-colors hover:bg-white/20 hover:text-white"
+          >
+            {isDark ? (
+              <IconSun size={18} aria-hidden="true" />
+            ) : (
+              <IconMoon size={18} aria-hidden="true" />
+            )}
+          </button>
+
           {/* Stylized Language Switcher */}
           <div className="relative" ref={langRef}>
             <button
@@ -103,7 +136,7 @@ export default function Navbar({ onNavigate }) {
               <span>{activeLangObj.label}</span>
               <IconChevronDown
                 size={14}
-                className={`text-white/70 transition-transform duration-200 ${langOpen ? 'rotate-180 text-white' : ''}`}
+                className={`text-white transition-transform duration-200 ${langOpen ? 'rotate-180 text-white' : ''}`}
               />
             </button>
 
@@ -131,13 +164,13 @@ export default function Navbar({ onNavigate }) {
                           className={`flex items-center justify-between rounded-xl px-3 py-2 text-xs font-semibold transition-all duration-150 ${
                             isSelected
                               ? 'bg-hustle-500 text-ink-contrast shadow-sm'
-                              : 'text-white/85 hover:bg-white/15 hover:text-white'
+                              : 'text-white hover:bg-white/15 hover:text-white'
                           }`}
                         >
                           <div className="flex items-center gap-2">
                             <span>{lang.flag}</span>
                             <span>{lang.native}</span>
-                            <span className={`text-[10px] ${isSelected ? 'text-ink-contrast/70' : 'text-white/50'}`}>
+                            <span className={`text-[10px] ${isSelected ? 'text-ink-contrast/70' : 'text-white/70'}`}>
                               ({lang.label})
                             </span>
                           </div>
@@ -154,7 +187,7 @@ export default function Navbar({ onNavigate }) {
           <a
             href="#"
             onClick={handleNav('login')}
-            className="hidden rounded-full border border-transparent px-3.5 py-1.5 text-sm font-semibold text-white/85 transition-all duration-200 hover:border-white/20 hover:bg-white/10 hover:text-white md:inline-block"
+            className="hidden rounded-full border border-transparent px-3.5 py-1.5 text-sm font-semibold text-white transition-all duration-200 hover:border-white/20 hover:bg-white/10 hover:text-white md:inline-block"
           >
             Sign in
           </a>
@@ -219,7 +252,7 @@ export default function Navbar({ onNavigate }) {
                 key={link.href}
                 href={link.href}
                 onClick={() => setOpen(false)}
-                className="rounded-lg px-3 py-3 text-base text-white/80 transition-colors hover:bg-white/10 hover:text-white"
+                className="rounded-lg px-3 py-3 text-base text-white transition-colors hover:bg-white/10 hover:text-white"
               >
                 {link.label}
               </a>
@@ -227,7 +260,7 @@ export default function Navbar({ onNavigate }) {
             
             {/* Mobile Language Selector Grid */}
             <div className="my-2 border-y border-white/10 py-2.5">
-              <span className="text-[11px] font-bold uppercase tracking-wider text-white/50 px-2">Language</span>
+              <span className="text-[11px] font-bold uppercase tracking-wider text-white/70 px-2">Language</span>
               <div className="mt-1.5 grid grid-cols-2 gap-1.5">
                 {languages.map((lang) => {
                   const isSelected = lang.code === selectedLang
@@ -239,7 +272,7 @@ export default function Navbar({ onNavigate }) {
                       className={`flex items-center justify-between rounded-lg px-3 py-2 text-xs font-semibold ${
                         isSelected
                           ? 'bg-hustle-500 text-ink-contrast'
-                          : 'bg-white/10 text-white/85 hover:bg-white/20'
+                          : 'bg-white/10 text-white hover:bg-white/20'
                       }`}
                     >
                       <span className="flex items-center gap-1.5">

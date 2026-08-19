@@ -15,8 +15,9 @@ const resourceLinks = [
   { label: 'Campus Ambassadors', href: '#' },
 ]
 
-export default function Footer({ onNavigate }) {
+export default function Footer({ onNavigate, isLanding = false }) {
   const reduce = useReducedMotion()
+  const isLandingPage = Boolean(isLanding)
 
   const handleNav = (targetView, hash) => (e) => {
     e.preventDefault()
@@ -38,6 +39,7 @@ export default function Footer({ onNavigate }) {
     <footer className="relative overflow-hidden border-t border-surface-variant bg-surface-lowest text-on-surface">
       <div className="mx-auto max-w-6xl px-4 pt-16 sm:px-6 lg:px-8">
         <div className="grid grid-cols-1 gap-10 pb-14 md:grid-cols-12">
+          {/* Logo & Description */}
           <div className="md:col-span-6">
             <a
               href="#top"
@@ -60,19 +62,23 @@ export default function Footer({ onNavigate }) {
               verified students tutor, sell notes, and turn knowledge into
               income.
             </p>
-            <a
-              href="#"
-              onClick={handleNav('signup')}
-              className="group mt-6 inline-flex items-center gap-2 rounded-full bg-hustle-500 px-5 py-2.5 text-sm font-semibold text-ink-contrast shadow-sm transition-[background-color] duration-200 hover:bg-hustle-400"
-            >
-              Start hustling
-              <IconArrowRight
-                size={16}
-                className="transition-transform duration-200 group-hover:translate-x-0.5"
-              />
-            </a>
+            {/* Start hustling button (only visible on landing page) */}
+            {isLandingPage && (
+              <a
+                href="#"
+                onClick={handleNav('signup')}
+                className="group mt-6 inline-flex items-center gap-2 rounded-full bg-hustle-500 px-5 py-2.5 text-sm font-semibold text-ink-contrast shadow-sm transition-[background-color] duration-200 hover:bg-hustle-400"
+              >
+                Start hustling
+                <IconArrowRight
+                  size={16}
+                  className="transition-transform duration-200 group-hover:translate-x-0.5"
+                />
+              </a>
+            )}
           </div>
 
+          {/* Product & Resource links (visible across all pages) */}
           <div className="grid grid-cols-2 gap-8 sm:gap-12 md:col-span-6">
             <div>
               <h4 className="font-display text-sm font-semibold text-primary">
@@ -117,6 +123,7 @@ export default function Footer({ onNavigate }) {
         </div>
       </div>
 
+      {/* Biggest Campus Hustle Text */}
       <motion.div
         initial={reduce ? false : { y: 48, opacity: 0 }}
         whileInView={{ y: 0, opacity: 1 }}
@@ -132,6 +139,7 @@ export default function Footer({ onNavigate }) {
         </span>
       </motion.div>
 
+      {/* Bottom Bar: Copyright and Legal Links */}
       <div className="mx-auto max-w-6xl px-4 pb-8 sm:px-6 lg:px-8">
         <div className="flex flex-col items-center justify-between gap-4 border-t border-surface-variant pt-6 text-xs text-on-surface-variant sm:flex-row">
           <p>© {new Date().getFullYear()} CampusHustle Inc.</p>

@@ -1,10 +1,9 @@
-import { useRef, useState } from 'react'
+import { useState } from 'react'
 import {
   IconArrowRight,
   IconBold,
   IconBuildingBank,
   IconChevronDown,
-  IconCloudUpload,
   IconDeviceFloppy,
   IconItalic,
   IconLink,
@@ -15,6 +14,7 @@ import {
 } from '@tabler/icons-react'
 import AppNavbar from '../components/AppNavbar.jsx'
 import Footer from '../components/Footer.jsx'
+import UploadEntryPoint from '../components/UploadEntryPoint.jsx'
 
 const SUBJECTS = ['Economics', 'Computer Science', 'Mathematics', 'Physics']
 
@@ -28,13 +28,11 @@ export default function PostListingScreen({ user, onLogout, onNavigate }) {
   const [description, setDescription] = useState('')
   const [tutorialType, setTutorialType] = useState('free')
   const [visibility, setVisibility] = useState('public')
-  const [fileName, setFileName] = useState('')
+  //const [documentFile, setDocumentFile] = useState(null)
   const [feedback, setFeedback] = useState('')
-  const fileInputRef = useRef(null)
 
-  const handleFileChange = (e) => {
-    const file = e.target.files?.[0]
-    setFileName(file ? file.name : '')
+  const handleDocumentSelect = (file) => {
+    console.log("File successfully received from UploadEntryPoint:", file);
   }
 
   const handleAction = (message) => {
@@ -181,38 +179,9 @@ export default function PostListingScreen({ user, onLogout, onNavigate }) {
                 <h2 className="mb-6 flex items-center font-display text-xl font-bold text-primary">
                   <span className="mr-2 text-2xl" aria-hidden="true">🎬</span> Media &amp; Assets
                 </h2>
-                <button
-                  type="button"
-                  onClick={() => fileInputRef.current?.click()}
-                  className="group flex w-full cursor-pointer flex-col items-center justify-center rounded-xl border-2 border-dashed border-outline-variant bg-surface px-6 py-12 transition-colors hover:border-secondary-container hover:bg-surface-low"
-                >
-                  <div className="mb-4 flex size-16 items-center justify-center rounded-full bg-surface-container transition-colors group-hover:bg-secondary-fixed">
-                    <IconCloudUpload
-                      size={30}
-                      className="text-secondary"
-                      aria-hidden="true"
-                    />
-                  </div>
-                  <h3 className="mb-1 font-display text-lg font-bold text-primary">
-                    Upload Video or Slides
-                  </h3>
-                  <p className="mb-4 text-sm text-on-surface-variant">
-                    {fileName
-                      ? `Selected: ${fileName}`
-                      : 'Drag and drop your files here, or click to browse.'}
-                  </p>
-                  <span className="inline-flex items-center rounded-md bg-surface-container px-2 py-1 text-xs font-medium text-on-surface-variant">
-                    MP4, PDF, PPTX up to 500MB
-                  </span>
-                  <input
-                    ref={fileInputRef}
-                    type="file"
-                    accept=".mp4,.pdf,.pptx"
-                    className="sr-only"
-                    aria-label="Upload video or slides"
-                    onChange={handleFileChange}
-                  />
-                </button>
+                <div className="flex w-full justify-center">
+                  <UploadEntryPoint onFileSelect={handleDocumentSelect} />
+                </div>
               </section>
 
               {/* Pricing & Visibility */}
@@ -234,11 +203,10 @@ export default function PostListingScreen({ user, onLogout, onNavigate }) {
                         type="button"
                         onClick={() => setTutorialType('free')}
                         aria-pressed={tutorialType === 'free'}
-                        className={`flex-1 rounded-md px-4 py-2 text-sm font-semibold transition-colors ${
-                          tutorialType === 'free'
+                        className={`flex-1 rounded-md px-4 py-2 text-sm font-semibold transition-colors ${tutorialType === 'free'
                             ? 'bg-surface-lowest text-primary shadow-level-1'
                             : 'text-on-surface-variant hover:text-primary'
-                        }`}
+                          }`}
                       >
                         Free
                       </button>
@@ -246,11 +214,10 @@ export default function PostListingScreen({ user, onLogout, onNavigate }) {
                         type="button"
                         onClick={() => setTutorialType('premium')}
                         aria-pressed={tutorialType === 'premium'}
-                        className={`flex-1 rounded-md px-4 py-2 text-sm font-semibold transition-colors ${
-                          tutorialType === 'premium'
+                        className={`flex-1 rounded-md px-4 py-2 text-sm font-semibold transition-colors ${tutorialType === 'premium'
                             ? 'bg-surface-lowest text-primary shadow-level-1'
                             : 'text-on-surface-variant hover:text-primary'
-                        }`}
+                          }`}
                       >
                         Premium
                       </button>
@@ -368,7 +335,7 @@ export default function PostListingScreen({ user, onLogout, onNavigate }) {
         </div>
       </main>
 
-      <Footer onNavigate={onNavigate} />
+      <Footer onNavigate={onNavigate} user={user} />
     </div>
   )
 }

@@ -1,65 +1,126 @@
-import { useState, useEffect } from 'react';
-// import { useParams } from 'react-router-dom';
-import AppNavbar from '../components/AppNavbar';
-import Footer from '../components/Footer';
-import DocumentCarousel from '../components/DocumentCarousel';
-import PurchaseCard from '../components/PurchaseCard';
+import { useState, useEffect } from 'react'
+import { useParams } from 'react-router-dom'
+import {
+  IconChevronRight,
+  IconCircleCheckFilled,
+  IconMessageCircle,
+  IconStarFilled,
+} from '@tabler/icons-react'
+import AppNavbar from '../components/AppNavbar.jsx'
+import DocumentCarousel from '../components/DocumentCarousel.jsx'
+import PurchaseCard from '../components/PurchaseCard.jsx'
+import Footer from '../components/Footer.jsx'
 
 const DUMMY_NOTE = {
   id: 'note_123',
-  title: 'CS101 Midterm Complete Study Guide & Practice Problems',
-  course: 'Computer Science 101',
-  tutorName: 'Alex Johnson',
-  description: 'A comprehensive 40-page study guide covering all topics for the midterm exam. Includes detailed handwritten notes on Data Structures, Algorithms, time complexity cheat sheets, and 15 practice problems with step-by-step solutions.',
-  price: 15.00,
-  purchaseCount: 142,
-  createdAt: '2026-08-10T10:00:00Z',
-  previewPages: [
-    'https://images.unsplash.com/photo-1606326608606-aa0b62935f2b?q=80&w=800&auto=format&fit=crop',
-    'https://images.unsplash.com/photo-1517842645767-c639042777db?q=80&w=800&auto=format&fit=crop',
-    'https://images.unsplash.com/photo-1555099962-4199c345e5dd?q=80&w=800&auto=format&fit=crop'
-  ]
-};
+  title: 'Organic Chemistry: Reaction Mechanisms Masterclass',
+  course: 'Chemistry 201',
+  code: 'CHEM 201',
+  department: 'Chemistry',
+  lastUpdated: 'Oct 2026',
+  tutorName: 'Sarah Jenkins',
+  tutorRole: 'Senior, Chemistry Major',
+  tutorUniversity: 'Addis Ababa University',
+  tutorRating: 4.9,
+  tutorReviewsCount: 42,
+  tutorAvatar:
+    'https://lh3.googleusercontent.com/aida-public/AB6AXuDjOwJWmOo4wnikb1axjka0-v8R-36PRThsxPguoCaIV0CuU3MhOYfisMUFouccaprNJZCu-RIpfzSH_IC5Yhik4Kwpa62gUTeb8qUVvOOD48UyGsf1WWlOM6TSfKMiH3S_9aZ1gjoa6GoCPYywaQWXeD3BDR7FBanMILpkjsnGIqFqxwRLaeokfRIpgxu4pYWrfm2yPGE4S7dwna2tdkN8GupeByJP0dQleHAXMWVfYhVt_CP6uUwzlA',
+  price: 18.5,
+  priceEtb: 150,
+  format: 'PDF (12MB)',
+  length: '42 Pages',
+  sales: '120+ Downloads',
+  previewPagesCount: 42,
+  previewSlides: [
+    {
+      id: 1,
+      title: 'Chapter 7: Nucleophilic Addition to Carbonyls',
+      url: 'https://lh3.googleusercontent.com/aida-public/AB6AXuCSq0rO8PGRYNgwRirJSUHaLSsluvB5AdFaGKr3unHqsBmUSW1AAVOjPpKf01tOVNC8z5_GJTK2NCK26gifDFEahJZIpQrMf5fEOXXFYqXpZHx-YR9cAz-NM2QtwoWuaamNhyDd--VjYR7e5NjQ97YKr-roz46ddA5YL2mSz2jVuqoAm4aGWBaJzOnu2qR0gFlAti4su92_4tc1BjghdPqvUs_3fCE4HJtQ7mYQCXRt-9ETsc8VUcjBlg',
+    },
+    {
+      id: 2,
+      title: 'Chapter 8: Acid-Catalyzed Hydration & Hemiacetal Formation',
+      url: 'https://images.unsplash.com/photo-1606326608606-aa0b62935f2b?q=80&w=1000&auto=format&fit=crop',
+    },
+    {
+      id: 3,
+      title: 'Chapter 9: Grignard Reagents & Alcohol Synthesis Worksheets',
+      url: 'https://images.unsplash.com/photo-1555099962-4199c345e5dd?q=80&w=1000&auto=format&fit=crop',
+    },
+  ],
+  description:
+    'Comprehensive reaction mechanisms masterclass covering SN1/SN2, E1/E2, carbonyl chemistry, and aromatic substitutions with step-by-step electron pushing.',
+  whatsInside: [
+    '32 pages of high-yield reaction mechanisms',
+    'Printable A4 exam summary cheat sheets',
+    '50+ solved practice problems with keys',
+  ],
+}
 
 export default function NoteDetailScreen({ user, onNavigate, onLogout }) {
-  const [note, setNote] = useState(null);
-  const [isLoading, setIsLoading] = useState(true);
+  const { id } = useParams()
+  const [note, setNote] = useState(null)
+  const [isLoading, setIsLoading] = useState(true)
 
   useEffect(() => {
     const fetchNote = async () => {
-      setIsLoading(true);
-      //await new Promise(resolve => setTimeout(resolve, 600));
-      setNote(DUMMY_NOTE);
-      setIsLoading(false);
-    };
+      setIsLoading(true)
+      setNote({ ...DUMMY_NOTE, id: id || 'note_123' })
+      setIsLoading(false)
+    }
 
-    fetchNote();
-  }, []);
+    fetchNote()
+  }, [id])
+
+  const handleMakePayment = () => {
+    if (onNavigate) {
+      onNavigate(`/notes/${note?.id || 'note_123'}/payment`)
+    } else {
+      window.location.assign(`/notes/${note?.id || 'note_123'}/payment`)
+    }
+  }
 
   if (isLoading) {
     return (
-      <div className="flex min-h-screen items-center justify-center bg-gray-50">
-        <div className="flex flex-col items-center gap-4">
-          <svg className="h-10 w-10 animate-spin text-amber-500" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
-            <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"></circle>
-            <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
-          </svg>
-          <p className="text-gray-600 font-medium">Loading preview...</p>
+      <div className="flex h-screen w-screen items-center justify-center bg-gray-50 font-poppins">
+        <div className="flex flex-col items-center gap-3 text-[#041534]">
+          <div className="h-8 w-8 animate-spin rounded-full border-4 border-amber-500 border-t-transparent" />
+          <p className="text-sm font-medium text-gray-600">Loading note details...</p>
         </div>
       </div>
-    );
+    )
   }
 
   if (!note) {
     return (
-      <div className="flex min-h-screen items-center justify-center bg-gray-50">
-        <p className="text-xl text-gray-600">Note not found.</p>
+      <div className="flex h-screen w-screen flex-col bg-gray-50 font-poppins text-gray-900">
+        <AppNavbar user={user} activeView="marketplace" onNavigate={onNavigate} onLogout={onLogout} />
+        <main className="flex flex-1 flex-col items-center justify-center p-6 text-center">
+          <h1 className="text-2xl font-bold text-gray-900">Note Not Found</h1>
+          <p className="mt-2 text-sm text-gray-600">The requested study note is no longer available.</p>
+          <button
+            type="button"
+            onClick={() => (onNavigate ? onNavigate('marketplace') : window.location.assign('/market'))}
+            className="mt-4 rounded-full bg-[#041534] px-6 py-2.5 text-xs font-bold text-white shadow hover:bg-[#1b2a4a]"
+          >
+            Browse Marketplace
+          </button>
+        </main>
       </div>
-    );
+    )
   }
 
   return (
-    <div className="flex min-h-screen flex-col bg-surface font-body text-on-surface">
+    <div
+      className="flex min-h-screen w-full overflow-x-hidden flex-col bg-gray-50 font-poppins text-gray-900 antialiased"
+      style={{
+        backgroundImage: `
+          radial-gradient(circle at 15% 50%, rgba(4, 21, 52, 0.03), transparent 25%),
+          radial-gradient(circle at 85% 30%, rgba(254, 174, 44, 0.05), transparent 25%)
+        `,
+      }}
+    >
+      {/* Top Navbar */}
       <AppNavbar
         user={user}
         activeView="marketplace"
@@ -67,73 +128,80 @@ export default function NoteDetailScreen({ user, onNavigate, onLogout }) {
         onLogout={onLogout}
       />
 
-      <main className="flex-1 bg-gray-50">
-        <div className="mx-auto max-w-7xl w-full px-4 py-8 sm:px-6 lg:px-8">
-
-          {/* Breadcrumb Navigation */}
-          <nav className="mb-8 flex text-sm text-gray-600 font-medium">
-            <a href="/notes" className="hover:text-amber-600 transition-colors">Marketplace</a>
-            <span className="mx-2 text-gray-400">/</span>
-            <a href={`/notes?course=${encodeURIComponent(note.course)}`} className="hover:text-amber-600 transition-colors">{note.course}</a>
-            <span className="mx-2 text-gray-400">/</span>
-            <span className="text-gray-900 truncate max-w-xs">{note.title}</span>
+      {/* Main Content */}
+      <main className="mx-auto flex flex-1 flex-col w-full max-w-7xl px-4 py-6 sm:px-6 lg:px-8">
+        {/* Top Breadcrumb & Header Row */}
+        <div className="mb-4 flex shrink-0 flex-col sm:flex-row sm:items-center justify-between gap-3 text-xs sm:text-sm">
+          <nav className="flex flex-wrap items-center gap-1.5 text-gray-500 font-medium">
+            <button
+              type="button"
+              onClick={() => (onNavigate ? onNavigate('marketplace') : window.location.assign('/market'))}
+              className="hover:text-gray-900 transition-colors"
+            >
+              Marketplace
+            </button>
+            <IconChevronRight size={14} className="text-gray-400" />
+            <span className="text-gray-600">{note.department}</span>
+            <IconChevronRight size={14} className="text-gray-400" />
+            <span className="font-semibold text-gray-900 truncate max-w-xs">{note.title}</span>
           </nav>
 
-          <div className="grid grid-cols-1 gap-8 lg:grid-cols-12 lg:gap-12">
+          <div className="flex flex-wrap items-center gap-2">
+            <span className="inline-flex items-center gap-1 rounded-full border border-gray-200 bg-white px-2.5 py-0.5 text-[11px] font-semibold text-gray-800 shadow-2xs">
+              <IconStarFilled size={12} className="text-amber-500" />
+              <span>{note.tutorRating} ({note.tutorReviewsCount})</span>
+            </span>
+            <span className="rounded-full bg-[#1b2a4a] px-2.5 py-0.5 text-[11px] font-bold text-white">
+              {note.code}
+            </span>
+            <span className="text-[11px] text-gray-400">Updated {note.lastUpdated}</span>
+          </div>
+        </div>
 
-            {/* Main Content Area: Document Preview */}
-            <div className="lg:col-span-7">
-              <div className="mb-4 flex items-center justify-between">
-                <h2 className="text-xl font-bold text-gray-900">Document Preview</h2>
-                <span className="rounded-full bg-gray-100 px-3 py-1 text-xs font-bold text-gray-700">
-                  Preview ({note.previewPages.length} Pages)
-                </span>
-              </div>
+        {/* 2-Column Bento Grid */}
+        <div className="grid flex-1 grid-cols-1 gap-6 lg:grid-cols-12 pb-1">
+          {/* Left Column: 3-Image Slide Preview Stage & Quick Highlights (7 Cols) */}
+          <DocumentCarousel note={note} handleMakePayment={handleMakePayment} />
 
-              <DocumentCarousel previewPages={note.previewPages} />
+          {/* Right Column: Clean Purchase & Seller Details (5 Cols) */}
+          <div className="flex w-full flex-col justify-between gap-3 lg:col-span-5">
+            {/* Purchase & Specs Card */}
+            <PurchaseCard note={note} handleMakePayment={handleMakePayment} />
 
-              {/* Trust Badges / Extra Info */}
-              <div className="mt-8 grid grid-cols-1 gap-6 sm:grid-cols-3">
-                <div className="rounded-xl bg-white p-5 text-center shadow-sm border border-gray-200">
-                  <div className="mx-auto flex h-12 w-12 items-center justify-center rounded-full bg-amber-50 text-amber-600 mb-4">
-                    <svg className="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" />
-                    </svg>
-                  </div>
-                  <h4 className="font-semibold text-gray-900">Verified Quality</h4>
-                  <p className="mt-2 text-xs text-gray-600">Notes are reviewed by community members.</p>
-                </div>
-                <div className="rounded-xl bg-white p-5 text-center shadow-sm border border-gray-200">
-                  <div className="mx-auto flex h-12 w-12 items-center justify-center rounded-full bg-green-50 text-green-600 mb-4">
-                    <svg className="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 6.253v13m0-13C10.832 5.477 9.246 5 7.5 5S4.168 5.477 3 6.253v13C4.168 18.477 5.754 18 7.5 18s3.332.477 4.5 1.253m0-13C13.168 5.477 14.754 5 16.5 5c1.747 0 3.332.477 4.5 1.253v13C19.832 18.477 18.247 18 16.5 18c-1.746 0-3.332.477-4.5 1.253" />
-                    </svg>
-                  </div>
-                  <h4 className="font-semibold text-gray-900">AI Assistant Ready</h4>
-                  <p className="mt-2 text-xs text-gray-600">Ask the AI questions strictly grounded in this note.</p>
-                </div>
-                <div className="rounded-xl bg-white p-5 text-center shadow-sm border border-gray-200">
-                  <div className="mx-auto flex h-12 w-12 items-center justify-center rounded-full bg-blue-50 text-blue-600 mb-4">
-                    <svg className="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v4h8z" />
-                    </svg>
-                  </div>
-                  <h4 className="font-semibold text-gray-900">Instant Access</h4>
-                  <p className="mt-2 text-xs text-gray-600">Download and access the full PDF immediately.</p>
+            {/* Seller Profile Card (Below Payment Card) */}
+            <div className="flex flex-col items-center rounded-2xl border border-gray-200 bg-white p-4 text-center shadow-sm">
+              <div className="relative mb-2 h-16 w-16 overflow-hidden rounded-full border-2 border-amber-400">
+                <img
+                  src={note.tutorAvatar}
+                  alt={note.tutorName}
+                  className="h-full w-full object-cover"
+                />
+                <div className="absolute right-0 bottom-0 flex h-4 w-4 items-center justify-center rounded-full border-2 border-white bg-amber-500">
+                  <IconCircleCheckFilled size={11} className="text-gray-950" />
                 </div>
               </div>
+              <h2 className="text-sm font-bold text-[#041534] leading-tight">{note.tutorName}</h2>
+              <p className="text-xs text-gray-500 mt-0.5">
+                {note.tutorRole} · {note.tutorUniversity}
+              </p>
+              <div className="my-2 flex items-center justify-center gap-1 text-xs text-gray-600">
+                <IconStarFilled size={13} className="text-amber-500" />
+                <span className="font-semibold text-gray-900">{note.tutorRating}</span>
+                <span>({note.tutorReviewsCount} ratings)</span>
+              </div>
+              <button
+                type="button"
+                onClick={() => (onNavigate ? onNavigate('/chat/sarah-jenkins') : window.location.assign('/chat/sarah-jenkins'))}
+                className="w-full flex items-center justify-center gap-1.5 rounded-xl bg-gray-100 py-2.5 text-xs font-bold text-gray-800 hover:bg-gray-200 transition-colors active:scale-95"
+              >
+                <IconMessageCircle size={15} />
+                <span>Message Seller</span>
+              </button>
             </div>
-
-            {/* Sidebar Area: Purchase Details */}
-            <div className="lg:col-span-5 sticky top-28 self-start">
-              <PurchaseCard note={note} />
-            </div>
-
           </div>
         </div>
       </main>
-
-      <Footer onNavigate={onNavigate} />
+      <Footer onNavigate={onNavigate} user={user} />
     </div>
-  );
+  )
 }
