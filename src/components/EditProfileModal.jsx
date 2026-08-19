@@ -1,5 +1,5 @@
-import { useState, useEffect } from 'react'
-import { IconX, IconSchool, IconCheck } from '@tabler/icons-react'
+import { useState, useEffect, useRef } from 'react'
+import { IconX, IconSchool, IconCheck, IconCamera, IconUser } from '@tabler/icons-react'
 
 function TagInput({ id, placeholder, tags, onChange }) {
   const [draft, setDraft] = useState('')
@@ -22,20 +22,20 @@ function TagInput({ id, placeholder, tags, onChange }) {
   }
 
   return (
-    <div className="flex min-h-[44px] flex-wrap items-center gap-1.5 rounded-lg border border-surface-variant bg-surface-low p-2 focus-within:border-primary focus-within:ring-1 focus-within:ring-primary">
+    <div className="flex min-h-[38px] flex-wrap items-center gap-1.5 rounded-lg border border-surface-variant bg-surface-low px-3 py-1.5 transition-colors focus-within:border-primary focus-within:ring-1 focus-within:ring-primary">
       {tags.map((tag) => (
         <span
           key={tag}
-          className="inline-flex items-center gap-1 rounded-full bg-surface-high px-2.5 py-1 text-xs font-medium text-on-surface"
+          className="inline-flex items-center gap-1 rounded-md bg-secondary-container px-2 py-0.5 text-xs font-medium text-on-secondary-container"
         >
           {tag}
           <button
             type="button"
-            aria-label={`Remove ${tag}`}
             onClick={() => onChange(tags.filter((t) => t !== tag))}
-            className="text-on-surface-variant transition-colors hover:text-error cursor-pointer"
+            className="text-on-secondary-container/70 hover:text-on-secondary-container cursor-pointer"
+            aria-label={`Remove ${tag}`}
           >
-            <IconX size={13} aria-hidden="true" />
+            <IconX size={12} />
           </button>
         </span>
       ))}
@@ -53,10 +53,15 @@ function TagInput({ id, placeholder, tags, onChange }) {
   )
 }
 
+const SCHEDULE_DAYS = ['Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat']
+const SCHEDULE_TIMES = ['9:00 AM', '2:00 PM', '5:00 PM']
+
 function EditProfileForm({ user, onClose, onSave }) {
+  const fileInputRef = useRef(null)
   const parts = (user?.name || '').split(' ')
   const [firstName, setFirstName] = useState(parts[0] || '')
   const [lastName, setLastName] = useState(parts.slice(1).join(' ') || '')
+  const [profilePicUrl, setProfilePicUrl] = useState(user?.profilePicUrl || '')
   const [bio, setBio] = useState(user?.bio || '')
   const [university, setUniversity] = useState(user?.university || '')
   const [department, setDepartment] = useState(user?.department || '')
@@ -70,6 +75,43 @@ function EditProfileForm({ user, onClose, onSave }) {
   const [skillsLearning, setSkillsLearning] = useState(
     Array.isArray(user?.skillsLearning) ? user.skillsLearning : [],
   )
+  const [availability, setAvailability] = useState(
+    Array.isArray(user?.availability)
+      ? user.availability
+      : ['Mon-9:00 AM', 'Wed-2:00 PM', 'Fri-9:00 AM'],
+  )
+
+  const handlePhotoUpload = (e) => {
+    const file = e.target.files?.[0]
+    if (file) {
+      const reader = new FileReader()
+      reader.onload = () => {
+        setProfilePicUrl(reader.result)
+      }
+      reader.readAsDataURL(file)
+    }
+  }
+
+  const toggleSlot = (day, time) => {
+    const slotKey = `${day}-${time}`
+    setAvailability((prev) =>
+      prev.includes(slotKey) ? prev.filter((s) => s !== slotKey) : [...prev, slotKey],
+    )
+  }
+
+  const selectWeekdays = () => {
+    const all = []
+    SCHEDULE_DAYS.slice(0, 5).forEach((day) => {
+      SCHEDULE_TIMES.forEach((time) => {
+        all.push(`${day}-${time}`)
+      })
+    })
+    setAvailability(all)
+  }
+
+  const clearAvailability = () => {
+    setAvailability([])
+  }
 
   const handleSubmit = (e) => {
     e.preventDefault()
@@ -77,6 +119,7 @@ function EditProfileForm({ user, onClose, onSave }) {
     const updatedUser = {
       ...user,
       name: fullName || user?.name || 'Student',
+      profilePicUrl: profilePicUrl || '',
       bio: bio.trim(),
       university: university.trim(),
       department: department.trim(),
@@ -84,6 +127,7 @@ function EditProfileForm({ user, onClose, onSave }) {
       hourlyRate: hourlyRate ? Number(hourlyRate) : null,
       skillsTeaching,
       skillsLearning,
+      availability,
     }
     onSave(updatedUser)
     onClose()
@@ -117,6 +161,41 @@ function EditProfileForm({ user, onClose, onSave }) {
 
       {/* Form */}
       <form onSubmit={handleSubmit} className="mt-5 space-y-4 max-h-[70vh] overflow-y-auto pr-1">
+        {/* Profile Picture (PFP) Upload */}
+        <div className="flex flex-col items-center pb-2">
+          <input
+            ref={fileInputRef}
+            type="file"
+            accept="image/*"
+            className="hidden"
+            onChange={handlePhotoUpload}
+          />
+          <div className="relative size-24">
+            <div className="flex size-full items-center justify-center rounded-full border-2 border-dashed border-outline-variant bg-surface-low text-outline overflow-hidden">
+              {profilePicUrl ? (
+                <img
+                  src={profilePicUrl}
+                  alt="Profile preview"
+                  className="size-full object-cover"
+                />
+              ) : (
+                <IconUser size={36} aria-hidden="true" />
+              )}
+            </div>
+            <button
+              type="button"
+              aria-label="Upload Photo"
+              onClick={() => fileInputRef.current?.click()}
+              className="absolute bottom-0 right-0 rounded-full bg-primary p-1.5 text-on-primary shadow-level-2 transition-colors hover:bg-tertiary-container cursor-pointer"
+            >
+              <IconCamera size={14} aria-hidden="true" />
+            </button>
+          </div>
+          <p className="mt-1.5 text-center text-[11px] text-on-surface-variant">
+            Click the camera icon to upload a headshot.
+          </p>
+        </div>
+
         {/* Name */}
         <div className="grid grid-cols-1 gap-3 sm:grid-cols-2">
           <div className="flex flex-col gap-1">
@@ -254,6 +333,64 @@ function EditProfileForm({ user, onClose, onSave }) {
             tags={skillsLearning}
             onChange={setSkillsLearning}
           />
+        </div>
+
+        {/* Weekly Availability Schedule */}
+        <div className="flex flex-col gap-2 pt-1 border-t border-surface-variant/80">
+          <div className="flex items-center justify-between">
+            <div>
+              <span className={labelClass}>Weekly Availability Schedule</span>
+              <p className="text-[11px] text-on-surface-variant">
+                Select the days and slots when students can book you.
+              </p>
+            </div>
+            <div className="flex items-center gap-1.5">
+              <button
+                type="button"
+                onClick={selectWeekdays}
+                className="text-[11px] font-semibold text-primary hover:underline cursor-pointer"
+              >
+                Weekdays
+              </button>
+              <span className="text-xs text-outline">·</span>
+              <button
+                type="button"
+                onClick={clearAvailability}
+                className="text-[11px] font-semibold text-outline hover:text-error cursor-pointer"
+              >
+                Clear
+              </button>
+            </div>
+          </div>
+
+          <div className="grid grid-cols-6 gap-1.5 pt-1">
+            {SCHEDULE_DAYS.map((day) => (
+              <div key={day} className="text-center text-[10px] font-bold text-outline">
+                {day}
+              </div>
+            ))}
+            {SCHEDULE_TIMES.map((time) =>
+              SCHEDULE_DAYS.map((day) => {
+                const slotKey = `${day}-${time}`
+                const isSelected = availability.includes(slotKey)
+                return (
+                  <button
+                    key={slotKey}
+                    type="button"
+                    onClick={() => toggleSlot(day, time)}
+                    aria-pressed={isSelected}
+                    className={`rounded-md p-1.5 text-center text-[10px] font-semibold transition-all border cursor-pointer ${
+                      isSelected
+                        ? 'bg-primary text-on-primary border-primary shadow-sm'
+                        : 'bg-surface-low text-on-surface-variant border-surface-variant hover:bg-surface-high'
+                    }`}
+                  >
+                    {time}
+                  </button>
+                )
+              })
+            )}
+          </div>
         </div>
 
         {/* Actions */}

@@ -9,6 +9,7 @@ import {
   IconCheck,
   IconRefresh,
 } from '@tabler/icons-react'
+import { askFelatAi } from '../api/aiApi.js'
 
 function getAssistantReply(message) {
   const lower = message.toLowerCase()
@@ -114,8 +115,15 @@ export default function FloatingAiAssistant() {
     setIsTyping(true)
 
     // Initial brief thinking state before writing animation starts
-    setTimeout(() => {
-      const fullReply = getAssistantReply(content || 'Uploaded Document Analysis')
+    setTimeout(async () => {
+      let fullReply
+      try {
+        const res = await askFelatAi({ question: content || 'Help with my courses' })
+        fullReply = res?.answer || getAssistantReply(content || 'Uploaded Document Analysis')
+      } catch {
+        fullReply = getAssistantReply(content || 'Uploaded Document Analysis')
+      }
+
       const aiMsgId = `ai-${idRef.current++}`
       const timestamp = new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })
 

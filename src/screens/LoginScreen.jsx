@@ -3,7 +3,7 @@ import { IconArrowRight, IconLock, IconMail } from '@tabler/icons-react'
 import AuthTextField from '../components/AuthTextField.jsx'
 import PrimaryButton from '../components/PrimaryButton.jsx'
 import Toast from '../components/Toast.jsx'
-import { mockLogin } from '../api/mockAuthApi.js'
+import { loginUser } from '../api/authApi.js'
 import { validateEmail, validatePassword } from '../utils/validators.js'
 
 export default function LoginScreen({ onSwitchToSignup, onLoginSuccess }) {
@@ -32,14 +32,18 @@ export default function LoginScreen({ onSwitchToSignup, onLoginSuccess }) {
 
     setStatus('loading')
     try {
-      const { user } = await mockLogin(values)
+      const result = await loginUser(values)
       setStatus('success')
-      onLoginSuccess?.(user)
+      onLoginSuccess?.(result.user || result)
     } catch (err) {
       setStatus('error')
+      const errorMessage =
+        typeof err?.message === 'string'
+          ? err.message
+          : err?.data?.error?.message || err?.data?.message || 'Invalid email or password. Please try again.'
       setErrors((prev) => ({
         ...prev,
-        form: err?.message ?? 'Something went wrong. Please try again.',
+        form: errorMessage,
       }))
     }
   }

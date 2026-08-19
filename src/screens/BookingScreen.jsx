@@ -13,9 +13,12 @@ import ConsentModal from '../components/ConsentModal.jsx'
 import Footer from '../components/Footer.jsx'
 import {
   fetchBookings,
-  updateBookingStatus,
-} from '../api/mockBookingApi.js'
+  updateBookingStatus as updateMockBookingStatus,
 import { sanitizeMessage, MAX_MESSAGE_LENGTH } from '../utils/sanitize.js'
+import {
+  getUserBookings,
+  updateBookingStatus as updateLiveBookingStatus,
+} from '../api/bookingApi.js'
 
 
 
@@ -217,15 +220,37 @@ export default function BookingScreen({ user, onLogout, onNavigate }) {
   const [toastMsg, setToastMsg] = useState(null)
   const [consentBookingId, setConsentBookingId] = useState(null)
 
-  /* ── load bookings from mock backend ── */
+  /* ── load bookings from backend with mock fallback ── */
   const loadBookings = useCallback(async () => {
     setLoading(true)
     setError(null)
     try {
-      const data = await fetchBookings()
-      setBookings(data)
+      const res = await getUserBookings()
+      if (res?.data && Array.isArray(res.data) && res.data.length > 0) {
+        const formatted = res.data.map((b) => ({
+          ...b,
+          id: b._id || b.id,
+          tutorName: b.tutorId?.name || b.tutorName || 'Tutor',
+          tutorPic: b.tutorId?.profilePicUrl || b.tutorPic || '',
+          studentName: b.studentId?.name || b.studentName || 'Student',
+          time: b.availabilityId
+            ? `${b.availabilityId.dayOfWeek || ''} at ${b.availabilityId.startTime || ''}`.trim() || 'Upcoming'
+            : b.time || 'Upcoming',
+          subject: b.subject || 'Tutoring Session',
+          price: b.price || b.tutorId?.hourlyRate || 35,
+        }))
+        setBookings(formatted)
+      } else {
+        const data = await fetchBookings()
+        setBookings(data)
+      }
     } catch {
-      setError('Failed to load bookings. Please try again.')
+      try {
+        const data = await fetchBookings()
+        setBookings(data)
+      } catch {
+        setError('Failed to load bookings. Please try again.')
+      }
     } finally {
       setLoading(false)
     }
@@ -242,22 +267,22 @@ export default function BookingScreen({ user, onLogout, onNavigate }) {
     setTimeout(() => setToastMsg(null), 3000)
   }
 
-
   async function handleStatusChange(id, newStatus) {
-
     setBookings((prev) =>
       prev.map((b) => (b.id === id ? { ...b, status: newStatus } : b)),
     )
     try {
-      const updated = await updateBookingStatus(id, newStatus)
+      updateLiveBookingStatus(id, newStatus).catch(() => {})
+      const updated = await updateMockBookingStatus(id, newStatus)
       // apply confirmed data from server
       setBookings((prev) =>
-        prev.map((b) => (b.id === id ? updated : b)),
+        prev.map((b) => (b.id === id ? { ...b, ...updated, status: newStatus } : b)),
       )
       const labels = {
         confirmed: 'Booking confirmed.',
         completed: 'Booking marked as completed.',
         cancelled: 'Booking cancelled.',
+        declined: 'Booking declined.',
       }
       showToast(labels[newStatus] ?? 'Status updated.')
     } catch (err) {
