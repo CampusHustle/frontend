@@ -1,5 +1,6 @@
 import { useState, useRef, useEffect } from 'react'
 import {
+  IconMessageChatbot,
   IconSparkles,
   IconX,
   IconSend,
@@ -11,7 +12,7 @@ import {
 
 function getAssistantReply(message) {
   const lower = message.toLowerCase()
-  let detailedTip = "I'm your CampusHustle study assistant — ask me anything about your courses, lecture notes, or exam preparation."
+  let detailedTip = "I'm Felat (ፈላጥ), your CampusHustle study assistant — ask me anything about your courses, lecture notes, or exam preparation."
 
   if (lower.includes('opportunity cost')) {
     detailedTip =
@@ -31,7 +32,7 @@ function welcomeMessage() {
   return {
     id: 'welcome',
     role: 'ai',
-    content: "Hello! I'm your CampusHustle AI Assistant. How can I help you with your studies today?",
+    content: "Selam! I'm Felat (ፈላጥ), your CampusHustle AI Assistant. How can I help you with your studies today?",
     isStreaming: false,
     timestamp: 'Just now',
   }
@@ -182,18 +183,18 @@ export default function FloatingAiAssistant() {
         <button
           type="button"
           onClick={() => setIsOpen((prev) => !prev)}
-          aria-label={isOpen ? 'Close AI Assistant' : 'Open AI Assistant'}
-          title="AI Assistant"
-          className="group relative flex size-14 items-center justify-center rounded-full bg-primary text-secondary-container shadow-level-3 transition-all duration-300 hover:scale-105 hover:bg-primary-container active:scale-95 border-2 border-secondary-container/40 focus:outline-none focus:ring-4 focus:ring-secondary-container/30 cursor-pointer"
+          aria-label={isOpen ? 'Close Felat (ፈላጥ)' : 'Open Felat (ፈላጥ)'}
+          title="Felat (ፈላጥ)"
+          className="group relative flex size-14 items-center justify-center rounded-full bg-[#114161] text-white shadow-[0_8px_25px_rgba(17,65,97,0.45)] transition-all duration-300 hover:scale-105 hover:bg-[#0d344e] hover:shadow-[0_12px_32px_rgba(17,65,97,0.6)] active:scale-95 border-2 border-white/25 focus:outline-none focus:ring-4 focus:ring-[#114161]/30 cursor-pointer"
         >
           {isOpen ? (
-            <IconX size={26} stroke={2.5} className="text-white transition-transform group-hover:rotate-90 duration-200" />
+            <IconX size={24} stroke={2.5} className="text-white transition-transform group-hover:rotate-90 duration-200" />
           ) : (
             <>
-              <IconSparkles size={26} stroke={2.2} className="animate-pulse text-secondary-container" />
+              <IconMessageChatbot size={28} stroke={2} className="text-white transition-transform duration-200 group-hover:scale-110" />
               <span className="absolute -top-1 -right-1 flex size-3.5">
-                <span className="absolute inline-flex size-full animate-ping rounded-full bg-secondary-container opacity-75" />
-                <span className="relative inline-flex size-3.5 rounded-full bg-secondary-container" />
+                <span className="absolute inline-flex size-full animate-ping rounded-full bg-hustle-400 opacity-75" />
+                <span className="relative inline-flex size-3.5 rounded-full bg-hustle-400 border border-white/60" />
               </span>
             </>
           )}
@@ -204,18 +205,18 @@ export default function FloatingAiAssistant() {
       {isOpen && (
         <div
           role="dialog"
-          aria-label="AI Assistant chat"
+          aria-label="Felat (ፈላጥ) AI Assistant chat"
           className="fixed bottom-24 right-4 sm:right-6 z-50 flex h-[530px] max-h-[calc(100vh-7.5rem)] w-[380px] max-w-[calc(100vw-2rem)] flex-col overflow-hidden rounded-2xl border border-surface-variant/80 bg-surface-lowest shadow-level-3 backdrop-blur-xl transition-all dark:border-white/10 dark:bg-surface dark:text-ink-950"
         >
           {/* Header */}
           <div className="flex items-center justify-between border-b border-surface-variant/70 bg-surface-low px-4 py-3 dark:border-ink-200/60 dark:bg-ink-100">
             <div className="flex items-center gap-2.5">
-              <div className="flex size-8 items-center justify-center rounded-xl bg-primary text-secondary-container shadow-sm">
+              <div className="flex size-8 items-center justify-center rounded-xl bg-[#114161] text-white shadow-sm">
                 <IconSparkles size={16} stroke={2.2} />
               </div>
               <div className="flex items-center gap-2">
                 <h3 className="font-display text-sm font-bold text-primary dark:text-ink-950">
-                  AI Assistant
+                  Felat (ፈላጥ)
                 </h3>
                 <span className="inline-block size-2 rounded-full bg-emerald-500" title="Online" />
               </div>
@@ -234,8 +235,8 @@ export default function FloatingAiAssistant() {
               <button
                 type="button"
                 onClick={() => setIsOpen(false)}
-                title="Close assistant"
-                aria-label="Close assistant"
+                title="Close chat panel"
+                aria-label="Close chat panel"
                 className="inline-flex size-7 items-center justify-center rounded-lg text-outline transition-colors hover:bg-surface-high hover:text-on-surface dark:hover:bg-ink-200 dark:hover:text-ink-900 cursor-pointer"
               >
                 <IconX size={17} />
@@ -347,14 +348,14 @@ export default function FloatingAiAssistant() {
                 type="text"
                 value={draft}
                 onChange={(e) => setDraft(e.target.value)}
-                placeholder="Ask AI assistant... (Enter to send)"
+                placeholder="Ask Felat (ፈላጥ)... (Enter to send)"
                 className="flex-1 bg-transparent py-1 text-xs text-on-surface outline-none placeholder:text-outline dark:text-ink-950 dark:placeholder:text-ink-400"
               />
               <button
                 type="submit"
                 disabled={!draft.trim() && !attachment}
                 aria-label="Send message"
-                className="inline-flex size-7 items-center justify-center rounded-lg bg-primary text-secondary-container transition-all hover:bg-primary-container disabled:opacity-40 disabled:hover:bg-primary cursor-pointer"
+                className="inline-flex size-7 items-center justify-center rounded-lg bg-[#114161] text-white transition-all hover:bg-[#0d344e] disabled:opacity-40 cursor-pointer shadow-sm"
               >
                 <IconSend size={14} />
               </button>
