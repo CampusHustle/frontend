@@ -1,5 +1,5 @@
-import { useState } from 'react'
-import { IconLogout, IconMoon, IconPlus, IconSearch, IconSun } from '@tabler/icons-react'
+import { useState, useRef } from 'react'
+import { IconLogout, IconMoon, IconPlus, IconSearch, IconSun, IconX } from '@tabler/icons-react'
 import { applyTheme } from '../utils/theme.js'
 
 function getInitial(name) {
@@ -39,6 +39,8 @@ export default function AppNavbar({
   const [isDark, setIsDark] = useState(() =>
     document.documentElement.classList.contains('dark'),
   )
+  const [isSearchExpanded, setIsSearchExpanded] = useState(false)
+  const searchInputRef = useRef(null)
 
   const toggleTheme = () => {
     setIsDark((prev) => {
@@ -57,7 +59,7 @@ export default function AppNavbar({
             e.preventDefault()
             onNavigate?.('home')
           }}
-          className="font-display text-xl font-bold text-primary transition-opacity hover:opacity-80 flex items-center gap-2"
+          className="font-display text-xl font-bold text-primary transition-opacity hover:opacity-80 flex items-center gap-2 shrink-0"
         >
           <img
             src="/assets/campushustle.jpg"
@@ -68,20 +70,71 @@ export default function AppNavbar({
         </a>
 
         {onSearchChange !== undefined && (
-          <div className="hidden max-w-md flex-1 md:block">
-            <div className="relative">
-              <IconSearch
-                size={18}
-                className="pointer-events-none absolute left-3 top-1/2 -translate-y-1/2 text-outline"
-                aria-hidden="true"
-              />
+          <div className="relative flex items-center">
+            <div
+              className={`relative flex items-center transition-all duration-300 ease-out ${
+                isSearchExpanded || searchQuery
+                  ? 'w-52 sm:w-72 md:w-80'
+                  : 'w-9'
+              }`}
+            >
+              <button
+                type="button"
+                onClick={() => {
+                  setIsSearchExpanded((prev) => {
+                    const next = !prev
+                    if (next) {
+                      setTimeout(() => searchInputRef.current?.focus(), 50)
+                    }
+                    return next
+                  })
+                }}
+                aria-label={isSearchExpanded || searchQuery ? 'Close search' : 'Open search'}
+                className="absolute left-0 z-10 inline-flex size-9 items-center justify-center rounded-full text-on-surface-variant transition-colors hover:text-primary cursor-pointer"
+              >
+                <IconSearch size={18} aria-hidden="true" />
+              </button>
+
               <input
+                ref={searchInputRef}
                 type="text"
                 value={searchQuery || ''}
                 onChange={(e) => onSearchChange(e.target.value)}
+                onFocus={() => setIsSearchExpanded(true)}
+                onBlur={() => {
+                  if (!searchQuery) {
+                    setIsSearchExpanded(false)
+                  }
+                }}
+                onKeyDown={(e) => {
+                  if (e.key === 'Escape') {
+                    onSearchChange('')
+                    setIsSearchExpanded(false)
+                  }
+                }}
                 placeholder={searchPlaceholder}
-                className="w-full rounded-lg border border-surface-variant bg-surface-low py-2 pl-10 pr-4 text-sm shadow-level-1 transition-all duration-200 focus:border-primary focus:outline-none focus:ring-1 focus:ring-primary text-on-surface"
+                aria-label={searchPlaceholder}
+                className={`h-9 w-full rounded-full border border-surface-variant bg-surface-low pl-9 pr-8 text-xs sm:text-sm shadow-level-1 transition-all duration-300 focus:border-primary focus:outline-none focus:ring-1 focus:ring-primary text-on-surface ${
+                  isSearchExpanded || searchQuery
+                    ? 'opacity-100 cursor-text'
+                    : 'opacity-0 pointer-events-none border-transparent bg-transparent shadow-none'
+                }`}
               />
+
+              {(isSearchExpanded || searchQuery) && (
+                <button
+                  type="button"
+                  onClick={() => {
+                    onSearchChange('')
+                    setIsSearchExpanded(false)
+                  }}
+                  title="Clear search"
+                  aria-label="Clear search"
+                  className="absolute right-2.5 z-10 text-outline hover:text-primary transition-colors cursor-pointer"
+                >
+                  <IconX size={15} />
+                </button>
+              )}
             </div>
           </div>
         )}
