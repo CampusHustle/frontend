@@ -1,5 +1,5 @@
 import { useState, useEffect } from 'react'
-import { BrowserRouter, Routes, Route, useNavigate, Navigate } from 'react-router-dom'
+import { BrowserRouter, Routes, Route, useNavigate, useLocation, Navigate } from 'react-router-dom'
 import HomeScreen from './screens/HomeScreen.jsx'
 import LoginScreen from './screens/LoginScreen.jsx'
 import SignupScreen from './screens/SignupScreen.jsx'
@@ -18,6 +18,12 @@ import NoteDetailPage from './pages/NoteDetailPage.jsx'
 import NotePaymentPage from './pages/NotePaymentPage.jsx'
 import LogoutWarningModal from './components/LogoutWarningModal.jsx'
 import FloatingAiAssistant from './components/FloatingAiAssistant.jsx'
+import { AdminLayout } from './admin/components/AdminLayout.jsx'
+import DashboardOverviewScreen from './admin/screens/DashboardOverviewScreen.jsx'
+import VerificationQueueScreen from './admin/screens/VerificationQueueScreen.jsx'
+import ReportsModerationScreen from './admin/screens/ReportsModerationScreen.jsx'
+import ReportDetailScreen from './admin/screens/ReportDetailScreen.jsx'
+import UserManagementScreen from './admin/screens/UserManagementScreen.jsx'
 import {
   logoutUser,
   updateCurrentUserProfile,
@@ -34,6 +40,7 @@ import { profileFromForm, hasCompletedProfile } from './utils/user.js'
 
 export function AppRoutes() {
   const navigate = useNavigate()
+  const location = useLocation()
   const [currentUser, setCurrentUser] = useState(() => loadSessionUser())
   const [pendingUser, setPendingUser] = useState(null)
   const [pendingEmail, setPendingEmail] = useState('')
@@ -277,9 +284,51 @@ export function AppRoutes() {
           />
         }
       />
+      <Route
+        path="/admin"
+        element={
+          <AdminLayout onLogout={handleLogout} user={currentUser}>
+            <DashboardOverviewScreen />
+          </AdminLayout>
+        }
+      />
+      <Route
+        path="/admin/verifications"
+        element={
+          <AdminLayout onLogout={handleLogout} user={currentUser}>
+            <VerificationQueueScreen />
+          </AdminLayout>
+        }
+      />
+      <Route
+        path="/admin/reports"
+        element={
+          <AdminLayout onLogout={handleLogout} user={currentUser}>
+            <ReportsModerationScreen />
+          </AdminLayout>
+        }
+      />
+      <Route
+        path="/admin/reports/:id"
+        element={
+          <AdminLayout onLogout={handleLogout} user={currentUser}>
+            <ReportDetailScreen />
+          </AdminLayout>
+        }
+      />
+      <Route
+        path="/admin/users"
+        element={
+          <AdminLayout onLogout={handleLogout} user={currentUser}>
+            <UserManagementScreen />
+          </AdminLayout>
+        }
+      />
       <Route path="*" element={<Navigate to="/" replace />} />
     </Routes>
-    <FloatingAiAssistant user={currentUser} />
+    {!location.pathname.startsWith('/admin') && (
+      <FloatingAiAssistant user={currentUser} />
+    )}
     {showLogoutWarning && (
       <LogoutWarningModal
         user={currentUser}
