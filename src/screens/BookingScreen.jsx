@@ -14,6 +14,7 @@ import Footer from '../components/Footer.jsx'
 import {
   fetchBookings,
   updateBookingStatus as updateMockBookingStatus,
+} from '../api/mockBookingApi.js'
 import { sanitizeMessage, MAX_MESSAGE_LENGTH } from '../utils/sanitize.js'
 import {
   getUserBookings,
