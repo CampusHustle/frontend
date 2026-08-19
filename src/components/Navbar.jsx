@@ -91,18 +91,14 @@ export default function Navbar({ onNavigate }) {
           </span>
         </a>
 
-        <div className="hidden items-center gap-1.5 lg:gap-2 md:flex">
+        <div className="hidden items-center gap-8 md:flex">
           {links.map((link) => (
             <a
               key={link.href}
               href={link.href}
-              className="group relative rounded-full px-3.5 py-1.5 text-sm font-semibold text-white/90 transition-all duration-200 hover:-translate-y-0.5 hover:bg-white/15 hover:text-white hover:shadow-[0_2px_12px_rgba(255,255,255,0.12)] active:scale-95"
+              className="text-sm font-medium text-white/80 transition-all hover:text-white hover:drop-shadow-sm"
             >
-              <span>{link.label}</span>
-              <span
-                aria-hidden="true"
-                className="absolute bottom-1 left-3.5 right-3.5 h-[2px] origin-left scale-x-0 rounded-full bg-white transition-transform duration-250 ease-out group-hover:scale-x-100"
-              />
+              {link.label}
             </a>
           ))}
         </div>
@@ -114,7 +110,7 @@ export default function Navbar({ onNavigate }) {
             id="landing-theme-toggle"
             aria-label={isDark ? 'Switch to light mode' : 'Switch to dark mode'}
             onClick={toggleTheme}
-            className="inline-flex size-9 items-center justify-center rounded-full border border-white/20 bg-white/10 text-white transition-colors hover:bg-white/20 hover:text-white"
+            className="inline-flex size-9 items-center justify-center rounded-full border border-surface-variant text-on-surface-variant transition-colors hover:text-primary"
           >
             {isDark ? (
               <IconSun size={18} aria-hidden="true" />
@@ -136,7 +132,7 @@ export default function Navbar({ onNavigate }) {
               <span>{activeLangObj.label}</span>
               <IconChevronDown
                 size={14}
-                className={`text-white transition-transform duration-200 ${langOpen ? 'rotate-180 text-white' : ''}`}
+                className={`text-white/70 transition-transform duration-200 ${langOpen ? 'rotate-180 text-white' : ''}`}
               />
             </button>
 
@@ -164,13 +160,13 @@ export default function Navbar({ onNavigate }) {
                           className={`flex items-center justify-between rounded-xl px-3 py-2 text-xs font-semibold transition-all duration-150 ${
                             isSelected
                               ? 'bg-hustle-500 text-ink-contrast shadow-sm'
-                              : 'text-white hover:bg-white/15 hover:text-white'
+                              : 'text-white/85 hover:bg-white/15 hover:text-white'
                           }`}
                         >
                           <div className="flex items-center gap-2">
                             <span>{lang.flag}</span>
                             <span>{lang.native}</span>
-                            <span className={`text-[10px] ${isSelected ? 'text-ink-contrast/70' : 'text-white/70'}`}>
+                            <span className={`text-[10px] ${isSelected ? 'text-ink-contrast/70' : 'text-white/50'}`}>
                               ({lang.label})
                             </span>
                           </div>
@@ -187,7 +183,7 @@ export default function Navbar({ onNavigate }) {
           <a
             href="#"
             onClick={handleNav('login')}
-            className="hidden rounded-full border border-transparent px-3.5 py-1.5 text-sm font-semibold text-white transition-all duration-200 hover:border-white/20 hover:bg-white/10 hover:text-white md:inline-block"
+            className="hidden rounded-full border border-transparent px-3.5 py-1.5 text-sm font-semibold text-white/85 transition-all duration-200 hover:border-white/20 hover:bg-white/10 hover:text-white md:inline-block"
           >
             Sign in
           </a>
