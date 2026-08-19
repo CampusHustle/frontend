@@ -18,20 +18,26 @@ import NoteDetailPage from './pages/NoteDetailPage.jsx'
 import NotePaymentPage from './pages/NotePaymentPage.jsx'
 import LogoutWarningModal from './components/LogoutWarningModal.jsx'
 import FloatingAiAssistant from './components/FloatingAiAssistant.jsx'
-import { mockUpdateProfile } from './api/mockAuthApi.js'
+import {
+  logoutUser,
+  updateCurrentUserProfile,
+  getCurrentUserProfile,
+} from './api/authApi.js'
 import {
   clearSession,
   loadSessionUser,
   saveSessionUser,
   loadSessionView,
   saveSessionView,
+  getAccessToken,
 } from './utils/session.js'
-import { profileFromForm } from './utils/user.js'
+import { profileFromForm, hasCompletedProfile } from './utils/user.js'
 
 function getInitialPath() {
   const user = loadSessionUser()
   const savedView = loadSessionView()
   if (user) {
+    if (!hasCompletedProfile(user)) return '/complete-profile'
     if (savedView === 'complete-profile') return '/complete-profile'
     if (savedView === 'marketplace' || savedView === 'market') return '/market'
     if (savedView === 'profile') return '/profile'
@@ -51,12 +57,23 @@ export function AppRoutes() {
   const [currentUser, setCurrentUser] = useState(() => loadSessionUser())
   const [pendingUser, setPendingUser] = useState(null)
   const [pendingEmail, setPendingEmail] = useState('')
+  const [pendingVerificationToken, setPendingVerificationToken] = useState('')
   const [showLogoutWarning, setShowLogoutWarning] = useState(false)
 
   useEffect(() => {
     const initialPath = getInitialPath()
     if (initialPath !== location.pathname && location.pathname === '/') {
       navigate(initialPath, { replace: true })
+    }
+
+    if (getAccessToken()) {
+      getCurrentUserProfile()
+        .then((res) => {
+          if (res?.user) {
+            setCurrentUser(res.user)
+          }
+        })
+        .catch(() => {})
     }
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [])
@@ -94,6 +111,7 @@ export function AppRoutes() {
 
   const handleConfirmLogout = () => {
     setShowLogoutWarning(false)
+    logoutUser().catch(() => {})
     clearSession()
     setCurrentUser(null)
     setPendingUser(null)
@@ -107,9 +125,7 @@ export function AppRoutes() {
   const handleUpdateProfile = (updatedUser) => {
     setCurrentUser(updatedUser)
     saveSessionUser(updatedUser)
-    if (updatedUser?.email) {
-      mockUpdateProfile(updatedUser.email, updatedUser).catch(() => {})
-    }
+    updateCurrentUserProfile(updatedUser).catch(() => {})
   }
 
   return (
@@ -126,7 +142,11 @@ export function AppRoutes() {
             onLoginSuccess={(user) => {
               saveSessionUser(user)
               setCurrentUser(user)
-              handleNavigate('tutor')
+              if (hasCompletedProfile(user)) {
+                handleNavigate('tutor')
+              } else {
+                handleNavigate('complete-profile')
+              }
             }}
           />
         }
@@ -140,6 +160,7 @@ export function AppRoutes() {
             onSignupSuccess={(user) => {
               setPendingUser(user)
               setPendingEmail(user.email)
+              setPendingVerificationToken(user.verificationToken || '')
               handleNavigate('verify-email')
             }}
           />
@@ -150,7 +171,9 @@ export function AppRoutes() {
         element={
           <VerifyEmailScreen
             email={pendingEmail || currentUser?.email || 'student@campus.edu.et'}
+            devToken={pendingVerificationToken}
             onBackToLogin={() => handleNavigate('login')}
+            onVerificationSuccess={() => handleNavigate('login')}
           />
         }
       />
@@ -166,7 +189,7 @@ export function AppRoutes() {
               setCurrentUser(updated)
               saveSessionUser(updated)
               handleNavigate('tutor')
-              mockUpdateProfile(updated.email, profile).catch(() => { })
+              updateCurrentUserProfile(profile).catch(() => {})
             }}
           />
         }
