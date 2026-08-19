@@ -1,4 +1,4 @@
-import { useState } from 'react'
+import { useState, useRef } from 'react'
 import { IconCamera, IconChevronDown, IconSchool, IconUser, IconX } from '@tabler/icons-react'
 
 function TagInput({ id, placeholder, tags, onChange }) {
@@ -60,21 +60,70 @@ const sectionClass = 'border-b border-surface-highest py-6'
 const labelClass = 'text-sm font-semibold text-on-surface'
 const headingClass = 'font-display mb-4 text-xl font-semibold text-primary'
 
+const SCHEDULE_DAYS = ['Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat']
+const SCHEDULE_TIMES = ['9:00 AM', '2:00 PM', '5:00 PM']
+
 export default function CompleteProfileScreen({ user, onFinish }) {
-  const [form, setForm] = useState({
-    firstName: '',
-    lastName: '',
-    bio: '',
-    university: '',
-    major: '',
-    year: '',
-    skills: [],
-    subjects: [],
-    hourlyRate: '',
+  const fileInputRef = useRef(null)
+  const [form, setForm] = useState(() => {
+    const parts = (user?.name || '').split(' ')
+    return {
+      firstName: parts[0] || '',
+      lastName: parts.slice(1).join(' ') || '',
+      profilePicUrl: user?.profilePicUrl || '',
+      bio: user?.bio || '',
+      university: user?.university || '',
+      major: user?.department || user?.major || '',
+      year: user?.year ? String(user.year) : '1',
+      skills: user?.skillsLearning || [],
+      subjects: user?.skillsTeaching || [],
+      hourlyRate: user?.hourlyRate ? String(user.hourlyRate) : '',
+      availability: Array.isArray(user?.availability)
+        ? user.availability
+        : ['Mon-9:00 AM', 'Wed-2:00 PM', 'Fri-9:00 AM'],
+    }
   })
 
   const set = (field) => (e) => setForm((f) => ({ ...f, [field]: e.target.value }))
   const setTags = (field) => (tags) => setForm((f) => ({ ...f, [field]: tags }))
+
+  const handlePhotoUpload = (e) => {
+    const file = e.target.files?.[0]
+    if (file) {
+      const reader = new FileReader()
+      reader.onload = () => {
+        setForm((f) => ({ ...f, profilePicUrl: reader.result }))
+      }
+      reader.readAsDataURL(file)
+    }
+  }
+
+  const toggleSlot = (day, time) => {
+    const slotKey = `${day}-${time}`
+    setForm((f) => {
+      const exists = f.availability.includes(slotKey)
+      return {
+        ...f,
+        availability: exists
+          ? f.availability.filter((s) => s !== slotKey)
+          : [...f.availability, slotKey],
+      }
+    })
+  }
+
+  const selectWeekdays = () => {
+    const all = []
+    SCHEDULE_DAYS.slice(0, 5).forEach((day) => {
+      SCHEDULE_TIMES.forEach((time) => {
+        all.push(`${day}-${time}`)
+      })
+    })
+    setForm((f) => ({ ...f, availability: all }))
+  }
+
+  const clearAvailability = () => {
+    setForm((f) => ({ ...f, availability: [] }))
+  }
 
   const handleSubmit = (e) => {
     e.preventDefault()
@@ -97,14 +146,30 @@ export default function CompleteProfileScreen({ user, onFinish }) {
         <div className="space-y-6 rounded-xl border border-surface-highest bg-surface-lowest p-6 shadow-level-1 md:p-8">
           <form onSubmit={handleSubmit}>
             <section className={`${sectionClass} flex flex-col items-center`}>
+              <input
+                ref={fileInputRef}
+                type="file"
+                accept="image/*"
+                className="hidden"
+                onChange={handlePhotoUpload}
+              />
               <div className="relative mb-4 size-32">
-                <div className="flex size-full items-center justify-center rounded-full border-2 border-dashed border-outline-variant bg-surface-low text-outline">
-                  <IconUser size={40} aria-hidden="true" />
+                <div className="flex size-full items-center justify-center rounded-full border-2 border-dashed border-outline-variant bg-surface-low text-outline overflow-hidden">
+                  {form.profilePicUrl ? (
+                    <img
+                      src={form.profilePicUrl}
+                      alt="Profile preview"
+                      className="size-full object-cover"
+                    />
+                  ) : (
+                    <IconUser size={40} aria-hidden="true" />
+                  )}
                 </div>
                 <button
                   type="button"
                   aria-label="Upload Photo"
-                  className="absolute bottom-0 right-0 rounded-full bg-primary p-2 text-on-primary shadow-level-2 transition-colors hover:bg-tertiary-container"
+                  onClick={() => fileInputRef.current?.click()}
+                  className="absolute bottom-0 right-0 rounded-full bg-primary p-2 text-on-primary shadow-level-2 transition-colors hover:bg-tertiary-container cursor-pointer"
                 >
                   <IconCamera size={16} aria-hidden="true" />
                 </button>
@@ -281,10 +346,77 @@ export default function CompleteProfileScreen({ user, onFinish }) {
               </div>
             </section>
 
+            {/* Weekly Availability Schedule */}
+            <section className={`${sectionClass} space-y-4`}>
+              <div className="flex items-center justify-between">
+                <div>
+                  <h2 className={headingClass}>Weekly Availability Schedule</h2>
+                  <p className="text-xs text-on-surface-variant">
+                    Select the days and time slots when you are available for tutoring sessions.
+                  </p>
+                </div>
+                <div className="flex items-center gap-2">
+                  <button
+                    type="button"
+                    onClick={selectWeekdays}
+                    className="text-xs font-semibold text-primary hover:underline cursor-pointer"
+                  >
+                    Weekdays
+                  </button>
+                  <span className="text-xs text-outline">·</span>
+                  <button
+                    type="button"
+                    onClick={clearAvailability}
+                    className="text-xs font-semibold text-outline hover:text-error cursor-pointer"
+                  >
+                    Clear
+                  </button>
+                </div>
+              </div>
+
+              <div className="grid grid-cols-6 gap-2 pt-2">
+                {SCHEDULE_DAYS.map((day) => (
+                  <div key={day} className="mb-1 text-center text-xs font-bold text-outline">
+                    {day}
+                  </div>
+                ))}
+                {SCHEDULE_TIMES.map((time) =>
+                  SCHEDULE_DAYS.map((day) => {
+                    const slotKey = `${day}-${time}`
+                    const isSelected = form.availability.includes(slotKey)
+                    return (
+                      <button
+                        key={slotKey}
+                        type="button"
+                        onClick={() => toggleSlot(day, time)}
+                        aria-pressed={isSelected}
+                        className={`rounded-lg p-2 text-center text-[11px] sm:text-xs font-semibold transition-all border cursor-pointer ${
+                          isSelected
+                            ? 'bg-primary text-on-primary border-primary shadow-level-1'
+                            : 'bg-surface-high text-on-surface-variant border-surface-highest hover:bg-surface-highest'
+                        }`}
+                      >
+                        {time}
+                      </button>
+                    )
+                  })
+                )}
+              </div>
+
+              <div className="flex items-center gap-4 pt-1">
+                <span className="flex items-center gap-1.5 text-xs text-on-surface-variant font-medium">
+                  <span className="size-3 rounded-full bg-primary border border-primary" aria-hidden="true" /> Open Slot
+                </span>
+                <span className="flex items-center gap-1.5 text-xs text-outline">
+                  <span className="size-3 rounded-full bg-surface-high border border-surface-highest" aria-hidden="true" /> Unavailable
+                </span>
+              </div>
+            </section>
+
             <div className="mt-6 flex justify-end border-t border-surface-highest pt-6">
               <button
                 type="submit"
-                className="rounded-lg bg-secondary-container px-8 py-3 text-sm font-semibold text-on-secondary-container shadow-level-1 transition-all duration-200 hover:bg-secondary hover:text-on-secondary hover:shadow-level-2"
+                className="rounded-lg bg-secondary-container px-8 py-3 text-sm font-semibold text-on-secondary-container shadow-level-1 transition-all duration-200 hover:bg-secondary hover:text-on-secondary hover:shadow-level-2 cursor-pointer"
               >
                 Finish Setup
               </button>
