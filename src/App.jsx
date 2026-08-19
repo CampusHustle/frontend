@@ -156,14 +156,22 @@ export function AppRoutes() {
         element={
           <CompleteProfileScreen
             user={currentUser || pendingUser}
-            onFinish={(form) => {
+            onFinish={async (form) => {
               const profile = profileFromForm(form)
               const active = currentUser || pendingUser || {}
               const updated = { ...active, ...profile }
               setCurrentUser(updated)
               saveSessionUser(updated)
+              try {
+                const res = await updateCurrentUserProfile(profile)
+                if (res?.user) {
+                  setCurrentUser(res.user)
+                  saveSessionUser(res.user)
+                }
+              } catch (err) {
+                console.error('Failed to update profile:', err)
+              }
               handleNavigate('tutor')
-              updateCurrentUserProfile(profile).catch(() => {})
             }}
           />
         }

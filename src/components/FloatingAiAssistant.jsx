@@ -11,29 +11,11 @@ import {
 } from '@tabler/icons-react'
 import { askFelatAi } from '../api/aiApi.js'
 
-function getAssistantReply(message) {
-  const lower = message.toLowerCase()
-  let detailedTip = "I'm Felat (ፈላጥ), your CampusHustle study assistant — ask me anything about your courses, lecture notes, or exam preparation."
-
-  if (lower.includes('opportunity cost')) {
-    detailedTip =
-      "Opportunity cost represents the potential benefits an individual, investor, or business misses out on when choosing one alternative over another. For example, if you spend 2 hours studying for Economics instead of working a part-time shift that pays $40, the opportunity cost of studying is the $40 you could have earned.\n\nKey Takeaways:\n• It measures the cost of forgone opportunities.\n• Essential for evaluating trade-offs in decision making.\n• Relevant in economics, finance, and everyday college choices."
-  } else if (lower.includes('summarize') || lower.includes('note')) {
-    detailedTip =
-      "Here is a structured summary strategy for your notes:\n1. Core Concepts & Definitions\n2. Key Formulas or Models\n3. High-Yield Exam Topics\n4. Real-world Examples & Practice Problems"
-  } else if (lower.includes('quiz') || lower.includes('exam')) {
-    detailedTip =
-      "Here's a quick practice review checklist:\n• Test your active recall without looking at notes.\n• Focus on questions with high difficulty ratings.\n• Practice past exam patterns.\n• Need tutor help? Check the CampusHustle Tutors tab anytime!"
-  }
-
-  return `Here's my answer for "${message}". ${detailedTip}`
-}
-
 function welcomeMessage() {
   return {
     id: 'welcome',
     role: 'ai',
-    content: "Selam! I'm Felat (ፈላጥ), your CampusHustle AI Assistant. How can I help you with your studies today?",
+    content: "Selam! I'm Felat (ፈላጥ), your CampusHustle AI Assistant. Ask me anything about your university courses, concepts, or exam preparation!",
     isStreaming: false,
     timestamp: 'Just now',
   }
@@ -114,14 +96,13 @@ export default function FloatingAiAssistant() {
     setAttachment(null)
     setIsTyping(true)
 
-    // Initial brief thinking state before writing animation starts
     setTimeout(async () => {
       let fullReply
       try {
         const res = await askFelatAi({ question: content || 'Help with my courses' })
-        fullReply = res?.answer || getAssistantReply(content || 'Uploaded Document Analysis')
-      } catch {
-        fullReply = getAssistantReply(content || 'Uploaded Document Analysis')
+        fullReply = res?.answer || "I'm Felat (ፈላጥ), your CampusHustle AI study assistant. How can I help you succeed today?"
+      } catch (err) {
+        fullReply = err.message || "Unable to reach Felat AI assistant. Please check your network connection and make sure you are logged in."
       }
 
       const aiMsgId = `ai-${idRef.current++}`

@@ -29,6 +29,16 @@ describe('FloatingAiAssistant Component', () => {
   })
 
   it('sends a user message and streams writing animation to reveal AI response', async () => {
+    globalThis.fetch = vi.fn().mockResolvedValue({
+      ok: true,
+      status: 200,
+      headers: new Headers({ 'content-type': 'application/json' }),
+      json: async () => ({
+        success: true,
+        answer: 'Opportunity cost represents the potential benefits foregone.',
+      }),
+    })
+
     const user = userEvent.setup()
     render(<FloatingAiAssistant user={null} />)
 
@@ -40,12 +50,12 @@ describe('FloatingAiAssistant Component', () => {
 
     expect(screen.getByText('What is opportunity cost?')).toBeInTheDocument()
 
-    // Fast-forward for simulated AI writing animation to complete
+    // Fast-forward for AI writing animation to complete
     await act(async () => {
       await new Promise((r) => setTimeout(r, 1200))
     })
 
-    expect(screen.getByText(/Here's my answer for "What is opportunity cost\?"/)).toBeInTheDocument()
+    expect(screen.getByText(/Opportunity cost represents the potential benefits foregone/)).toBeInTheDocument()
   })
 
   it('closes on Escape key press', async () => {

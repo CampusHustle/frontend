@@ -65,6 +65,8 @@ const SCHEDULE_TIMES = ['9:00 AM', '2:00 PM', '5:00 PM']
 
 export default function CompleteProfileScreen({ user, onFinish }) {
   const fileInputRef = useRef(null)
+  const [isSubmitting, setIsSubmitting] = useState(false)
+  const [errorMsg, setErrorMsg] = useState('')
   const [form, setForm] = useState(() => {
     const parts = (user?.name || '').split(' ')
     return {
@@ -125,9 +127,17 @@ export default function CompleteProfileScreen({ user, onFinish }) {
     setForm((f) => ({ ...f, availability: [] }))
   }
 
-  const handleSubmit = (e) => {
+  const handleSubmit = async (e) => {
     e.preventDefault()
-    onFinish(form)
+    setIsSubmitting(true)
+    setErrorMsg('')
+    try {
+      await onFinish(form)
+    } catch (err) {
+      setErrorMsg(err?.message || 'Failed to save profile. Please ensure you are logged in and try again.')
+    } finally {
+      setIsSubmitting(false)
+    }
   }
 
   return (
@@ -413,12 +423,19 @@ export default function CompleteProfileScreen({ user, onFinish }) {
               </div>
             </section>
 
+            {errorMsg && (
+              <div className="mt-4 rounded-lg bg-error-container/30 border border-error/40 p-3 text-sm text-error font-medium">
+                {errorMsg}
+              </div>
+            )}
+
             <div className="mt-6 flex justify-end border-t border-surface-highest pt-6">
               <button
                 type="submit"
-                className="rounded-lg bg-secondary-container px-8 py-3 text-sm font-semibold text-on-secondary-container shadow-level-1 transition-all duration-200 hover:bg-secondary hover:text-on-secondary hover:shadow-level-2 cursor-pointer"
+                disabled={isSubmitting}
+                className="rounded-lg bg-secondary-container px-8 py-3 text-sm font-semibold text-on-secondary-container shadow-level-1 transition-all duration-200 hover:bg-secondary hover:text-on-secondary hover:shadow-level-2 cursor-pointer disabled:opacity-50"
               >
-                Finish Setup
+                {isSubmitting ? 'Saving Profile...' : 'Finish Setup'}
               </button>
             </div>
           </form>
