@@ -22,6 +22,7 @@ import {
   INITIAL_MESSAGES,
   subscribeLiveMessages,
 } from '../api/mockChatApi.js'
+import { sanitizeMessage, sanitizeDisplayText, MAX_MESSAGE_LENGTH } from '../utils/sanitize.js'
 
 const STATUS_CONFIG = {
   connecting: {
@@ -213,7 +214,7 @@ function MessageInput({ onSend, onShareContact }) {
   const textareaRef = useRef(null)
 
   function handleSend() {
-    const text = draft.trim()
+    const text = sanitizeMessage(draft)
     if (!text) return
     onSend(text)
     setDraft('')
@@ -233,6 +234,9 @@ function MessageInput({ onSend, onShareContact }) {
     el.style.height = `${Math.min(el.scrollHeight, 160)}px`
     setDraft(el.value)
   }
+
+  const remaining = MAX_MESSAGE_LENGTH - draft.length
+  const nearLimit = remaining <= 100
 
   return (
     <div className="shrink-0 bg-gradient-to-t from-surface via-surface/95 to-transparent px-4 pb-4 pt-2 sm:px-6">
@@ -265,10 +269,12 @@ function MessageInput({ onSend, onShareContact }) {
             ref={textareaRef}
             rows={1}
             value={draft}
+            maxLength={MAX_MESSAGE_LENGTH}
             onInput={handleInput}
             onKeyDown={handleKey}
             placeholder="Type a message…"
             aria-label="Message input"
+            aria-describedby={nearLimit ? 'msg-char-count' : undefined}
             className="max-h-44 w-full resize-none border-0 bg-transparent px-2 py-2 text-sm text-on-surface placeholder:text-outline focus:outline-none focus:ring-0"
           />
 
@@ -281,6 +287,15 @@ function MessageInput({ onSend, onShareContact }) {
             <IconSend size={18} aria-hidden="true" />
           </button>
         </form>
+
+        {nearLimit && (
+          <p
+            id="msg-char-count"
+            className={`mt-1 text-right text-[11px] ${remaining <= 0 ? 'text-error' : 'text-outline'}`}
+          >
+            {remaining} characters remaining
+          </p>
+        )}
       </div>
     </div>
   )
@@ -316,9 +331,9 @@ export default function ChatScreen({ user, onLogout, onNavigate }) {
   function handleConsentConfirm() {
     setConsentOpen(false)
     const contact = {
-      name: user?.name ?? 'Demo Student',
-      email: user?.email ?? 'student@campus.edu.et',
-      phone: user?.phone ?? null,
+      name: sanitizeDisplayText(user?.name ?? 'Demo Student'),
+      email: sanitizeDisplayText(user?.email ?? 'student@campus.edu.et'),
+      phone: user?.phone ? sanitizeDisplayText(user.phone) : null,
     }
     setMessages((prev) => [
       ...prev,

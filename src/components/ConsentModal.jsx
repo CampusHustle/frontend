@@ -1,7 +1,9 @@
 import { useEffect, useRef } from 'react'
 import { IconAddressBook, IconX } from '@tabler/icons-react'
+import { sanitizeDisplayText } from '../utils/sanitize.js'
 
 export default function ConsentModal({ isOpen, peerName, onCancel, onConfirm }) {
+  const safePeerName = sanitizeDisplayText(peerName ?? '')
   const cancelBtnRef = useRef(null)
   const dialogRef = useRef(null)
 
@@ -84,7 +86,7 @@ export default function ConsentModal({ isOpen, peerName, onCancel, onConfirm }) 
             name, email address, and phone number
           </strong>{' '}
           will be shared with{' '}
-          <strong className="font-semibold text-on-surface">{peerName}</strong> so you
+          <strong className="font-semibold text-on-surface">{safePeerName}</strong> so you
           can coordinate outside the platform. Only share if you are comfortable with
           this.
         </p>
