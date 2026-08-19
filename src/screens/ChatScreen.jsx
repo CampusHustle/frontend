@@ -1,4 +1,5 @@
 import { useState, useEffect, useRef, useCallback } from 'react'
+import { useParams } from 'react-router-dom'
 import {
   IconSend,
   IconPaperclip,
@@ -22,6 +23,8 @@ import {
   INITIAL_MESSAGES,
   subscribeLiveMessages,
 } from '../api/mockChatApi.js'
+import { tutors } from '../api/mockUsers.js'
+import { getTutorById } from '../api/tutorApi.js'
 import { sanitizeMessage, sanitizeDisplayText, MAX_MESSAGE_LENGTH } from '../utils/sanitize.js'
 
 const STATUS_CONFIG = {
@@ -302,9 +305,35 @@ function MessageInput({ onSend, onShareContact }) {
 }
 
 export default function ChatScreen({ user, onLogout, onNavigate }) {
+  const { id } = useParams()
   const { status } = useSocket()
   const [messages, setMessages] = useState(INITIAL_MESSAGES)
   const [consentOpen, setConsentOpen] = useState(false)
+  const [peer, setPeer] = useState(() => {
+    if (id) {
+      const found = tutors.find((t) => t.id === id || t._id === id)
+      if (found) return found
+    }
+    return MOCK_PEER
+  })
+
+  useEffect(() => {
+    if (!id) return
+    let isMounted = true
+    getTutorById(id)
+      .then((res) => {
+        if (isMounted && res?.user) {
+          setPeer({
+            ...res.user,
+            id: res.user._id || res.user.id || id,
+          })
+        }
+      })
+      .catch(() => {})
+    return () => {
+      isMounted = false
+    }
+  }, [id])
 
   // Wire up the mock live-message subscription. Swap subscribeLiveMessages
   // for socket.on('chat:message', onIncoming) when the real backend is ready.
@@ -372,7 +401,7 @@ export default function ChatScreen({ user, onLogout, onNavigate }) {
 
             {/* Avatar + online dot */}
             <div className="relative shrink-0">
-              <PeerAvatar peer={MOCK_PEER} size="lg" />
+              <PeerAvatar peer={peer} size="lg" />
               <span
                 aria-label="Online"
                 className="absolute bottom-0 right-0 size-3 rounded-full border-2 border-primary bg-green-400"
@@ -382,7 +411,7 @@ export default function ChatScreen({ user, onLogout, onNavigate }) {
             {/* Name + online label */}
             <div className="min-w-0 flex-1">
               <p className="truncate text-sm font-semibold leading-tight text-on-primary">
-                {MOCK_PEER.name}
+                {peer.name}
               </p>
               <div className="flex items-center gap-1 mt-0.5">
                 <ConnectionStatusBadge status={status} />

@@ -267,6 +267,16 @@ export function AppRoutes() {
           />
         }
       />
+      <Route
+        path="/chat/:id"
+        element={
+          <ChatScreen
+            user={currentUser}
+            onLogout={handleLogout}
+            onNavigate={handleNavigate}
+          />
+        }
+      />
       <Route path="*" element={<Navigate to="/" replace />} />
     </Routes>
     <FloatingAiAssistant user={currentUser} />
