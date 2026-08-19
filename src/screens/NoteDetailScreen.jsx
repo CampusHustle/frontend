@@ -10,6 +10,7 @@ import AppNavbar from '../components/AppNavbar.jsx'
 import DocumentCarousel from '../components/DocumentCarousel.jsx'
 import PurchaseCard from '../components/PurchaseCard.jsx'
 import Footer from '../components/Footer.jsx'
+import { getNoteById } from '../api/noteApi.js'
 
 const DUMMY_NOTE = {
   id: 'note_123',
@@ -63,13 +64,36 @@ export default function NoteDetailScreen({ user, onNavigate, onLogout }) {
   const [isLoading, setIsLoading] = useState(true)
 
   useEffect(() => {
+    let isMounted = true
     const fetchNote = async () => {
       setIsLoading(true)
-      setNote({ ...DUMMY_NOTE, id: id || 'note_123' })
-      setIsLoading(false)
+      try {
+        const res = await getNoteById(id || 'note_123')
+        if (isMounted && (res?.note || res?.data)) {
+          const doc = res.note || res.data
+          setNote({
+            ...DUMMY_NOTE,
+            ...doc,
+            id: doc._id || doc.id || id,
+            price: doc.price || 18.5,
+            priceEtb: doc.price ? Math.round(doc.price * 10) : 150,
+            tutorName: doc.tutorId?.name || doc.tutorName || DUMMY_NOTE.tutorName,
+            tutorUniversity: doc.tutorId?.university || DUMMY_NOTE.tutorUniversity,
+          })
+        } else if (isMounted) {
+          setNote({ ...DUMMY_NOTE, id: id || 'note_123' })
+        }
+      } catch {
+        if (isMounted) setNote({ ...DUMMY_NOTE, id: id || 'note_123' })
+      } finally {
+        if (isMounted) setIsLoading(false)
+      }
     }
 
     fetchNote()
+    return () => {
+      isMounted = false
+    }
   }, [id])
 
   const handleMakePayment = () => {
