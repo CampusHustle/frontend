@@ -42,24 +42,6 @@ function getInitialPath() {
     if (savedView === 'privacy') return '/privacy'
     return '/tutor'
   }
-  if (savedView) {
-    const viewToPath = {
-      login: '/login',
-      signup: '/signup',
-      'verify-email': '/verify-email',
-      'complete-profile': '/complete-profile',
-      'find-tutor': '/tutor',
-      tutor: '/tutor',
-      marketplace: '/market',
-      market: '/market',
-      home: '/',
-      bookings: '/bookings',
-      chat: '/chat',
-      terms: '/terms',
-      privacy: '/privacy',
-    }
-    if (viewToPath[savedView]) return viewToPath[savedView]
-  }
   return '/'
 }
 
