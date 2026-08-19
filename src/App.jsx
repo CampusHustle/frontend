@@ -1,5 +1,5 @@
 import { useState, useEffect } from 'react'
-import { BrowserRouter, Routes, Route, useNavigate, Navigate, useLocation } from 'react-router-dom'
+import { BrowserRouter, Routes, Route, useNavigate, Navigate } from 'react-router-dom'
 import HomeScreen from './screens/HomeScreen.jsx'
 import LoginScreen from './screens/LoginScreen.jsx'
 import SignupScreen from './screens/SignupScreen.jsx'
@@ -27,33 +27,13 @@ import {
   clearSession,
   loadSessionUser,
   saveSessionUser,
-  loadSessionView,
   saveSessionView,
   getAccessToken,
 } from './utils/session.js'
 import { profileFromForm, hasCompletedProfile } from './utils/user.js'
 
-function getInitialPath() {
-  const user = loadSessionUser()
-  const savedView = loadSessionView()
-  if (user) {
-    if (!hasCompletedProfile(user)) return '/complete-profile'
-    if (savedView === 'complete-profile') return '/complete-profile'
-    if (savedView === 'marketplace' || savedView === 'market') return '/market'
-    if (savedView === 'profile') return '/profile'
-    if (savedView === 'post-listing') return '/post-listing'
-    if (savedView === 'bookings') return '/bookings'
-    if (savedView === 'chat') return '/chat'
-    if (savedView === 'terms') return '/terms'
-    if (savedView === 'privacy') return '/privacy'
-    return '/tutor'
-  }
-  return '/'
-}
-
 export function AppRoutes() {
   const navigate = useNavigate()
-  const location = useLocation()
   const [currentUser, setCurrentUser] = useState(() => loadSessionUser())
   const [pendingUser, setPendingUser] = useState(null)
   const [pendingEmail, setPendingEmail] = useState('')
@@ -61,11 +41,6 @@ export function AppRoutes() {
   const [showLogoutWarning, setShowLogoutWarning] = useState(false)
 
   useEffect(() => {
-    const initialPath = getInitialPath()
-    if (initialPath !== location.pathname && location.pathname === '/') {
-      navigate(initialPath, { replace: true })
-    }
-
     if (getAccessToken()) {
       getCurrentUserProfile()
         .then((res) => {
@@ -75,7 +50,6 @@ export function AppRoutes() {
         })
         .catch(() => {})
     }
-    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [])
 
   const handleNavigate = (targetView) => {
