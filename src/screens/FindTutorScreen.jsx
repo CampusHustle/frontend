@@ -102,7 +102,7 @@ function TutorCard({ tutor, onView }) {
       {/* Price & Book Action */}
       <div className="mt-auto flex justify-between items-center pt-4 border-t border-surface-variant z-10">
         <div className="text-base font-bold text-primary">
-          ${tutor.hourlyRate} <span className="text-xs text-on-surface-variant font-normal">/hr</span>
+          br {tutor.hourlyRate} <span className="text-xs text-on-surface-variant font-normal">/hr</span>
         </div>
         <button
           type="button"
@@ -177,7 +177,7 @@ export default function FindTutorScreen({ user, onLogout, onNavigate }) {
         <aside className="md:col-span-3 space-y-6 hidden md:block">
           <div className="bg-surface-lowest p-6 rounded-xl shadow-level-1 border border-surface-variant">
             <h2 className="font-display text-lg font-bold text-primary mb-4">Filters</h2>
-            
+
             <div className="space-y-5">
               {/* Subject Filter */}
               <div>
@@ -214,8 +214,8 @@ export default function FindTutorScreen({ user, onLogout, onNavigate }) {
                   className="w-full accent-primary cursor-pointer"
                 />
                 <div className="flex justify-between text-xs text-outline mt-1 font-medium">
-                  <span>$10</span>
-                  <span>${maxRate === 100 ? '100+' : maxRate}</span>
+                  <span>br 10</span>
+                  <span>br {maxRate === 100 ? '100+' : maxRate}</span>
                 </div>
               </div>
 

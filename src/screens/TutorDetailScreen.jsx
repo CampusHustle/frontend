@@ -161,11 +161,10 @@ function AvailabilityGrid({ slots, selected, onSelect }) {
               type="button"
               onClick={() => onSelect({ day: slot.day, time: slot.time })}
               aria-pressed={isSelected}
-              className={`rounded-md p-2 text-center text-xs font-medium transition-colors border ${
-                isSelected
-                  ? 'bg-primary text-on-primary border-primary shadow-level-1'
-                  : 'bg-primary-container text-on-primary-container border-primary hover:bg-primary hover:text-on-primary'
-              }`}
+              className={`rounded-md p-2 text-center text-xs font-medium transition-colors border ${isSelected
+                ? 'bg-primary text-on-primary border-primary shadow-level-1'
+                : 'bg-primary-container text-on-primary-container border-primary hover:bg-primary hover:text-on-primary'
+                }`}
             >
               {slot.time}
             </button>
@@ -174,7 +173,7 @@ function AvailabilityGrid({ slots, selected, onSelect }) {
       </div>
 
       <div className="mt-5 flex items-center gap-4">
-          <span className="flex items-center gap-1.5 text-xs text-outline">
+        <span className="flex items-center gap-1.5 text-xs text-outline">
           <span className="size-3 rounded-full bg-primary-container border border-primary"></span> Available
         </span>
         <span className="flex items-center gap-1.5 text-xs text-outline">
@@ -243,7 +242,7 @@ function BookingPanel({
   return (
     <div className="flex flex-col justify-center rounded-xl border border-surface-variant bg-surface p-6 shadow-level-1">
       <div className="mb-4 text-center">
-        <span className="font-display text-3xl font-bold text-primary">${tutor.hourlyRate}</span>
+        <span className="font-display text-3xl font-bold text-primary">br {tutor.hourlyRate}</span>
         <span className="text-base text-outline"> / hour</span>
       </div>
 
@@ -311,7 +310,7 @@ function NotesSection({ tutor, onNavigate }) {
     const byDept = dummyNotes.filter((n) => n.department === tutor.department)
     return (byDept.length > 0 ? byDept : dummyNotes).slice(0, 3).map((note, index) => ({
       ...note,
-      price: `$${[10, 5, 8][index] ?? 5}`,
+      price: `br ${[10, 5, 8][index] ?? 5}`,
       Icon: NOTE_ICONS[index % NOTE_ICONS.length],
     }))
   }, [tutor.department])

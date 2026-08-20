@@ -12,6 +12,7 @@ import TutorDetailScreen from './screens/TutorDetailScreen.jsx'
 import PostListingScreen from './screens/PostListingScreen.jsx'
 import BookingScreen from './screens/BookingScreen.jsx'
 import ChatScreen from './screens/ChatScreen.jsx'
+import TutorBookingRequestScreen from './screens/TutorBookingRequestScreen.jsx'
 import TermsScreen from './screens/TermsScreen.jsx'
 import PrivacyScreen from './screens/PrivacyScreen.jsx'
 import NoteDetailPage from './pages/NoteDetailPage.jsx'
@@ -80,6 +81,7 @@ export function AppRoutes() {
       'post-listing': '/post-listing',
       bookings: '/bookings',
       chat: '/chat',
+      'tutor-requests': '/tutor-requests',
       terms: '/terms',
       privacy: '/privacy',
     }
@@ -108,170 +110,180 @@ export function AppRoutes() {
     setCurrentUser(updatedUser)
     saveSessionUser(updatedUser)
     if (updatedUser?.email) {
-      mockUpdateProfile(updatedUser.email, updatedUser).catch(() => {})
+      mockUpdateProfile(updatedUser.email, updatedUser).catch(() => { })
     }
   }
 
   return (
     <>
-    <Routes>
-      <Route path="/" element={<HomeScreen onNavigate={handleNavigate} />} />
-      <Route path="/terms" element={<TermsScreen onNavigate={handleNavigate} />} />
-      <Route path="/privacy" element={<PrivacyScreen onNavigate={handleNavigate} />} />
-      <Route
-        path="/login"
-        element={
-          <LoginScreen
-            onSwitchToSignup={() => handleNavigate('signup')}
-            onLoginSuccess={(user) => {
-              saveSessionUser(user)
-              setCurrentUser(user)
-              handleNavigate('tutor')
-            }}
-          />
-        }
-      />
-      <Route
-        path="/signup"
-        element={
-          <SignupScreen
-            onSwitchToLogin={() => handleNavigate('login')}
-            onNavigate={handleNavigate}
-            onSignupSuccess={(user) => {
-              setPendingUser(user)
-              setPendingEmail(user.email)
-              handleNavigate('verify-email')
-            }}
-          />
-        }
-      />
-      <Route
-        path="/verify-email"
-        element={
-          <VerifyEmailScreen
-            email={pendingEmail || currentUser?.email || 'student@campus.edu.et'}
-            onBackToLogin={() => handleNavigate('login')}
-          />
-        }
-      />
-      <Route
-        path="/complete-profile"
-        element={
-          <CompleteProfileScreen
-            user={currentUser || pendingUser}
-            onFinish={(form) => {
-              const profile = profileFromForm(form)
-              const active = currentUser || pendingUser || {}
-              const updated = { ...active, ...profile }
-              setCurrentUser(updated)
-              saveSessionUser(updated)
-              handleNavigate('tutor')
-              mockUpdateProfile(updated.email, profile).catch(() => { })
-            }}
-          />
-        }
-      />
-      <Route
-        path="/tutor"
-        element={
-          <FindTutorScreen
-            user={currentUser}
-            onLogout={handleLogout}
-            onNavigate={handleNavigate}
-          />
-        }
-      />
-      <Route
-        path="/tutor/:id"
-        element={
-          <TutorDetailScreen
-            user={currentUser}
-            onLogout={handleLogout}
-            onNavigate={handleNavigate}
-          />
-        }
-      />
-      <Route
-        path="/market"
-        element={
-          <MarketplaceScreen
-            user={currentUser}
-            onLogout={handleLogout}
-            onNavigate={handleNavigate}
-          />
-        }
-      />
-      <Route 
-         path="/notes/:id" 
-         element={
-        <NoteDetailPage 
-         user={currentUser} 
-         onNavigate={handleNavigate} 
-         onLogout={handleLogout} 
+      <Routes>
+        <Route path="/" element={<HomeScreen onNavigate={handleNavigate} />} />
+        <Route path="/terms" element={<TermsScreen onNavigate={handleNavigate} />} />
+        <Route path="/privacy" element={<PrivacyScreen onNavigate={handleNavigate} />} />
+        <Route
+          path="/login"
+          element={
+            <LoginScreen
+              onSwitchToSignup={() => handleNavigate('signup')}
+              onLoginSuccess={(user) => {
+                saveSessionUser(user)
+                setCurrentUser(user)
+                handleNavigate('tutor')
+              }}
+            />
+          }
         />
-      } 
-    />
-      <Route 
-         path="/notes/:id/payment" 
-         element={
-        <NotePaymentPage 
-         user={currentUser} 
-         onNavigate={handleNavigate} 
-         onLogout={handleLogout} 
+        <Route
+          path="/signup"
+          element={
+            <SignupScreen
+              onSwitchToLogin={() => handleNavigate('login')}
+              onNavigate={handleNavigate}
+              onSignupSuccess={(user) => {
+                setPendingUser(user)
+                setPendingEmail(user.email)
+                handleNavigate('verify-email')
+              }}
+            />
+          }
         />
-      } 
-    />
-      <Route
-        path="/profile"
-        element={
-          <ProfileScreen
-            user={currentUser}
-            onLogout={handleLogout}
-            onNavigate={handleNavigate}
-            onUpdateProfile={handleUpdateProfile}
-          />
-        }
-      />
-      <Route
-        path="/post-listing"
-        element={
-          <PostListingScreen
-            user={currentUser}
-            onLogout={handleLogout}
-            onNavigate={handleNavigate}
-          />
-        }
-      />
-      <Route
-        path="/bookings"
-        element={
-          <BookingScreen
-            user={currentUser}
-            onLogout={handleLogout}
-            onNavigate={handleNavigate}
-          />
-        }
-      />
-      <Route
-        path="/chat"
-        element={
-          <ChatScreen
-            user={currentUser}
-            onLogout={handleLogout}
-            onNavigate={handleNavigate}
-          />
-        }
-      />
-      <Route path="*" element={<Navigate to="/" replace />} />
-    </Routes>
-    <FloatingAiAssistant user={currentUser} />
-    {showLogoutWarning && (
-      <LogoutWarningModal
-        user={currentUser}
-        onConfirm={handleConfirmLogout}
-        onCancel={handleCancelLogout}
-      />
-    )}
+        <Route
+          path="/verify-email"
+          element={
+            <VerifyEmailScreen
+              email={pendingEmail || currentUser?.email || 'student@campus.edu.et'}
+              onBackToLogin={() => handleNavigate('login')}
+            />
+          }
+        />
+        <Route
+          path="/complete-profile"
+          element={
+            <CompleteProfileScreen
+              user={currentUser || pendingUser}
+              onFinish={(form) => {
+                const profile = profileFromForm(form)
+                const active = currentUser || pendingUser || {}
+                const updated = { ...active, ...profile }
+                setCurrentUser(updated)
+                saveSessionUser(updated)
+                handleNavigate('tutor')
+                mockUpdateProfile(updated.email, profile).catch(() => { })
+              }}
+            />
+          }
+        />
+        <Route
+          path="/tutor"
+          element={
+            <FindTutorScreen
+              user={currentUser}
+              onLogout={handleLogout}
+              onNavigate={handleNavigate}
+            />
+          }
+        />
+        <Route
+          path="/tutor/:id"
+          element={
+            <TutorDetailScreen
+              user={currentUser}
+              onLogout={handleLogout}
+              onNavigate={handleNavigate}
+            />
+          }
+        />
+        <Route
+          path="/market"
+          element={
+            <MarketplaceScreen
+              user={currentUser}
+              onLogout={handleLogout}
+              onNavigate={handleNavigate}
+            />
+          }
+        />
+        <Route
+          path="/notes/:id"
+          element={
+            <NoteDetailPage
+              user={currentUser}
+              onNavigate={handleNavigate}
+              onLogout={handleLogout}
+            />
+          }
+        />
+        <Route
+          path="/notes/:id/payment"
+          element={
+            <NotePaymentPage
+              user={currentUser}
+              onNavigate={handleNavigate}
+              onLogout={handleLogout}
+            />
+          }
+        />
+        <Route
+          path="/profile"
+          element={
+            <ProfileScreen
+              user={currentUser}
+              onLogout={handleLogout}
+              onNavigate={handleNavigate}
+              onUpdateProfile={handleUpdateProfile}
+            />
+          }
+        />
+        <Route
+          path="/post-listing"
+          element={
+            <PostListingScreen
+              user={currentUser}
+              onLogout={handleLogout}
+              onNavigate={handleNavigate}
+            />
+          }
+        />
+        <Route
+          path="/bookings"
+          element={
+            <BookingScreen
+              user={currentUser}
+              onLogout={handleLogout}
+              onNavigate={handleNavigate}
+            />
+          }
+        />
+        <Route
+          path="/chat"
+          element={
+            <ChatScreen
+              user={currentUser}
+              onLogout={handleLogout}
+              onNavigate={handleNavigate}
+            />
+          }
+        />
+        <Route
+          path="/tutor-requests"
+          element={
+            <TutorBookingRequestScreen
+              user={currentUser}
+              onLogout={handleLogout}
+              onNavigate={handleNavigate}
+            />
+          }
+        />
+        <Route path="*" element={<Navigate to="/" replace />} />
+      </Routes>
+      <FloatingAiAssistant user={currentUser} />
+      {showLogoutWarning && (
+        <LogoutWarningModal
+          user={currentUser}
+          onConfirm={handleConfirmLogout}
+          onCancel={handleCancelLogout}
+        />
+      )}
     </>
   )
 }

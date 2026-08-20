@@ -112,3 +112,61 @@ export async function createBooking({ _tutorId, tutorName, tutorProfilePicUrl, s
   _bookings.unshift(newBooking)
   return { ...newBooking }
 }
+
+// Incoming booking requests seen from the tutor's side
+let _tutorRequests = [
+  {
+    id: 'tr-1',
+    studentName: 'Alex Johnson',
+    studentProfilePicUrl: null,
+    subject: 'Calculus 101 Tutoring',
+    message: 'I need help with derivatives and the chain rule before my exam next week.',
+    scheduledDate: 'Oct 18, 2 PM',
+    hourlyRate: 35,
+    status: 'pending',
+  },
+  {
+    id: 'tr-2',
+    studentName: 'Lena Tesfaye',
+    studentProfilePicUrl: null,
+    subject: 'Python for Beginners',
+    message: 'Looking to build my first project. Available most afternoons.',
+    scheduledDate: 'Oct 20, 4 PM',
+    hourlyRate: 35,
+    status: 'pending',
+  },
+  {
+    id: 'tr-3',
+    studentName: 'Dawit Bekele',
+    studentProfilePicUrl: null,
+    subject: 'Data Structures Review',
+    message: 'Preparing for technical interviews. Need 2–3 sessions.',
+    scheduledDate: 'Oct 22, 10 AM',
+    hourlyRate: 35,
+    status: 'confirmed',
+  },
+  {
+    id: 'tr-4',
+    studentName: 'Sara Haile',
+    studentProfilePicUrl: null,
+    subject: 'Linear Algebra',
+    message: 'Struggling with eigenvectors. One session should do it.',
+    scheduledDate: 'Oct 12, 11 AM',
+    hourlyRate: 35,
+    status: 'cancelled',
+  },
+]
+
+export async function fetchTutorRequests() {
+  await delay(DELAY)
+  return _tutorRequests.map((r) => ({ ...r }))
+}
+
+export async function respondToRequest(id, response) {
+  await delay(DELAY)
+  const req = _tutorRequests.find((r) => r.id === id)
+  if (!req) throw new Error(`Request ${id} not found`)
+  if (req.status !== 'pending') throw new Error('Request already responded to')
+  req.status = response === 'accept' ? 'confirmed' : 'cancelled'
+  return { ...req }
+}
