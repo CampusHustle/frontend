@@ -39,7 +39,7 @@ describe('TutorDetailPage', () => {
     expect(screen.getByText('Subject Knowledge')).toBeInTheDocument()
     expect(screen.getByText('Communication')).toBeInTheDocument()
     expect(screen.getByText('Punctuality')).toBeInTheDocument()
-    expect(screen.getByText(`$${tutor.hourlyRate}`)).toBeInTheDocument()
+    expect(screen.getByText(new RegExp(`br ${tutor.hourlyRate}`))).toBeInTheDocument()
     tutor.skillsTeaching.forEach((skill) => {
       expect(screen.getByText(skill)).toBeInTheDocument()
     })

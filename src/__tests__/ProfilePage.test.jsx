@@ -26,7 +26,7 @@ describe('ProfilePage and Edit Profile feature', () => {
     expect(screen.getByRole('heading', { name: 'Daniel Gidey' })).toBeInTheDocument()
     expect(screen.getByText(/Software Engineering • Addis Ababa University • junior/)).toBeInTheDocument()
     expect(screen.getByText('Passionate coding tutor and student.')).toBeInTheDocument()
-    expect(screen.getByText('$30')).toBeInTheDocument()
+    expect(screen.getByText(/br 30/)).toBeInTheDocument()
     expect(screen.getByRole('button', { name: 'Edit Profile' })).toBeInTheDocument()
   })
 
@@ -57,7 +57,7 @@ describe('ProfilePage and Edit Profile feature', () => {
     await user.clear(bioInput)
     await user.type(bioInput, 'Updated bio for semester 2026.')
 
-    const rateInput = screen.getByLabelText('Hourly Tutoring Rate ($/hr)')
+    const rateInput = screen.getByLabelText(/Hourly Tutoring Rate/i)
     await user.clear(rateInput)
     await user.type(rateInput, '45')
 
@@ -69,7 +69,7 @@ describe('ProfilePage and Edit Profile feature', () => {
 
     // Profile card updates
     expect(screen.getByText('Updated bio for semester 2026.')).toBeInTheDocument()
-    expect(screen.getByText('$45')).toBeInTheDocument()
+    expect(screen.getByText(/br 45/)).toBeInTheDocument()
     expect(screen.getByText('Profile updated successfully!')).toBeInTheDocument()
 
     expect(onUpdateProfile).toHaveBeenCalledWith(
