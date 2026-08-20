@@ -18,7 +18,7 @@ import {
 import { tutors } from '../api/mockUsers.js'
 import { getTutorById } from '../api/tutorApi.js'
 import { createBooking } from '../api/bookingApi.js'
-import { dummyNotes } from '../components/AuthNotesMarketplace.jsx'
+import '../components/AuthNotesMarketplace.jsx'
 import Footer from '../components/Footer.jsx'
 import AppNavbar from '../components/AppNavbar.jsx'
 

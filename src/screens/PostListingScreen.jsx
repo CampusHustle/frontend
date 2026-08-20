@@ -1,4 +1,5 @@
 import { useState } from 'react'
+import { useNavigate } from 'react-router-dom'
 import {
   IconArrowRight,
   IconBold,
@@ -21,7 +22,8 @@ function sectionClass() {
   return 'glass-card rounded-2xl p-6 sm:p-10'
 }
 
-export default function PostListingScreen({ user, onLogout, onNavigate }) {
+export default function PostListingScreen({ user, onLogout, onNavigate, onAddNote }) {
+  const navigate = useNavigate()
   const [title, setTitle] = useState('')
   const [subject, setSubject] = useState('')
   const [contentType, setContentType] = useState('')
@@ -43,6 +45,27 @@ export default function PostListingScreen({ user, onLogout, onNavigate }) {
   const handlePublish = async () => {
     const successMsg = !isPremium ? 'Tutorial published!' : 'Premium tutorial published!'
 
+    // Construct Mock API payload (Lifting State Up)
+    const numericPriceValue = isPremium ? parseFloat(price) || 0 : 0
+    const formattedPrice = numericPriceValue > 0 ? `$${numericPriceValue.toFixed(2)}` : 'Free'
+    
+    const newNote = {
+      id: Date.now(),
+      contentType: contentType || 'PDF Notes',
+      price: formattedPrice,
+      numericPrice: numericPriceValue,
+      title: title.trim() || 'Untitled',
+      course: subject || 'Unspecified',
+      department: subject || 'Unspecified',
+      authorName: user?.name || 'Current User',
+      authorAvatar: user?.avatar || 'https://i.pravatar.cc/150?u=current',
+      coverImage: 'https://images.unsplash.com/photo-1516116216624-53e697fedbea?w=400&q=80',
+    }
+    
+    if (onAddNote) {
+      onAddNote(newNote)
+    }
+
     try {
       if (documentFile) {
         const formData = new FormData()
@@ -59,6 +82,11 @@ export default function PostListingScreen({ user, onLogout, onNavigate }) {
     }
 
     handleAction(successMsg)
+    
+    // Redirect to marketplace
+    setTimeout(() => {
+      navigate('/market')
+    }, 1200)
   }
 
   const publishDisabled = !title.trim() || !subject
