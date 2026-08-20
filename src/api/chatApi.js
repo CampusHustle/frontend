@@ -1,6 +1,14 @@
 import apiClient from './client.js'
 
 /**
+ * Retrieves all active conversations for the authenticated user
+ * @returns {Promise<{ success: boolean, count: number, conversations: Array }>}
+ */
+export async function getConversations() {
+  return apiClient.get('/api/messages/conversations')
+}
+
+/**
  * Retrieves conversation message history by conversationId
  * @param {string} conversationId
  * @param {{ page?: number, limit?: number }} [params]

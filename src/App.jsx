@@ -1,5 +1,5 @@
 import { useState, useEffect } from 'react'
-import { BrowserRouter, Routes, Route, useNavigate, Navigate } from 'react-router-dom'
+import { BrowserRouter, Routes, Route, useNavigate, useLocation, Navigate } from 'react-router-dom'
 import HomeScreen from './screens/HomeScreen.jsx'
 import LoginScreen from './screens/LoginScreen.jsx'
 import SignupScreen from './screens/SignupScreen.jsx'
@@ -12,12 +12,19 @@ import TutorDetailScreen from './screens/TutorDetailScreen.jsx'
 import PostListingScreen from './screens/PostListingScreen.jsx'
 import BookingScreen from './screens/BookingScreen.jsx'
 import ChatScreen from './screens/ChatScreen.jsx'
+import AiChatScreen from './screens/AiChatScreen.jsx'
 import TermsScreen from './screens/TermsScreen.jsx'
 import PrivacyScreen from './screens/PrivacyScreen.jsx'
 import NoteDetailPage from './pages/NoteDetailPage.jsx'
 import NotePaymentPage from './pages/NotePaymentPage.jsx'
 import LogoutWarningModal from './components/LogoutWarningModal.jsx'
 import FloatingAiAssistant from './components/FloatingAiAssistant.jsx'
+import { AdminLayout } from './admin/components/AdminLayout.jsx'
+import DashboardOverviewScreen from './admin/screens/DashboardOverviewScreen.jsx'
+import VerificationQueueScreen from './admin/screens/VerificationQueueScreen.jsx'
+import ReportsModerationScreen from './admin/screens/ReportsModerationScreen.jsx'
+import ReportDetailScreen from './admin/screens/ReportDetailScreen.jsx'
+import UserManagementScreen from './admin/screens/UserManagementScreen.jsx'
 import {
   logoutUser,
   updateCurrentUserProfile,
@@ -114,6 +121,7 @@ export function AppRoutes() {
   const handleAddNote = (newNote) => {
     setAvailableTutorials((prev) => [newNote, ...prev])
   }
+  const location = useLocation()
   const [currentUser, setCurrentUser] = useState(() => loadSessionUser())
   const [pendingUser, setPendingUser] = useState(null)
   const [pendingEmail, setPendingEmail] = useState('')
@@ -133,10 +141,6 @@ export function AppRoutes() {
   }, [])
 
   const handleNavigate = (targetView) => {
-    if (targetView === 'assistant') {
-      window.dispatchEvent(new CustomEvent('open-ai-assistant'))
-      return
-    }
     const routeMap = {
       home: '/',
       login: '/login',
@@ -151,6 +155,8 @@ export function AppRoutes() {
       'post-listing': '/post-listing',
       bookings: '/bookings',
       chat: '/chat',
+      assistant: '/assistant',
+      ai: '/assistant',
       terms: '/terms',
       privacy: '/privacy',
     }
@@ -248,10 +254,11 @@ export function AppRoutes() {
                   setCurrentUser(res.user)
                   saveSessionUser(res.user)
                 }
+                handleNavigate('tutor')
               } catch (err) {
-                console.error('Failed to update profile:', err)
+                console.error('Failed to update profile in database:', err)
+                throw err
               }
-              handleNavigate('tutor')
             }}
           />
         }
@@ -360,9 +367,31 @@ export function AppRoutes() {
           />
         }
       />
+      <Route
+        path="/assistant"
+        element={
+          <AiChatScreen
+            user={currentUser}
+            onLogout={handleLogout}
+            onNavigate={handleNavigate}
+          />
+        }
+      />
+      <Route
+        path="/ai"
+        element={
+          <AiChatScreen
+            user={currentUser}
+            onLogout={handleLogout}
+            onNavigate={handleNavigate}
+          />
+        }
+      />
       <Route path="*" element={<Navigate to="/" replace />} />
     </Routes>
-    <FloatingAiAssistant user={currentUser} />
+    {!location.pathname.startsWith('/admin') && (
+      <FloatingAiAssistant user={currentUser} />
+    )}
     {showLogoutWarning && (
       <LogoutWarningModal
         user={currentUser}
