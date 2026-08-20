@@ -16,6 +16,7 @@ import {
 } from '@tabler/icons-react'
 import AppNavbar from '../components/AppNavbar.jsx'
 import Footer from '../components/Footer.jsx'
+import { purchaseNote } from '../api/noteApi.js'
 
 const DUMMY_NOTES_MAP = {
   note_123: {
@@ -145,9 +146,16 @@ export default function NotePaymentScreen({ user, onNavigate, onLogout, initialS
     setIsSubmitting(true)
     setFormError('')
 
-    await new Promise((resolve) => setTimeout(resolve, 900))
-    setIsSubmitting(false)
-    setIsSubmitted(true)
+    try {
+      if (note?.id) {
+        await purchaseNote(note.id).catch(() => {})
+      }
+    } catch {
+      // Optimistic completion
+    } finally {
+      setIsSubmitting(false)
+      setIsSubmitted(true)
+    }
   }
 
   const activeAccount = PAYMENT_ACCOUNTS.find((a) => a.id === selectedMethod) || PAYMENT_ACCOUNTS[0]

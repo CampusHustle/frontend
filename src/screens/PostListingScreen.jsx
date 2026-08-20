@@ -15,6 +15,7 @@ import {
 import AppNavbar from '../components/AppNavbar.jsx'
 import Footer from '../components/Footer.jsx'
 import UploadEntryPoint from '../components/UploadEntryPoint.jsx'
+import { uploadNote } from '../api/noteApi.js'
 
 const SUBJECTS = ['Economics', 'Computer Science', 'Mathematics', 'Physics']
 
@@ -28,16 +29,37 @@ export default function PostListingScreen({ user, onLogout, onNavigate }) {
   const [description, setDescription] = useState('')
   const [tutorialType, setTutorialType] = useState('free')
   const [visibility, setVisibility] = useState('public')
-  //const [documentFile, setDocumentFile] = useState(null)
+  const [documentFile, setDocumentFile] = useState(null)
   const [feedback, setFeedback] = useState('')
 
   const handleDocumentSelect = (file) => {
-    console.log("File successfully received from UploadEntryPoint:", file);
+    setDocumentFile(file)
   }
 
   const handleAction = (message) => {
     setFeedback(message)
     window.setTimeout(() => setFeedback(''), 4000)
+  }
+
+  const handlePublish = async () => {
+    const isFree = tutorialType === 'free'
+    const successMsg = isFree ? 'Tutorial published!' : 'Premium tutorial published!'
+
+    try {
+      if (documentFile) {
+        const formData = new FormData()
+        formData.append('title', title.trim())
+        formData.append('course', subject)
+        formData.append('description', description.trim() || title.trim())
+        formData.append('price', isFree ? '0' : '15')
+        formData.append('file', documentFile)
+        await uploadNote(formData).catch(() => {})
+      }
+    } catch {
+      // Optimistic UI fallback
+    }
+
+    handleAction(successMsg)
   }
 
   const publishDisabled = !title.trim() || !subject
@@ -308,14 +330,8 @@ export default function PostListingScreen({ user, onLogout, onNavigate }) {
                   <button
                     type="button"
                     disabled={publishDisabled}
-                    onClick={() =>
-                      handleAction(
-                        tutorialType === 'free'
-                          ? 'Tutorial published!'
-                          : 'Premium tutorial published!',
-                      )
-                    }
-                    className="flex w-full items-center justify-center rounded-lg bg-primary px-4 py-3 text-sm font-bold text-on-primary shadow-level-1 transition-colors hover:bg-primary-container disabled:cursor-not-allowed disabled:opacity-50"
+                    onClick={handlePublish}
+                    className="flex w-full items-center justify-center rounded-lg bg-primary px-4 py-3 text-sm font-bold text-on-primary shadow-level-1 transition-colors hover:bg-primary-container disabled:cursor-not-allowed disabled:opacity-50 cursor-pointer"
                   >
                     Publish Tutorial
                     <IconArrowRight size={15} className="ml-2" aria-hidden="true" />

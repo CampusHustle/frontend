@@ -1,13 +1,79 @@
-import { describe, it, expect, beforeEach } from 'vitest'
+import { describe, it, expect, beforeEach, afterEach, vi } from 'vitest'
 import { render, screen } from '@testing-library/react'
 import userEvent from '@testing-library/user-event'
 import App from '../App.jsx'
 import { saveSessionUser, saveSessionView } from '../utils/session.js'
+import { mockUsers } from '../api/mockUsers.js'
 
 describe('App navigation and session persistence', () => {
   beforeEach(() => {
     localStorage.clear()
     window.history.pushState({}, '', '/')
+    globalThis.fetch = vi.fn().mockImplementation((url, options) => {
+      let body
+      try {
+        body = options?.body ? JSON.parse(options.body) : {}
+      } catch {
+        body = {}
+      }
+
+      const mockUser = {
+        id: 'u-demo',
+        name: body.name || 'Demo Student',
+        email: body.email || 'student@campus.edu.et',
+        university: 'Campus University',
+        department: 'General Studies',
+        year: 'sophomore',
+        bio: 'Demo account used to walk through the CampusHustle flow.',
+        role: 'student',
+        rating: { knowledge: 4.8, communication: 4.8, punctuality: 4.8, count: 5 },
+        skillsTeaching: ['Python'],
+        skillsLearning: [],
+      }
+
+      if (url.includes('/api/users/u-sarah')) {
+        const sarah = mockUsers.find((u) => u.id === 'u-sarah')
+        return Promise.resolve({
+          ok: true,
+          status: 200,
+          headers: new Headers({ 'content-type': 'application/json' }),
+          json: async () => ({ success: true, user: sarah }),
+        })
+      }
+
+      if (url.includes('/api/users/skills')) {
+        return Promise.resolve({
+          ok: true,
+          status: 200,
+          headers: new Headers({ 'content-type': 'application/json' }),
+          json: async () => ({ success: true, tags: ['Computer Science', 'Mathematics', 'Physics'] }),
+        })
+      }
+
+      if (url.includes('/api/users/search')) {
+        return Promise.resolve({
+          ok: true,
+          status: 200,
+          headers: new Headers({ 'content-type': 'application/json' }),
+          json: async () => ({ success: true, count: 0, tutors: [] }),
+        })
+      }
+
+      return Promise.resolve({
+        ok: true,
+        status: 200,
+        headers: new Headers({ 'content-type': 'application/json' }),
+        json: async () => ({
+          user: mockUser,
+          accessToken: 'test-token',
+          refreshToken: 'test-refresh',
+        }),
+      })
+    })
+  })
+
+  afterEach(() => {
+    vi.restoreAllMocks()
   })
 
   it('renders landing page by default when not logged in', () => {
@@ -109,7 +175,8 @@ describe('App navigation and session persistence', () => {
 
     expect(await screen.findByRole('heading', { name: 'Find Tutors' })).toBeInTheDocument()
 
-    await user.click(screen.getByRole('button', { name: 'View profile of Sarah Johnson' }))
+    const tutorCard = await screen.findByRole('button', { name: 'View profile of Sarah Johnson' })
+    await user.click(tutorCard)
 
     expect(await screen.findByRole('heading', { name: /Sarah Johnson/ })).toBeInTheDocument()
     expect(screen.getByRole('heading', { name: 'Rating Breakdown' })).toBeInTheDocument()

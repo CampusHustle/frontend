@@ -1,5 +1,5 @@
 import { useState, useEffect } from 'react'
-import { BrowserRouter, Routes, Route, useNavigate, Navigate, useLocation } from 'react-router-dom'
+import { BrowserRouter, Routes, Route, useNavigate, Navigate } from 'react-router-dom'
 import HomeScreen from './screens/HomeScreen.jsx'
 import LoginScreen from './screens/LoginScreen.jsx'
 import SignupScreen from './screens/SignupScreen.jsx'
@@ -19,47 +19,36 @@ import NoteDetailPage from './pages/NoteDetailPage.jsx'
 import NotePaymentPage from './pages/NotePaymentPage.jsx'
 import LogoutWarningModal from './components/LogoutWarningModal.jsx'
 import FloatingAiAssistant from './components/FloatingAiAssistant.jsx'
-import { mockUpdateProfile } from './api/mockAuthApi.js'
+import {
+  logoutUser,
+  updateCurrentUserProfile,
+  getCurrentUserProfile,
+} from './api/authApi.js'
 import {
   clearSession,
   loadSessionUser,
   saveSessionUser,
-  loadSessionView,
   saveSessionView,
+  getAccessToken,
 } from './utils/session.js'
-import { profileFromForm } from './utils/user.js'
-
-function getInitialPath() {
-  const user = loadSessionUser()
-  const savedView = loadSessionView()
-  if (user) {
-    if (savedView === 'complete-profile') return '/complete-profile'
-    if (savedView === 'marketplace' || savedView === 'market') return '/market'
-    if (savedView === 'profile') return '/profile'
-    if (savedView === 'post-listing') return '/post-listing'
-    if (savedView === 'bookings') return '/bookings'
-    if (savedView === 'chat') return '/chat'
-    if (savedView === 'terms') return '/terms'
-    if (savedView === 'privacy') return '/privacy'
-    return '/tutor'
-  }
-  return '/'
-}
+import { profileFromForm, hasCompletedProfile } from './utils/user.js'
 
 export function AppRoutes() {
   const navigate = useNavigate()
-  const location = useLocation()
   const [currentUser, setCurrentUser] = useState(() => loadSessionUser())
   const [pendingUser, setPendingUser] = useState(null)
   const [pendingEmail, setPendingEmail] = useState('')
+  const [pendingVerificationToken, setPendingVerificationToken] = useState('')
   const [showLogoutWarning, setShowLogoutWarning] = useState(false)
 
   useEffect(() => {
-    const initialPath = getInitialPath()
-    if (initialPath !== location.pathname && location.pathname === '/') {
-      navigate(initialPath, { replace: true })
+    if (getAccessToken()) {
+      getCurrentUserProfile()
+        .then((res) => {
+          if (res?.user) setCurrentUser(res.user)
+        })
+        .catch(() => { })
     }
-    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [])
 
   const handleNavigate = (targetView) => {
@@ -85,33 +74,28 @@ export function AppRoutes() {
       terms: '/terms',
       privacy: '/privacy',
     }
-    const path = routeMap[targetView] || (typeof targetView === 'string' && targetView.startsWith('/') ? targetView : '/')
+    const path =
+      routeMap[targetView] ||
+      (typeof targetView === 'string' && targetView.startsWith('/') ? targetView : '/')
     saveSessionView(targetView)
     navigate(path)
   }
 
-  const handleLogout = () => {
-    setShowLogoutWarning(true)
-  }
+  const handleLogout = () => setShowLogoutWarning(true)
 
   const handleConfirmLogout = () => {
     setShowLogoutWarning(false)
+    logoutUser().catch(() => { })
     clearSession()
     setCurrentUser(null)
     setPendingUser(null)
     handleNavigate('home')
   }
 
-  const handleCancelLogout = () => {
-    setShowLogoutWarning(false)
-  }
-
   const handleUpdateProfile = (updatedUser) => {
     setCurrentUser(updatedUser)
     saveSessionUser(updatedUser)
-    if (updatedUser?.email) {
-      mockUpdateProfile(updatedUser.email, updatedUser).catch(() => { })
-    }
+    updateCurrentUserProfile(updatedUser).catch(() => { })
   }
 
   return (
@@ -120,6 +104,7 @@ export function AppRoutes() {
         <Route path="/" element={<HomeScreen onNavigate={handleNavigate} />} />
         <Route path="/terms" element={<TermsScreen onNavigate={handleNavigate} />} />
         <Route path="/privacy" element={<PrivacyScreen onNavigate={handleNavigate} />} />
+
         <Route
           path="/login"
           element={
@@ -128,11 +113,16 @@ export function AppRoutes() {
               onLoginSuccess={(user) => {
                 saveSessionUser(user)
                 setCurrentUser(user)
-                handleNavigate('tutor')
+                if (hasCompletedProfile(user)) {
+                  handleNavigate('tutor')
+                } else {
+                  handleNavigate('complete-profile')
+                }
               }}
             />
           }
         />
+
         <Route
           path="/signup"
           element={
@@ -142,37 +132,51 @@ export function AppRoutes() {
               onSignupSuccess={(user) => {
                 setPendingUser(user)
                 setPendingEmail(user.email)
+                setPendingVerificationToken(user.verificationToken || '')
                 handleNavigate('verify-email')
               }}
             />
           }
         />
+
         <Route
           path="/verify-email"
           element={
             <VerifyEmailScreen
               email={pendingEmail || currentUser?.email || 'student@campus.edu.et'}
+              devToken={pendingVerificationToken}
               onBackToLogin={() => handleNavigate('login')}
+              onVerificationSuccess={() => handleNavigate('login')}
             />
           }
         />
+
         <Route
           path="/complete-profile"
           element={
             <CompleteProfileScreen
               user={currentUser || pendingUser}
-              onFinish={(form) => {
+              onFinish={async (form) => {
                 const profile = profileFromForm(form)
                 const active = currentUser || pendingUser || {}
                 const updated = { ...active, ...profile }
                 setCurrentUser(updated)
                 saveSessionUser(updated)
+                try {
+                  const res = await updateCurrentUserProfile(profile)
+                  if (res?.user) {
+                    setCurrentUser(res.user)
+                    saveSessionUser(res.user)
+                  }
+                } catch {
+                  // proceed with local state on API failure
+                }
                 handleNavigate('tutor')
-                mockUpdateProfile(updated.email, profile).catch(() => { })
               }}
             />
           }
         />
+
         <Route
           path="/tutor"
           element={
@@ -183,6 +187,7 @@ export function AppRoutes() {
             />
           }
         />
+
         <Route
           path="/tutor/:id"
           element={
@@ -193,6 +198,7 @@ export function AppRoutes() {
             />
           }
         />
+
         <Route
           path="/market"
           element={
@@ -203,6 +209,7 @@ export function AppRoutes() {
             />
           }
         />
+
         <Route
           path="/notes/:id"
           element={
@@ -213,6 +220,7 @@ export function AppRoutes() {
             />
           }
         />
+
         <Route
           path="/notes/:id/payment"
           element={
@@ -223,6 +231,7 @@ export function AppRoutes() {
             />
           }
         />
+
         <Route
           path="/profile"
           element={
@@ -234,6 +243,7 @@ export function AppRoutes() {
             />
           }
         />
+
         <Route
           path="/post-listing"
           element={
@@ -244,6 +254,7 @@ export function AppRoutes() {
             />
           }
         />
+
         <Route
           path="/bookings"
           element={
@@ -254,6 +265,7 @@ export function AppRoutes() {
             />
           }
         />
+
         <Route
           path="/chat"
           element={
@@ -264,6 +276,18 @@ export function AppRoutes() {
             />
           }
         />
+
+        <Route
+          path="/chat/:id"
+          element={
+            <ChatScreen
+              user={currentUser}
+              onLogout={handleLogout}
+              onNavigate={handleNavigate}
+            />
+          }
+        />
+
         <Route
           path="/tutor-requests"
           element={
@@ -274,14 +298,17 @@ export function AppRoutes() {
             />
           }
         />
+
         <Route path="*" element={<Navigate to="/" replace />} />
       </Routes>
+
       <FloatingAiAssistant user={currentUser} />
+
       {showLogoutWarning && (
         <LogoutWarningModal
           user={currentUser}
           onConfirm={handleConfirmLogout}
-          onCancel={handleCancelLogout}
+          onCancel={() => setShowLogoutWarning(false)}
         />
       )}
     </>

@@ -1,9 +1,11 @@
-import { useMemo, useState } from 'react'
+import { useMemo, useState, useEffect } from 'react'
 import {
   IconCircleCheckFilled,
   IconStarFilled,
+  IconLoader2,
 } from '@tabler/icons-react'
-import { tutors } from '../api/mockUsers.js'
+import { tutors as initialTutors } from '../api/mockUsers.js'
+import { searchTutors, getSkillTags } from '../api/tutorApi.js'
 import Footer from '../components/Footer.jsx'
 import AppNavbar from '../components/AppNavbar.jsx'
 
@@ -46,6 +48,13 @@ function TutorCard({ tutor, onView }) {
     }
   }
 
+  const ratingValue =
+    typeof tutor.rating?.knowledge === 'number'
+      ? tutor.rating.knowledge
+      : typeof tutor.rating === 'number'
+        ? tutor.rating
+        : 5.0
+
   return (
     <div
       role="button"
@@ -70,11 +79,15 @@ function TutorCard({ tutor, onView }) {
                   aria-label="Verified tutor"
                 />
               </div>
-              <p className="text-xs text-on-surface-variant truncate mt-0.5">{tutor.department}, {tutor.university}</p>
+              <p className="text-xs text-on-surface-variant truncate mt-0.5">
+                {tutor.department || 'Academic Tutor'}{tutor.university ? `, ${tutor.university}` : ''}
+              </p>
             </div>
             <div className="flex items-center gap-1 bg-primary-container px-2.5 py-1 rounded-full shrink-0">
               <IconStarFilled size={14} className="text-on-primary-container" aria-hidden="true" />
-              <span className="text-sm font-semibold text-on-primary-container">{tutor.rating.knowledge.toFixed(1)}</span>
+              <span className="text-sm font-semibold text-on-primary-container">
+                {ratingValue.toFixed(1)}
+              </span>
             </div>
           </div>
         </div>
@@ -102,7 +115,7 @@ function TutorCard({ tutor, onView }) {
       {/* Price & Book Action */}
       <div className="mt-auto flex justify-between items-center pt-4 border-t border-surface-variant z-10">
         <div className="text-base font-bold text-primary">
-          br {tutor.hourlyRate} <span className="text-xs text-on-surface-variant font-normal">/hr</span>
+          br {tutor.hourlyRate || 25} <span className="text-xs text-on-surface-variant font-normal">/hr</span>
         </div>
         <button
           type="button"
@@ -110,7 +123,7 @@ function TutorCard({ tutor, onView }) {
             e.stopPropagation()
             onView(tutor)
           }}
-          className="border border-primary text-primary text-sm font-semibold px-4 py-1.5 rounded-lg hover:bg-primary hover:text-on-primary transition-colors"
+          className="border border-primary text-primary text-sm font-semibold px-4 py-1.5 rounded-lg hover:bg-primary hover:text-on-primary transition-colors cursor-pointer"
         >
           Book
         </button>
@@ -126,7 +139,73 @@ export default function FindTutorScreen({ user, onLogout, onNavigate }) {
   const [selectedDepts, setSelectedDepts] = useState([])
   const [maxRate, setMaxRate] = useState(60)
   const [minRating, setMinRating] = useState(0)
+  const [sortBy, setSortBy] = useState('rating')
   const [visibleCount, setVisibleCount] = useState(VISIBLE_STEP)
+  const [tutorList, setTutorList] = useState(initialTutors)
+  const [skillTags, setSkillTags] = useState([])
+  const [isLoading, setIsLoading] = useState(false)
+
+  // Fetch canonical skill tags on mount
+  useEffect(() => {
+    let isMounted = true
+    async function loadTags() {
+      try {
+        const res = await getSkillTags()
+        if (isMounted && res?.tags && Array.isArray(res.tags)) {
+          setSkillTags(res.tags)
+        }
+      } catch {
+        // Fallback to static tags if network is unavailable
+      }
+    }
+    loadTags()
+    return () => {
+      isMounted = false
+    }
+  }, [])
+
+  // Live search and filter querying
+  useEffect(() => {
+    let isMounted = true
+
+    const timer = setTimeout(async () => {
+      setIsLoading(true)
+      try {
+        const res = await searchTutors({
+          q: query.trim() || undefined,
+          department: selectedDepts.length === 1 ? selectedDepts[0] : undefined,
+          maxPrice: maxRate < 100 ? maxRate : undefined,
+          minRating: minRating > 0 ? minRating : undefined,
+          sortBy: sortBy === 'Price: Low to High' ? 'price_asc' : sortBy === 'Highest Rated' ? 'rating' : 'rating',
+        })
+
+        if (isMounted && res?.tutors && Array.isArray(res.tutors) && res.tutors.length > 0) {
+          const formatted = res.tutors.map((t) => ({
+            ...t,
+            id: t._id || t.id,
+            rating: t.rating?.knowledge
+              ? t.rating
+              : { knowledge: 5.0, count: 1, communication: 5.0, punctuality: 5.0 },
+          }))
+          setTutorList(formatted)
+        } else if (isMounted && res?.tutors && Array.isArray(res.tutors) && res.tutors.length === 0) {
+          // Empty result from backend
+          if (query || selectedDepts.length > 0) {
+            setTutorList([])
+          }
+        }
+      } catch {
+        // Retain initial seed list on offline test mock
+      } finally {
+        if (isMounted) setIsLoading(false)
+      }
+    }, 200)
+
+    return () => {
+      isMounted = false
+      clearTimeout(timer)
+    }
+  }, [query, selectedDepts, maxRate, minRating, sortBy])
 
   const handleDeptToggle = (dept) => {
     setSelectedDepts((prev) =>
@@ -137,19 +216,26 @@ export default function FindTutorScreen({ user, onLogout, onNavigate }) {
 
   const filtered = useMemo(() => {
     const q = query.trim().toLowerCase()
-    return tutors.filter((t) => {
+    return tutorList.filter((t) => {
       const matchDept = selectedDepts.length === 0 || selectedDepts.includes(t.department)
-      const matchRate = t.hourlyRate <= maxRate
-      const matchRating = t.rating.knowledge >= minRating
+      const hourly = typeof t.hourlyRate === 'number' ? t.hourlyRate : 0
+      const matchRate = hourly <= maxRate
+      const rating =
+        typeof t.rating?.knowledge === 'number'
+          ? t.rating.knowledge
+          : typeof t.rating === 'number'
+            ? t.rating
+            : 5.0
+      const matchRating = rating >= minRating
       const matchQuery =
         !q ||
-        t.name.toLowerCase().includes(q) ||
-        t.university.toLowerCase().includes(q) ||
-        t.department.toLowerCase().includes(q) ||
-        t.skillsTeaching.some((s) => s.toLowerCase().includes(q))
+        (t.name && t.name.toLowerCase().includes(q)) ||
+        (t.university && t.university.toLowerCase().includes(q)) ||
+        (t.department && t.department.toLowerCase().includes(q)) ||
+        (Array.isArray(t.skillsTeaching) && t.skillsTeaching.some((s) => s.toLowerCase().includes(q)))
       return matchDept && matchRate && matchRating && matchQuery
     })
-  }, [query, selectedDepts, maxRate, minRating])
+  }, [tutorList, query, selectedDepts, maxRate, minRating])
 
   const visibleTutors = useMemo(
     () => filtered.slice(0, visibleCount),
@@ -159,6 +245,16 @@ export default function FindTutorScreen({ user, onLogout, onNavigate }) {
   const handleViewTutor = (tutor) => {
     onNavigate?.(`/tutor/${tutor.id}`)
   }
+
+  const availableDepts = useMemo(() => {
+    const depts = new Set(['Computer Science', 'Mathematics', 'Physics', 'Electrical Engineering'])
+    if (Array.isArray(skillTags)) {
+      skillTags.slice(0, 8).forEach((tag) => {
+        depts.add(tag.charAt(0).toUpperCase() + tag.slice(1))
+      })
+    }
+    return Array.from(depts).slice(0, 6)
+  }, [skillTags])
 
   return (
     <div className="flex min-h-screen flex-col bg-surface font-body text-on-surface">
@@ -183,7 +279,7 @@ export default function FindTutorScreen({ user, onLogout, onNavigate }) {
               <div>
                 <h3 className="text-xs font-bold uppercase tracking-wider text-outline mb-2">Subject</h3>
                 <div className="space-y-2">
-                  {['Computer Science', 'Mathematics', 'Physics'].map((dept) => (
+                  {availableDepts.map((dept) => (
                     <label key={dept} className="flex items-center gap-2 cursor-pointer group">
                       <input
                         type="checkbox"
@@ -255,7 +351,7 @@ export default function FindTutorScreen({ user, onLogout, onNavigate }) {
             <button
               type="button"
               onClick={() => onNavigate?.('assistant')}
-              className="w-full bg-primary text-on-primary text-sm font-semibold py-2 rounded-lg shadow-level-1 hover:bg-primary-container transition-colors"
+              className="w-full bg-primary text-on-primary text-sm font-semibold py-2 rounded-lg shadow-level-1 hover:bg-primary-container transition-colors cursor-pointer"
             >
               Try AI Assistant
             </button>
@@ -269,17 +365,22 @@ export default function FindTutorScreen({ user, onLogout, onNavigate }) {
               <h1 className="font-display text-2xl sm:text-3xl font-bold text-primary tracking-tight">
                 Find Tutors
               </h1>
-              <p className="text-sm text-on-surface-variant mt-1 font-medium">
-                {filtered.length} available right now
+              <p className="text-sm text-on-surface-variant mt-1 font-medium flex items-center gap-2">
+                {isLoading && <IconLoader2 size={16} className="animate-spin text-primary" />}
+                <span>{filtered.length} available right now</span>
               </p>
             </div>
 
             <div className="hidden md:flex items-center gap-2">
               <span className="text-xs font-medium text-outline">Sort by:</span>
-              <select className="bg-surface-lowest border border-surface-variant rounded-lg text-xs font-medium text-on-surface focus:border-primary focus:ring-1 focus:ring-primary py-1.5 px-3">
-                <option>Recommended</option>
-                <option>Price: Low to High</option>
-                <option>Highest Rated</option>
+              <select
+                value={sortBy}
+                onChange={(e) => setSortBy(e.target.value)}
+                className="bg-surface-lowest border border-surface-variant rounded-lg text-xs font-medium text-on-surface focus:border-primary focus:ring-1 focus:ring-primary py-1.5 px-3 cursor-pointer"
+              >
+                <option value="rating">Recommended</option>
+                <option value="Price: Low to High">Price: Low to High</option>
+                <option value="Highest Rated">Highest Rated</option>
               </select>
             </div>
           </div>
@@ -290,6 +391,20 @@ export default function FindTutorScreen({ user, onLogout, onNavigate }) {
               <p className="text-sm text-on-surface-variant mt-1">
                 Try widening your search terms or adjusting filter limits.
               </p>
+              {(query || selectedDepts.length > 0) && (
+                <button
+                  type="button"
+                  onClick={() => {
+                    setQuery('')
+                    setSelectedDepts([])
+                    setMaxRate(100)
+                    setMinRating(0)
+                  }}
+                  className="mt-4 inline-flex items-center justify-center rounded-lg bg-primary px-4 py-2 text-xs font-semibold text-on-primary hover:bg-primary-container transition-colors"
+                >
+                  Reset Filters
+                </button>
+              )}
             </div>
           ) : (
             <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
@@ -304,7 +419,7 @@ export default function FindTutorScreen({ user, onLogout, onNavigate }) {
               <button
                 type="button"
                 onClick={() => setVisibleCount((c) => c + VISIBLE_STEP)}
-                className="bg-surface-lowest border border-surface-variant text-primary text-sm font-semibold px-6 py-2.5 rounded-lg shadow-level-1 hover:bg-surface-low transition-colors"
+                className="bg-surface-lowest border border-surface-variant text-primary text-sm font-semibold px-6 py-2.5 rounded-lg shadow-level-1 hover:bg-surface-low transition-colors cursor-pointer"
               >
                 Load More Tutors ({filtered.length - visibleCount} remaining)
               </button>

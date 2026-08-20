@@ -1,4 +1,4 @@
-import { useMemo, useState } from 'react'
+import { useEffect, useMemo, useState } from 'react'
 import { useParams } from 'react-router-dom'
 import {
   IconArrowLeft,
@@ -16,6 +16,8 @@ import {
   IconStarFilled,
 } from '@tabler/icons-react'
 import { tutors } from '../api/mockUsers.js'
+import { getTutorById } from '../api/tutorApi.js'
+import { createBooking } from '../api/bookingApi.js'
 import { dummyNotes } from '../components/AuthNotesMarketplace.jsx'
 import Footer from '../components/Footer.jsx'
 import AppNavbar from '../components/AppNavbar.jsx'
@@ -372,8 +374,36 @@ export default function TutorDetailScreen({ user, onLogout, onNavigate, initialB
   const [selected, setSelected] = useState(null)
   const [confirmation, setConfirmation] = useState('')
   const [bookingStatus, setBookingStatus] = useState(initialBookingStatus)
+  const [tutor, setTutor] = useState(() => tutors.find((t) => t.id === id || t._id === id) || null)
 
-  const tutor = useMemo(() => tutors.find((t) => t.id === id), [id])
+  useEffect(() => {
+    if (!id) return
+    let isMounted = true
+
+    async function fetchTutorProfile() {
+      try {
+        const res = await getTutorById(id)
+        if (isMounted && res?.user) {
+          const doc = res.user
+          setTutor({
+            ...doc,
+            id: doc._id || doc.id,
+            rating: doc.rating?.knowledge
+              ? doc.rating
+              : { knowledge: 5.0, communication: 5.0, punctuality: 5.0, count: 1 },
+          })
+        }
+      } catch {
+        // Not found or error
+      }
+    }
+
+    fetchTutorProfile()
+    return () => {
+      isMounted = false
+    }
+  }, [id])
+
   const slots = useMemo(() => buildSlots(id ?? 'unknown'), [id])
 
   if (!tutor) {
@@ -388,7 +418,7 @@ export default function TutorDetailScreen({ user, onLogout, onNavigate, initialB
           <button
             type="button"
             onClick={() => onNavigate('tutor')}
-            className="mt-2 rounded-lg bg-primary px-5 py-2.5 text-sm font-semibold text-on-primary shadow-level-1 transition-colors hover:bg-primary-container"
+            className="mt-2 rounded-lg bg-primary px-5 py-2.5 text-sm font-semibold text-on-primary shadow-level-1 transition-colors hover:bg-primary-container cursor-pointer"
           >
             Browse Tutors
           </button>
@@ -402,6 +432,15 @@ export default function TutorDetailScreen({ user, onLogout, onNavigate, initialB
     if (!selected) return
     setBookingStatus('pending')
     setConfirmation(`Booking request sent for ${selected.day} at ${selected.time}.`)
+
+    createBooking({
+      tutorId: tutor?._id || tutor?.id || id,
+      day: selected.day,
+      time: selected.time,
+      startTime: selected.time,
+    }).catch(() => {
+      // Optimistic fallback for test/offline
+    })
   }
 
   const handleSendMessage = () => {

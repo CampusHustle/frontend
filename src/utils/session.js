@@ -1,5 +1,57 @@
 const SESSION_KEY = 'campus-hustle:session'
 const VIEW_KEY = 'campus-hustle:view'
+const ACCESS_TOKEN_KEY = 'campus-hustle:access-token'
+const REFRESH_TOKEN_KEY = 'campus-hustle:refresh-token'
+
+export function getAccessToken() {
+  try {
+    return localStorage.getItem(ACCESS_TOKEN_KEY) || null
+  } catch {
+    return null
+  }
+}
+
+export function setAccessToken(token) {
+  try {
+    if (token) {
+      localStorage.setItem(ACCESS_TOKEN_KEY, token)
+    } else {
+      localStorage.removeItem(ACCESS_TOKEN_KEY)
+    }
+  } catch {
+    /* ignore quota / privacy-mode failures */
+  }
+}
+
+export function getRefreshToken() {
+  try {
+    return localStorage.getItem(REFRESH_TOKEN_KEY) || null
+  } catch {
+    return null
+  }
+}
+
+export function setRefreshToken(token) {
+  try {
+    if (token) {
+      localStorage.setItem(REFRESH_TOKEN_KEY, token)
+    } else {
+      localStorage.removeItem(REFRESH_TOKEN_KEY)
+    }
+  } catch {
+    /* ignore quota / privacy-mode failures */
+  }
+}
+
+export function saveAuthTokens({ accessToken, refreshToken }) {
+  if (accessToken) setAccessToken(accessToken)
+  if (refreshToken) setRefreshToken(refreshToken)
+}
+
+export function clearAuthTokens() {
+  setAccessToken(null)
+  setRefreshToken(null)
+}
 
 export function loadSessionUser() {
   try {
@@ -23,6 +75,7 @@ export function clearSession() {
   try {
     localStorage.removeItem(SESSION_KEY)
     localStorage.removeItem(VIEW_KEY)
+    clearAuthTokens()
   } catch {
     /* ignore quota / privacy-mode failures */
   }

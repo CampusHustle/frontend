@@ -19,6 +19,7 @@ describe('CompleteProfilePage', () => {
     expect(screen.getByRole('heading', { name: 'Academic Background' })).toBeInTheDocument()
     expect(screen.getByRole('heading', { name: 'Expertise' })).toBeInTheDocument()
     expect(screen.getByRole('heading', { name: 'Tutoring Rate' })).toBeInTheDocument()
+    expect(screen.getByRole('heading', { name: 'Weekly Availability Schedule' })).toBeInTheDocument()
     expect(screen.getByRole('button', { name: 'Finish Setup' })).toBeInTheDocument()
   })
 
@@ -36,7 +37,9 @@ describe('CompleteProfilePage', () => {
   it('submits the filled-in profile data', async () => {
     const { user, onFinish } = setup()
 
+    await user.clear(screen.getByLabelText('First Name'))
     await user.type(screen.getByLabelText('First Name'), 'Jane')
+    await user.clear(screen.getByLabelText('Last Name'))
     await user.type(screen.getByLabelText('Last Name'), 'Doe')
     await user.selectOptions(screen.getByLabelText('Year of Study'), 'senior')
     const skillInput = screen.getByLabelText('Academic Skills')
