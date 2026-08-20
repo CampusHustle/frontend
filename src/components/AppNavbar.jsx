@@ -2,9 +2,11 @@ import { useState, useRef, useEffect } from 'react'
 import {
   IconBell,
   IconLogout,
+  IconMessageCircle,
   IconMoon,
   IconPlus,
   IconSearch,
+  IconSparkles,
   IconSun,
   IconX,
 } from '@tabler/icons-react'
@@ -237,6 +239,34 @@ export default function AppNavbar({
         </div>
 
         <div className="flex items-center gap-3">
+          {/* Felat AI Study Workspace button */}
+          <button
+            type="button"
+            aria-label="AI Assistant"
+            onClick={() => onNavigate?.('assistant')}
+            className={`inline-flex size-9 items-center justify-center rounded-full border border-outline-variant transition-colors cursor-pointer ${
+              activeView === 'assistant'
+                ? 'bg-primary text-on-primary border-primary'
+                : 'text-on-surface-variant hover:text-primary'
+            }`}
+          >
+            <IconSparkles size={18} aria-hidden="true" />
+          </button>
+
+          {/* Messages shortcut button */}
+          <button
+            type="button"
+            aria-label="Messages"
+            onClick={() => onNavigate?.('chat')}
+            className={`inline-flex size-9 items-center justify-center rounded-full border border-outline-variant transition-colors cursor-pointer ${
+              activeView === 'chat'
+                ? 'bg-primary text-on-primary border-primary'
+                : 'text-on-surface-variant hover:text-primary'
+            }`}
+          >
+            <IconMessageCircle size={18} aria-hidden="true" />
+          </button>
+
           <button
             type="button"
             aria-label={isDark ? 'Switch to light mode' : 'Switch to dark mode'}

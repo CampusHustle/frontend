@@ -3,7 +3,21 @@ import { render, screen } from '@testing-library/react'
 import userEvent from '@testing-library/user-event'
 import App from '../App.jsx'
 import { saveSessionUser, saveSessionView } from '../utils/session.js'
-import { mockUsers } from '../api/mockUsers.js'
+
+const testSarah = {
+  id: 'u-sarah',
+  name: 'Sarah Johnson',
+  email: 'sarah.johnson@mit.edu.et',
+  university: 'MIT',
+  department: 'Computer Science',
+  year: 'senior',
+  bio: 'CS senior who loves teaching Python.',
+  skillsTeaching: ['Python', 'Data Structures'],
+  skillsLearning: ['Machine Learning'],
+  rating: { knowledge: 4.9, count: 38 },
+  hourlyRate: 45,
+  isEmailVerified: true,
+}
 
 describe('App navigation and session persistence', () => {
   beforeEach(() => {
@@ -32,12 +46,11 @@ describe('App navigation and session persistence', () => {
       }
 
       if (url.includes('/api/users/u-sarah')) {
-        const sarah = mockUsers.find((u) => u.id === 'u-sarah')
         return Promise.resolve({
           ok: true,
           status: 200,
           headers: new Headers({ 'content-type': 'application/json' }),
-          json: async () => ({ success: true, user: sarah }),
+          json: async () => ({ success: true, user: testSarah }),
         })
       }
 
@@ -55,7 +68,7 @@ describe('App navigation and session persistence', () => {
           ok: true,
           status: 200,
           headers: new Headers({ 'content-type': 'application/json' }),
-          json: async () => ({ success: true, count: 0, tutors: [] }),
+          json: async () => ({ success: true, count: 1, tutors: [testSarah] }),
         })
       }
 

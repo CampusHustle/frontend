@@ -1,8 +1,8 @@
 import { useState } from 'react'
+import { useNavigate } from 'react-router-dom'
 import {
   IconArrowRight,
   IconBold,
-  IconBuildingBank,
   IconChevronDown,
   IconDeviceFloppy,
   IconItalic,
@@ -10,7 +10,6 @@ import {
   IconList,
   IconPhoto,
   IconSchool,
-  IconWorld,
 } from '@tabler/icons-react'
 import AppNavbar from '../components/AppNavbar.jsx'
 import Footer from '../components/Footer.jsx'
@@ -23,12 +22,14 @@ function sectionClass() {
   return 'glass-card rounded-2xl p-6 sm:p-10'
 }
 
-export default function PostListingScreen({ user, onLogout, onNavigate }) {
+export default function PostListingScreen({ user, onLogout, onNavigate, onAddNote }) {
+  const navigate = useNavigate()
   const [title, setTitle] = useState('')
   const [subject, setSubject] = useState('')
+  const [contentType, setContentType] = useState('')
   const [description, setDescription] = useState('')
-  const [tutorialType, setTutorialType] = useState('free')
-  const [visibility, setVisibility] = useState('public')
+  const [isPremium, setIsPremium] = useState(false)
+  const [price, setPrice] = useState('')
   const [documentFile, setDocumentFile] = useState(null)
   const [feedback, setFeedback] = useState('')
 
@@ -42,16 +43,37 @@ export default function PostListingScreen({ user, onLogout, onNavigate }) {
   }
 
   const handlePublish = async () => {
-    const isFree = tutorialType === 'free'
-    const successMsg = isFree ? 'Tutorial published!' : 'Premium tutorial published!'
+    const successMsg = !isPremium ? 'Tutorial published!' : 'Premium tutorial published!'
+
+    // Construct Mock API payload (Lifting State Up)
+    const numericPriceValue = isPremium ? parseFloat(price) || 0 : 0
+    const formattedPrice = numericPriceValue > 0 ? `$${numericPriceValue.toFixed(2)}` : 'Free'
+    
+    const newNote = {
+      id: Date.now(),
+      contentType: contentType || 'PDF Notes',
+      price: formattedPrice,
+      numericPrice: numericPriceValue,
+      title: title.trim() || 'Untitled',
+      course: subject || 'Unspecified',
+      department: subject || 'Unspecified',
+      authorName: user?.name || 'Current User',
+      authorAvatar: user?.avatar || 'https://i.pravatar.cc/150?u=current',
+      coverImage: 'https://images.unsplash.com/photo-1516116216624-53e697fedbea?w=400&q=80',
+    }
+    
+    if (onAddNote) {
+      onAddNote(newNote)
+    }
 
     try {
       if (documentFile) {
         const formData = new FormData()
         formData.append('title', title.trim())
         formData.append('course', subject)
+        formData.append('contentType', contentType)
         formData.append('description', description.trim() || title.trim())
-        formData.append('price', isFree ? '0' : '15')
+        formData.append('price', isPremium ? (price || '0') : '0')
         formData.append('file', documentFile)
         await uploadNote(formData).catch(() => {})
       }
@@ -60,6 +82,11 @@ export default function PostListingScreen({ user, onLogout, onNavigate }) {
     }
 
     handleAction(successMsg)
+    
+    // Redirect to marketplace
+    setTimeout(() => {
+      navigate('/market')
+    }, 1200)
   }
 
   const publishDisabled = !title.trim() || !subject
@@ -146,6 +173,34 @@ export default function PostListingScreen({ user, onLogout, onNavigate }) {
 
                   <div>
                     <label
+                      htmlFor="post-content-type"
+                      className="block text-sm font-semibold text-on-surface"
+                    >
+                      Content Type
+                    </label>
+                    <div className="relative mt-2">
+                      <select
+                        id="post-content-type"
+                        value={contentType}
+                        onChange={(e) => setContentType(e.target.value)}
+                        className="w-full appearance-none rounded-lg border border-surface-variant bg-surface px-4 py-3 pr-10 text-sm text-on-surface transition-colors focus:border-primary focus:outline-none focus:ring-1 focus:ring-primary"
+                      >
+                        <option value="">Select a content type...</option>
+                        <option value="PDF Notes">PDF Notes</option>
+                        <option value="Study Guide">Study Guide</option>
+                        <option value="Cheat Sheet">Cheat Sheet</option>
+                        <option value="Practice Exam">Practice Exam</option>
+                      </select>
+                      <IconChevronDown
+                        size={16}
+                        className="pointer-events-none absolute inset-y-0 right-3 my-auto text-outline"
+                        aria-hidden="true"
+                      />
+                    </div>
+                  </div>
+
+                  <div>
+                    <label
                       htmlFor="post-description"
                       className="mb-2 block text-sm font-semibold text-on-surface"
                     >
@@ -206,10 +261,10 @@ export default function PostListingScreen({ user, onLogout, onNavigate }) {
                 </div>
               </section>
 
-              {/* Pricing & Visibility */}
+              {/* Pricing */}
               <section className={sectionClass()}>
                 <h2 className="mb-6 font-display text-xl font-bold text-primary">
-                  Pricing &amp; Visibility
+                  Pricing
                 </h2>
                 <div className="space-y-6">
                   <div>
@@ -223,9 +278,12 @@ export default function PostListingScreen({ user, onLogout, onNavigate }) {
                     <div className="flex space-x-1 rounded-lg border border-surface-variant bg-surface p-1">
                       <button
                         type="button"
-                        onClick={() => setTutorialType('free')}
-                        aria-pressed={tutorialType === 'free'}
-                        className={`flex-1 rounded-md px-4 py-2 text-sm font-semibold transition-colors ${tutorialType === 'free'
+                        onClick={() => {
+                          setIsPremium(false)
+                          setPrice('')
+                        }}
+                        aria-pressed={!isPremium}
+                        className={`flex-1 rounded-md px-4 py-2 text-sm font-semibold transition-colors ${!isPremium
                             ? 'bg-surface-lowest text-primary shadow-level-1'
                             : 'text-on-surface-variant hover:text-primary'
                           }`}
@@ -234,9 +292,9 @@ export default function PostListingScreen({ user, onLogout, onNavigate }) {
                       </button>
                       <button
                         type="button"
-                        onClick={() => setTutorialType('premium')}
-                        aria-pressed={tutorialType === 'premium'}
-                        className={`flex-1 rounded-md px-4 py-2 text-sm font-semibold transition-colors ${tutorialType === 'premium'
+                        onClick={() => setIsPremium(true)}
+                        aria-pressed={isPremium}
+                        className={`flex-1 rounded-md px-4 py-2 text-sm font-semibold transition-colors ${isPremium
                             ? 'bg-surface-lowest text-primary shadow-level-1'
                             : 'text-on-surface-variant hover:text-primary'
                           }`}
@@ -246,61 +304,31 @@ export default function PostListingScreen({ user, onLogout, onNavigate }) {
                     </div>
                   </div>
 
-                  <div className="border-t border-surface-variant pt-6">
-                    <h3 className="mb-4 text-sm font-semibold text-on-surface">
-                      Visibility
-                    </h3>
-                    <div className="space-y-4">
-                      <div className="flex items-start">
-                        <div className="flex h-6 items-center">
-                          <input
-                            id="visibility-public"
-                            type="radio"
-                            name="visibility"
-                            checked={visibility === 'public'}
-                            onChange={() => setVisibility('public')}
-                            className="h-4 w-4 border-outline-variant text-primary focus:ring-primary"
-                          />
+                  {isPremium && (
+                    <div className="animate-in fade-in slide-in-from-top-2 duration-200">
+                      <label
+                        htmlFor="post-price"
+                        className="block text-sm font-semibold text-on-surface"
+                      >
+                        Price (ETB)
+                      </label>
+                      <div className="relative mt-2">
+                        <div className="pointer-events-none absolute inset-y-0 left-0 flex items-center pl-4">
+                          <span className="text-on-surface-variant font-medium">ETB</span>
                         </div>
-                        <div className="ml-3">
-                          <label
-                            htmlFor="visibility-public"
-                            className="flex items-center gap-1.5 text-sm font-medium text-on-surface"
-                          >
-                            <IconWorld size={15} aria-hidden="true" />
-                            Public
-                          </label>
-                          <p className="text-sm text-on-surface-variant">
-                            Anyone on CampusHustle can view.
-                          </p>
-                        </div>
-                      </div>
-                      <div className="flex items-start">
-                        <div className="flex h-6 items-center">
-                          <input
-                            id="visibility-university"
-                            type="radio"
-                            name="visibility"
-                            checked={visibility === 'university'}
-                            onChange={() => setVisibility('university')}
-                            className="h-4 w-4 border-outline-variant text-primary focus:ring-primary"
-                          />
-                        </div>
-                        <div className="ml-3">
-                          <label
-                            htmlFor="visibility-university"
-                            className="flex items-center gap-1.5 text-sm font-medium text-on-surface"
-                          >
-                            <IconBuildingBank size={15} aria-hidden="true" />
-                            University Only
-                          </label>
-                          <p className="text-sm text-on-surface-variant">
-                            Restricted to users with verified university emails.
-                          </p>
-                        </div>
+                        <input
+                          id="post-price"
+                          type="number"
+                          min="0"
+                          step="0.01"
+                          value={price}
+                          onChange={(e) => setPrice(e.target.value)}
+                          placeholder="0.00"
+                          className="w-full rounded-lg border border-surface-variant bg-surface py-3 pl-14 pr-4 text-sm text-on-surface transition-colors placeholder-outline focus:border-primary focus:outline-none focus:ring-1 focus:ring-primary"
+                        />
                       </div>
                     </div>
-                  </div>
+                  )}
                 </div>
               </section>
             </div>

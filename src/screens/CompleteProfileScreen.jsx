@@ -67,21 +67,23 @@ export default function CompleteProfileScreen({ user, onFinish }) {
   const fileInputRef = useRef(null)
   const [isSubmitting, setIsSubmitting] = useState(false)
   const [errorMsg, setErrorMsg] = useState('')
+  const effectiveUser = user || (typeof window !== 'undefined' ? JSON.parse(localStorage.getItem('ch_session_user') || 'null') : null)
+
   const [form, setForm] = useState(() => {
-    const parts = (user?.name || '').split(' ')
+    const parts = (effectiveUser?.name || '').split(' ')
     return {
       firstName: parts[0] || '',
       lastName: parts.slice(1).join(' ') || '',
-      profilePicUrl: user?.profilePicUrl || '',
-      bio: user?.bio || '',
-      university: user?.university || '',
-      major: user?.department || user?.major || '',
-      year: user?.year ? String(user.year) : '1',
-      skills: user?.skillsLearning || [],
-      subjects: user?.skillsTeaching || [],
-      hourlyRate: user?.hourlyRate ? String(user.hourlyRate) : '',
-      availability: Array.isArray(user?.availability)
-        ? user.availability
+      profilePicUrl: effectiveUser?.profilePicUrl || '',
+      bio: effectiveUser?.bio || '',
+      university: effectiveUser?.university || 'Mekelle University',
+      major: effectiveUser?.department || effectiveUser?.major || '',
+      year: effectiveUser?.year ? String(effectiveUser.year) : '1',
+      skills: effectiveUser?.skillsLearning || [],
+      subjects: effectiveUser?.skillsTeaching || [],
+      hourlyRate: effectiveUser?.hourlyRate ? String(effectiveUser.hourlyRate) : '',
+      availability: Array.isArray(effectiveUser?.availability) && effectiveUser.availability.length > 0
+        ? effectiveUser.availability
         : ['Mon-9:00 AM', 'Wed-2:00 PM', 'Fri-9:00 AM'],
     }
   })
