@@ -4,7 +4,6 @@ import {
   IconStarFilled,
   IconLoader2,
 } from '@tabler/icons-react'
-import { tutors as initialTutors } from '../api/mockUsers.js'
 import { searchTutors, getSkillTags } from '../api/tutorApi.js'
 import Footer from '../components/Footer.jsx'
 import AppNavbar from '../components/AppNavbar.jsx'
@@ -68,55 +67,61 @@ function TutorCard({ tutor, onView }) {
       <div className="flex gap-4 mb-4 relative z-10">
         <Avatar user={tutor} className="w-14 h-14 shrink-0" />
         <div className="min-w-0 flex-1">
-          <div className="flex items-start justify-between gap-2">
-            <div className="min-w-0">
-              <div className="flex items-center gap-1.5">
-                <h3 className="font-display text-base font-bold text-primary truncate">{tutor.name}</h3>
-                <IconCircleCheckFilled
-                  size={16}
-                  className="text-tertiary-container shrink-0"
-                  title="Verified Student"
-                  aria-label="Verified tutor"
-                />
-              </div>
-              <p className="text-xs text-on-surface-variant truncate mt-0.5">
-                {tutor.department || 'Academic Tutor'}{tutor.university ? `, ${tutor.university}` : ''}
-              </p>
-            </div>
-            <div className="flex items-center gap-1 bg-primary-container px-2.5 py-1 rounded-full shrink-0">
-              <IconStarFilled size={14} className="text-on-primary-container" aria-hidden="true" />
-              <span className="text-sm font-semibold text-on-primary-container">
-                {ratingValue.toFixed(1)}
-              </span>
-            </div>
+          <div className="flex items-center gap-1.5 mb-1">
+            <h3 className="font-display font-semibold text-lg text-on-surface truncate group-hover:text-primary transition-colors">
+              {tutor.name}
+            </h3>
+            {tutor.isEmailVerified && (
+              <IconCircleCheckFilled
+                size={18}
+                className="text-primary shrink-0"
+                aria-label="Verified Student"
+              />
+            )}
+          </div>
+          <p className="text-xs text-outline font-medium truncate mb-2">
+            {tutor.department || tutor.university}
+          </p>
+
+          <div className="flex items-center gap-1.5">
+            <IconStarFilled size={14} className="text-primary" aria-hidden="true" />
+            <span className="font-bold text-xs text-on-surface">
+              {ratingValue.toFixed(1)}
+            </span>
+            <span className="text-[11px] text-outline">
+              ({tutor.rating?.count ?? tutor.reviewsCount ?? 0})
+            </span>
           </div>
         </div>
       </div>
 
-      {/* Teaching Skills Chips */}
-      {tutor.skillsTeaching?.length > 0 && (
-        <div className="flex flex-wrap gap-1.5 mb-4 z-10">
-          {tutor.skillsTeaching.slice(0, 3).map((skill) => (
-            <span
-              key={skill}
-              className="bg-surface-high text-on-surface-variant text-xs font-medium px-3 py-1 rounded-full"
-            >
-              {skill}
-            </span>
-          ))}
-          {tutor.skillsTeaching.length > 3 && (
-            <span className="bg-surface-high text-on-surface-variant text-xs font-medium px-3 py-1 rounded-full">
-              +{tutor.skillsTeaching.length - 3}
-            </span>
-          )}
-        </div>
-      )}
+      {/* Bio / Description */}
+      <p className="text-xs text-on-surface-variant line-clamp-2 mb-4 relative z-10">
+        {tutor.bio || 'Verified peer tutor on CampusHustle.'}
+      </p>
 
-      {/* Price & Book Action */}
-      <div className="mt-auto flex justify-between items-center pt-4 border-t border-surface-variant z-10">
-        <div className="text-base font-bold text-primary">
-          ${tutor.hourlyRate || 25} <span className="text-xs text-on-surface-variant font-normal">/hr</span>
+      {/* Skills / Badges */}
+      <div className="flex flex-wrap gap-1 mb-4 relative z-10 min-h-[48px]">
+        {(tutor.skillsTeaching || tutor.skills || []).slice(0, 3).map((skill) => (
+          <span
+            key={skill}
+            className="text-[11px] font-medium bg-surface-container-highest text-on-surface-variant px-2.5 py-1 rounded-full border border-outline-variant/30"
+          >
+            {skill}
+          </span>
+        ))}
+      </div>
+
+      {/* Footer / Pricing & Action */}
+      <div className="mt-auto pt-3 border-t border-surface-variant flex items-center justify-between relative z-10">
+        <div>
+          <span className="text-[10px] uppercase font-bold text-outline block">Rate</span>
+          <span className="font-display font-bold text-base text-primary">
+            ${tutor.hourlyRate || 0}
+            <span className="text-xs font-normal text-outline">/hr</span>
+          </span>
         </div>
+
         <button
           type="button"
           onClick={(e) => {
@@ -141,7 +146,7 @@ export default function FindTutorScreen({ user, onLogout, onNavigate }) {
   const [minRating, setMinRating] = useState(0)
   const [sortBy, setSortBy] = useState('rating')
   const [visibleCount, setVisibleCount] = useState(VISIBLE_STEP)
-  const [tutorList, setTutorList] = useState(initialTutors)
+  const [tutorList, setTutorList] = useState([])
   const [skillTags, setSkillTags] = useState([])
   const [isLoading, setIsLoading] = useState(false)
 

@@ -12,6 +12,7 @@ import TutorDetailScreen from './screens/TutorDetailScreen.jsx'
 import PostListingScreen from './screens/PostListingScreen.jsx'
 import BookingScreen from './screens/BookingScreen.jsx'
 import ChatScreen from './screens/ChatScreen.jsx'
+import AiChatScreen from './screens/AiChatScreen.jsx'
 import TermsScreen from './screens/TermsScreen.jsx'
 import PrivacyScreen from './screens/PrivacyScreen.jsx'
 import NoteDetailPage from './pages/NoteDetailPage.jsx'
@@ -60,10 +61,6 @@ export function AppRoutes() {
   }, [])
 
   const handleNavigate = (targetView) => {
-    if (targetView === 'assistant') {
-      window.dispatchEvent(new CustomEvent('open-ai-assistant'))
-      return
-    }
     const routeMap = {
       home: '/',
       login: '/login',
@@ -78,6 +75,8 @@ export function AppRoutes() {
       'post-listing': '/post-listing',
       bookings: '/bookings',
       chat: '/chat',
+      assistant: '/assistant',
+      ai: '/assistant',
       terms: '/terms',
       privacy: '/privacy',
     }
@@ -175,10 +174,11 @@ export function AppRoutes() {
                   setCurrentUser(res.user)
                   saveSessionUser(res.user)
                 }
+                handleNavigate('tutor')
               } catch (err) {
-                console.error('Failed to update profile:', err)
+                console.error('Failed to update profile in database:', err)
+                throw err
               }
-              handleNavigate('tutor')
             }}
           />
         }
@@ -285,43 +285,23 @@ export function AppRoutes() {
         }
       />
       <Route
-        path="/admin"
+        path="/assistant"
         element={
-          <AdminLayout onLogout={handleLogout} user={currentUser}>
-            <DashboardOverviewScreen />
-          </AdminLayout>
+          <AiChatScreen
+            user={currentUser}
+            onLogout={handleLogout}
+            onNavigate={handleNavigate}
+          />
         }
       />
       <Route
-        path="/admin/verifications"
+        path="/ai"
         element={
-          <AdminLayout onLogout={handleLogout} user={currentUser}>
-            <VerificationQueueScreen />
-          </AdminLayout>
-        }
-      />
-      <Route
-        path="/admin/reports"
-        element={
-          <AdminLayout onLogout={handleLogout} user={currentUser}>
-            <ReportsModerationScreen />
-          </AdminLayout>
-        }
-      />
-      <Route
-        path="/admin/reports/:id"
-        element={
-          <AdminLayout onLogout={handleLogout} user={currentUser}>
-            <ReportDetailScreen />
-          </AdminLayout>
-        }
-      />
-      <Route
-        path="/admin/users"
-        element={
-          <AdminLayout onLogout={handleLogout} user={currentUser}>
-            <UserManagementScreen />
-          </AdminLayout>
+          <AiChatScreen
+            user={currentUser}
+            onLogout={handleLogout}
+            onNavigate={handleNavigate}
+          />
         }
       />
       <Route path="*" element={<Navigate to="/" replace />} />
