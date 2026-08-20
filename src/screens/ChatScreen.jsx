@@ -329,7 +329,7 @@ export default function ChatScreen({ user, onLogout, onNavigate }) {
           })
         }
       })
-      .catch(() => {})
+      .catch(() => { })
     return () => {
       isMounted = false
     }
@@ -440,7 +440,7 @@ export default function ChatScreen({ user, onLogout, onNavigate }) {
         </header>
 
         <div className="flex flex-1 flex-col overflow-hidden bg-white/20 backdrop-blur-sm">
-          <ChatThread messages={messages} peer={MOCK_PEER} />
+          <ChatThread messages={messages} peer={peer} />
         </div>
 
         <MessageInput
@@ -453,7 +453,7 @@ export default function ChatScreen({ user, onLogout, onNavigate }) {
 
       <ConsentModal
         isOpen={consentOpen}
-        peerName={MOCK_PEER.name}
+        peerName={peer.name}
         onCancel={() => setConsentOpen(false)}
         onConfirm={handleConsentConfirm}
       />
