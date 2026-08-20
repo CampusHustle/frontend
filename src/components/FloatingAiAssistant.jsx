@@ -8,6 +8,7 @@ import {
   IconCopy,
   IconCheck,
   IconRefresh,
+  IconBook,
 } from '@tabler/icons-react'
 import { askFelatAi } from '../api/aiApi.js'
 
@@ -312,6 +313,7 @@ export default function FloatingAiAssistant() {
   const [isTyping, setIsTyping] = useState(false)
   const [copiedId, setCopiedId] = useState(null)
   const [attachment, setAttachment] = useState(null)
+  const [activeTutorId, setActiveTutorId] = useState(null)
 
   const messagesEndRef = useRef(null)
   const inputRef = useRef(null)
@@ -319,9 +321,12 @@ export default function FloatingAiAssistant() {
   const idRef = useRef(1)
   const streamingTimerRef = useRef(null)
 
-  // Listen for custom event to open assistant from other components (like FindTutorScreen "Try AI Assistant")
   useEffect(() => {
-    const handleOpen = () => {
+    const handleOpen = (e) => {
+      const detail = e?.detail
+      if (detail?.tutorId) {
+        setActiveTutorId(detail.tutorId)
+      }
       setIsOpen(true)
     }
     window.addEventListener('open-ai-assistant', handleOpen)
@@ -329,7 +334,7 @@ export default function FloatingAiAssistant() {
   }, [])
 
   // Auto-scroll to bottom of chat
-  useEffect(() => {
+   useEffect(() => {
     if (isOpen && typeof messagesEndRef.current?.scrollIntoView === 'function') {
       messagesEndRef.current.scrollIntoView({ behavior: 'smooth' })
     }
@@ -381,10 +386,14 @@ export default function FloatingAiAssistant() {
     setIsTyping(true)
 
     setTimeout(async () => {
-      let fullReply
+      let fullReply = ''
+      let grounded = false
+      let sources = []
       try {
-        const res = await askFelatAi({ question: content || 'Help with my courses' })
+        const res = await askFelatAi({ question: content || 'Help with my courses', tutorId: activeTutorId || undefined })
         fullReply = res?.answer || "I'm Felat (ፈላጥ), your CampusHustle AI study assistant. How can I help you succeed today?"
+        grounded = res?.grounded === true
+        sources = res?.sources || []
       } catch (err) {
         fullReply = err.message || "Unable to reach Felat AI assistant. Please check your network connection and make sure you are logged in."
       }
@@ -392,15 +401,14 @@ export default function FloatingAiAssistant() {
       const aiMsgId = `ai-${idRef.current++}`
       const timestamp = new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })
 
-      // Create new AI message with empty text and isStreaming flag
       setMessages((prev) => [
         ...prev,
-        { id: aiMsgId, role: 'ai', content: '', isStreaming: true, timestamp },
+        { id: aiMsgId, role: 'ai', content: '', isStreaming: true, timestamp, grounded, sources },
       ])
       setIsTyping(false)
 
       let charIndex = 0
-      const chunkSize = 4 // Characters typed per frame for a smooth, natural writing animation
+      const chunkSize = 4
       if (streamingTimerRef.current) clearInterval(streamingTimerRef.current)
 
       streamingTimerRef.current = setInterval(() => {
@@ -439,6 +447,7 @@ export default function FloatingAiAssistant() {
     setMessages([welcomeMessage()])
     setDraft('')
     setAttachment(null)
+    setActiveTutorId(null)
     setIsTyping(false)
   }
 
@@ -519,6 +528,12 @@ export default function FloatingAiAssistant() {
 
           {/* Chat Messages Body */}
           <div className="flex-1 overflow-y-auto p-4 space-y-3.5 text-xs">
+            {activeTutorId && (
+              <div className="flex items-center gap-1.5 rounded-lg border border-dashed border-[#114161]/30 bg-[#114161]/5 px-3 py-1.5 text-[10px] text-[#114161] dark:border-[#114161]/20 dark:bg-[#114161]/5">
+                <IconBook size={12} />
+                <span>Questions scoped to this tutor's notes</span>
+              </div>
+            )}
             {messages.map((msg) => (
               <div
                 key={msg.id}
@@ -541,27 +556,49 @@ export default function FloatingAiAssistant() {
                   )}
 
                   {msg.role === 'ai' && !msg.isStreaming && (
-                    <div className="mt-2 flex items-center justify-between pt-1 border-t border-surface-variant/40 dark:border-ink-200/40 text-[10px] text-outline dark:text-ink-400">
-                      <span>{msg.timestamp}</span>
-                      <button
-                        type="button"
-                        onClick={() => handleCopy(msg.id, msg.content)}
-                        title="Copy message"
-                        className="inline-flex items-center gap-1 text-[10px] font-medium text-outline hover:text-primary dark:hover:text-ink-950 transition-colors cursor-pointer"
-                      >
-                        {copiedId === msg.id ? (
-                          <>
-                            <IconCheck size={12} className="text-emerald-500" />
-                            <span className="text-emerald-500">Copied</span>
-                          </>
-                        ) : (
-                          <>
-                            <IconCopy size={12} />
-                            <span>Copy</span>
-                          </>
-                        )}
-                      </button>
-                    </div>
+                    <>
+                      {msg.grounded !== undefined && (
+                        <div className="mt-1.5 flex items-center gap-1 text-[10px]">
+                          <span className={`inline-flex items-center gap-1 rounded-full px-1.5 py-0.5 font-medium ${msg.grounded ? 'bg-emerald-50 text-emerald-700 dark:bg-emerald-900/30 dark:text-emerald-400' : 'bg-slate-100 text-slate-500 dark:bg-ink-200 dark:text-ink-400'}`}>
+                            {msg.grounded ? '📚 From notes' : '💬 General'}
+                          </span>
+                        </div>
+                      )}
+
+                      {msg.sources && msg.sources.length > 0 && (
+                        <div className="mt-2 space-y-1 border-t border-surface-variant/40 pt-2 dark:border-ink-200/40">
+                          <p className="text-[10px] font-semibold text-outline dark:text-ink-500">Sources:</p>
+                          {msg.sources.map((src, i) => (
+                            <div key={i} className="flex items-center gap-1 text-[10px] text-outline dark:text-ink-400">
+                              <IconBook size={10} />
+                              <span>Page {src.pageNumber}{src.similarityScore ? ` · ${Math.round(src.similarityScore * 100)}% match` : ''}</span>
+                            </div>
+                          ))}
+                        </div>
+                      )}
+
+                      <div className="mt-2 flex items-center justify-between pt-1 border-t border-surface-variant/40 dark:border-ink-200/40 text-[10px] text-outline dark:text-ink-400">
+                        <span>{msg.timestamp}</span>
+                        <button
+                          type="button"
+                          onClick={() => handleCopy(msg.id, msg.content)}
+                          title="Copy message"
+                          className="inline-flex items-center gap-1 text-[10px] font-medium text-outline hover:text-primary dark:hover:text-ink-950 transition-colors cursor-pointer"
+                        >
+                          {copiedId === msg.id ? (
+                            <>
+                              <IconCheck size={12} className="text-emerald-500" />
+                              <span className="text-emerald-500">Copied</span>
+                            </>
+                          ) : (
+                            <>
+                              <IconCopy size={12} />
+                              <span>Copy</span>
+                            </>
+                          )}
+                        </button>
+                      </div>
+                    </>
                   )}
                 </div>
               </div>
