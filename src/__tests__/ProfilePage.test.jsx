@@ -26,7 +26,7 @@ describe('ProfilePage and Edit Profile feature', () => {
     expect(screen.getByRole('heading', { name: 'Daniel Gidey' })).toBeInTheDocument()
     expect(screen.getByText(/Software Engineering • Addis Ababa University • junior/)).toBeInTheDocument()
     expect(screen.getByText('Passionate coding tutor and student.')).toBeInTheDocument()
-    expect(screen.getByText(/br 30/)).toBeInTheDocument()
+    expect(screen.getByText(/ETB 30/)).toBeInTheDocument()
     expect(screen.getByRole('button', { name: 'Edit Profile' })).toBeInTheDocument()
   })
 
@@ -69,7 +69,7 @@ describe('ProfilePage and Edit Profile feature', () => {
 
     // Profile card updates
     expect(screen.getByText('Updated bio for semester 2026.')).toBeInTheDocument()
-    expect(screen.getByText(/br 45/)).toBeInTheDocument()
+    expect(screen.getByText(/ETB 45/)).toBeInTheDocument()
     expect(screen.getByText('Profile updated successfully!')).toBeInTheDocument()
 
     expect(onUpdateProfile).toHaveBeenCalledWith(

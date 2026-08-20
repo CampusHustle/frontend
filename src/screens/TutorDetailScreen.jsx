@@ -244,7 +244,7 @@ function BookingPanel({
   return (
     <div className="flex flex-col justify-center rounded-xl border border-surface-variant bg-surface p-6 shadow-level-1">
       <div className="mb-4 text-center">
-        <span className="font-display text-3xl font-bold text-primary">br {tutor.hourlyRate}</span>
+        <span className="font-display text-3xl font-bold text-primary">ETB {tutor.hourlyRate}</span>
         <span className="text-base text-outline"> / hour</span>
       </div>
 
@@ -312,7 +312,7 @@ function NotesSection({ tutor, onNavigate }) {
     const byDept = dummyNotes.filter((n) => n.department === tutor.department)
     return (byDept.length > 0 ? byDept : dummyNotes).slice(0, 3).map((note, index) => ({
       ...note,
-      price: `br ${[10, 5, 8][index] ?? 5}`,
+      price: `ETB ${[10, 5, 8][index] ?? 5}`,
       Icon: NOTE_ICONS[index % NOTE_ICONS.length],
     }))
   }, [tutor.department])

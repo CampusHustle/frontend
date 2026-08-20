@@ -108,7 +108,7 @@ function ProfileCard({ user }) {
             <div className="mt-5 flex flex-wrap items-center justify-center gap-3 md:justify-start">
               {user?.hourlyRate ? (
                 <span className="rounded-full bg-secondary-container px-4 py-1.5 text-sm font-bold text-on-secondary-container">
-                  br {user.hourlyRate} <span className="font-medium opacity-80">/hr</span>
+                  ETB {user.hourlyRate} <span className="font-medium opacity-80">/hr</span>
                 </span>
               ) : (
                 <span className="rounded-full bg-surface-high px-4 py-1.5 text-sm font-medium text-on-surface-variant">

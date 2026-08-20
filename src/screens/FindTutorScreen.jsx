@@ -115,7 +115,7 @@ function TutorCard({ tutor, onView }) {
       {/* Price & Book Action */}
       <div className="mt-auto flex justify-between items-center pt-4 border-t border-surface-variant z-10">
         <div className="text-base font-bold text-primary">
-          br {tutor.hourlyRate || 25} <span className="text-xs text-on-surface-variant font-normal">/hr</span>
+          ETB {tutor.hourlyRate || 25} <span className="text-xs text-on-surface-variant font-normal">/hr</span>
         </div>
         <button
           type="button"
@@ -310,8 +310,8 @@ export default function FindTutorScreen({ user, onLogout, onNavigate }) {
                   className="w-full accent-primary cursor-pointer"
                 />
                 <div className="flex justify-between text-xs text-outline mt-1 font-medium">
-                  <span>br 10</span>
-                  <span>br {maxRate === 100 ? '100+' : maxRate}</span>
+                  <span>ETB 10</span>
+                  <span>ETB {maxRate === 100 ? '100+' : maxRate}</span>
                 </div>
               </div>
 

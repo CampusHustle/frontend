@@ -89,7 +89,7 @@ function RequestCard({ request, onAccept, onDecline, loading }) {
             </div>
             <div className="flex items-center gap-1.5 mt-1">
               <IconClock size={13} className="text-secondary shrink-0" aria-hidden="true" />
-              <p className="text-xs font-semibold text-secondary">br {hourlyRate} / hr</p>
+              <p className="text-xs font-semibold text-secondary">ETB {hourlyRate} / hr</p>
             </div>
             {message && (
               <div className="mt-3 flex items-start gap-2 rounded-lg bg-surface-container/60 px-3 py-2">
@@ -239,19 +239,17 @@ export default function TutorBookingRequestScreen({ user, onLogout, onNavigate }
                 type="button"
                 aria-selected={activeTab === tab.key}
                 onClick={() => setActiveTab(tab.key)}
-                className={`shrink-0 rounded-full px-4 py-1.5 text-xs font-semibold transition-colors ${
-                  activeTab === tab.key
+                className={`shrink-0 rounded-full px-4 py-1.5 text-xs font-semibold transition-colors ${activeTab === tab.key
                     ? 'bg-primary text-on-primary shadow-sm'
                     : 'bg-white/60 border border-outline-variant text-on-surface-variant hover:bg-surface-container-low'
-                }`}
+                  }`}
               >
                 {tab.label}
                 {count > 0 && (
-                  <span className={`ml-1.5 rounded-full px-1.5 text-[10px] font-bold ${
-                    activeTab === tab.key
+                  <span className={`ml-1.5 rounded-full px-1.5 text-[10px] font-bold ${activeTab === tab.key
                       ? 'bg-white/20 text-on-primary'
                       : 'bg-surface-container text-on-surface-variant'
-                  }`}>
+                    }`}>
                     {count}
                   </span>
                 )}
