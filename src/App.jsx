@@ -273,6 +273,7 @@ export function AppRoutes() {
             user={currentUser}
             onLogout={handleLogout}
             onNavigate={handleNavigate}
+            availableTutorials={availableTutorials}
           />
         }
       />
