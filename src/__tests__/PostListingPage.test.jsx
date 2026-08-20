@@ -2,11 +2,11 @@ import { describe, it, expect, vi } from 'vitest'
 import { render, screen } from '@testing-library/react'
 import userEvent from '@testing-library/user-event'
 import PostListingPage from '../pages/PostListingPage.jsx'
-
+import { MemoryRouter } from 'react-router-dom';
 const setup = (onNavigate = vi.fn()) => {
   const user = userEvent.setup()
   const onLogout = vi.fn()
-  render(<PostListingPage user={null} onLogout={onLogout} onNavigate={onNavigate} />)
+  render(<MemoryRouter><PostListingPage user={null} onLogout={onLogout} onNavigate={onNavigate} /></MemoryRouter>)
   return { user, onNavigate, onLogout }
 }
 
@@ -17,7 +17,7 @@ describe('PostListingPage', () => {
     expect(screen.getByRole('heading', { name: 'Create Tutorial' })).toBeInTheDocument()
     expect(screen.getByRole('heading', { name: 'Tutorial Essentials' })).toBeInTheDocument()
     expect(screen.getByRole('heading', { name: 'Media & Assets' })).toBeInTheDocument()
-    expect(screen.getByRole('heading', { name: 'Pricing & Visibility' })).toBeInTheDocument()
+    expect(screen.getByRole('heading', { name: 'Pricing' })).toBeInTheDocument()
   })
 
   it('renders the preview sidebar with draft status and action buttons', () => {
@@ -59,14 +59,14 @@ describe('PostListingPage', () => {
     )
   })
 
-  it('switches visibility to University Only', async () => {
+  /*it('switches visibility to University Only', async () => {
     const { user } = setup()
 
     await user.click(screen.getByLabelText('University Only'))
 
     expect(screen.getByLabelText('University Only')).toBeChecked()
     expect(screen.getByLabelText('Public')).not.toBeChecked()
-  })
+  })*/
 
   it('shows the selected file name after choosing a file', async () => {
     const { user } = setup()

@@ -11,6 +11,290 @@ import {
 } from '@tabler/icons-react'
 import { askFelatAi } from '../api/aiApi.js'
 
+function parseInlineMarkdown(text) {
+  if (!text) return null
+
+  // Tokenize bold (**text**), italic (*text*), inline code (`code`), and math ($formula$)
+  const inlineRegex = /(\*\*.*?\*\*|\*.*?\*|`.*?`|\$.*?\$)/g
+  const tokens = text.split(inlineRegex)
+
+  return tokens.map((token, i) => {
+    if (!token) return null
+    if (token.startsWith('**') && token.endsWith('**') && token.length >= 4) {
+      return (
+        <strong key={i} className="font-bold text-primary dark:text-ink-950">
+          {token.slice(2, -2)}
+        </strong>
+      )
+    }
+    if (token.startsWith('*') && token.endsWith('*') && token.length >= 2) {
+      return (
+        <em key={i} className="italic text-on-surface dark:text-ink-900">
+          {token.slice(1, -1)}
+        </em>
+      )
+    }
+    if (token.startsWith('`') && token.endsWith('`') && token.length >= 2) {
+      return (
+        <code
+          key={i}
+          className="rounded-md bg-surface-container/70 dark:bg-ink-200/80 px-1.5 py-0.5 font-mono text-[11px] font-medium text-primary dark:text-ink-950 border border-surface-variant/40 dark:border-ink-300/40"
+        >
+          {token.slice(1, -1)}
+        </code>
+      )
+    }
+    if (token.startsWith('$') && token.endsWith('$') && token.length >= 2) {
+      return (
+        <span
+          key={i}
+          className="inline-block font-mono text-[11px] px-1.5 py-0.5 bg-secondary-container/20 text-secondary dark:text-secondary-fixed rounded font-medium"
+        >
+          {token.slice(1, -1)}
+        </span>
+      )
+    }
+    return token
+  })
+}
+
+function CodeBlock({ lang, code }) {
+  const [copied, setCopied] = useState(false)
+
+  const handleCopyCode = () => {
+    navigator.clipboard?.writeText(code).catch(() => {})
+    setCopied(true)
+    setTimeout(() => setCopied(false), 1500)
+  }
+
+  return (
+    <div className="my-2.5 overflow-hidden rounded-xl border border-surface-variant/80 bg-surface-lowest dark:border-ink-300 dark:bg-ink-900 text-on-surface dark:text-white shadow-xs">
+      <div className="flex items-center justify-between border-b border-surface-variant/50 bg-surface-low dark:border-ink-700/60 dark:bg-ink-800 px-3 py-1.5 text-[10px] font-medium text-outline dark:text-ink-400">
+        <span className="font-mono uppercase tracking-wider">{lang || 'code'}</span>
+        <button
+          type="button"
+          onClick={handleCopyCode}
+          className="inline-flex items-center gap-1 hover:text-primary dark:hover:text-white transition-colors cursor-pointer"
+        >
+          {copied ? (
+            <>
+              <IconCheck size={12} className="text-emerald-500" />
+              <span className="text-emerald-500 font-semibold">Copied</span>
+            </>
+          ) : (
+            <>
+              <IconCopy size={12} />
+              <span>Copy code</span>
+            </>
+          )}
+        </button>
+      </div>
+      <pre className="overflow-x-auto p-3 font-mono text-[11px] leading-relaxed scrollbar-thin">
+        <code>{code}</code>
+      </pre>
+    </div>
+  )
+}
+
+function FormattedAiResponse({ content, isStreaming }) {
+  if (!content) {
+    return isStreaming ? (
+      <span className="inline-block w-1.5 h-3.5 bg-secondary-container dark:bg-secondary-fixed ml-1 animate-pulse align-middle rounded-xs" />
+    ) : null
+  }
+
+  const lines = content.split('\n')
+  const blocks = []
+  let currentCodeBlock = null
+  let currentList = null
+
+  for (let i = 0; i < lines.length; i++) {
+    const line = lines[i]
+
+    // Code block fences (```)
+    if (line.trim().startsWith('```')) {
+      if (currentCodeBlock) {
+        blocks.push({
+          type: 'code',
+          lang: currentCodeBlock.lang,
+          code: currentCodeBlock.lines.join('\n'),
+        })
+        currentCodeBlock = null
+      } else {
+        if (currentList) {
+          blocks.push(currentList)
+          currentList = null
+        }
+        const lang = line.trim().slice(3).trim() || 'text'
+        currentCodeBlock = { lang, lines: [] }
+      }
+      continue
+    }
+
+    if (currentCodeBlock) {
+      currentCodeBlock.lines.push(line)
+      continue
+    }
+
+    // Headings (###, ##, #)
+    if (line.startsWith('### ')) {
+      if (currentList) {
+        blocks.push(currentList)
+        currentList = null
+      }
+      blocks.push({ type: 'h3', text: line.slice(4) })
+      continue
+    }
+    if (line.startsWith('## ')) {
+      if (currentList) {
+        blocks.push(currentList)
+        currentList = null
+      }
+      blocks.push({ type: 'h2', text: line.slice(3) })
+      continue
+    }
+    if (line.startsWith('# ')) {
+      if (currentList) {
+        blocks.push(currentList)
+        currentList = null
+      }
+      blocks.push({ type: 'h1', text: line.slice(2) })
+      continue
+    }
+
+    // Blockquote (> )
+    if (line.startsWith('> ')) {
+      if (currentList) {
+        blocks.push(currentList)
+        currentList = null
+      }
+      blocks.push({ type: 'quote', text: line.slice(2) })
+      continue
+    }
+
+    // Unordered bullet list (- or * or •)
+    const bulletMatch = line.match(/^(\s*)[-*•]\s+(.*)$/)
+    if (bulletMatch) {
+      if (!currentList || currentList.type !== 'ul') {
+        if (currentList) blocks.push(currentList)
+        currentList = { type: 'ul', items: [] }
+      }
+      currentList.items.push(bulletMatch[2])
+      continue
+    }
+
+    // Ordered numbered list (1. , 2. )
+    const numberedMatch = line.match(/^(\s*)\d+\.\s+(.*)$/)
+    if (numberedMatch) {
+      if (!currentList || currentList.type !== 'ol') {
+        if (currentList) blocks.push(currentList)
+        currentList = { type: 'ol', items: [] }
+      }
+      currentList.items.push(numberedMatch[2])
+      continue
+    }
+
+    // Paragraph / Blank line
+    if (currentList) {
+      blocks.push(currentList)
+      currentList = null
+    }
+
+    if (line.trim() === '') {
+      blocks.push({ type: 'spacer' })
+    } else {
+      blocks.push({ type: 'p', text: line })
+    }
+  }
+
+  if (currentCodeBlock) {
+    blocks.push({
+      type: 'code',
+      lang: currentCodeBlock.lang,
+      code: currentCodeBlock.lines.join('\n'),
+    })
+  }
+
+  if (currentList) {
+    blocks.push(currentList)
+  }
+
+  return (
+    <div className="space-y-2 text-xs leading-relaxed break-words">
+      {blocks.map((block, idx) => {
+        if (block.type === 'code') {
+          return <CodeBlock key={idx} lang={block.lang} code={block.code} />
+        }
+        if (block.type === 'h1') {
+          return (
+            <h4 key={idx} className="font-display text-sm font-bold text-primary dark:text-ink-950 mt-2 mb-1 border-b border-surface-variant/40 pb-1">
+              {parseInlineMarkdown(block.text)}
+            </h4>
+          )
+        }
+        if (block.type === 'h2') {
+          return (
+            <h5 key={idx} className="font-display text-xs font-bold text-primary dark:text-ink-950 mt-2 mb-1">
+              {parseInlineMarkdown(block.text)}
+            </h5>
+          )
+        }
+        if (block.type === 'h3') {
+          return (
+            <h6 key={idx} className="font-display text-xs font-semibold text-primary dark:text-ink-900 mt-1.5 mb-0.5">
+              {parseInlineMarkdown(block.text)}
+            </h6>
+          )
+        }
+        if (block.type === 'quote') {
+          return (
+            <div key={idx} className="border-l-3 border-secondary-container bg-secondary-container/10 px-2.5 py-1.5 rounded-r-lg my-1 text-[11px] text-on-surface-variant dark:text-ink-700 italic">
+              {parseInlineMarkdown(block.text)}
+            </div>
+          )
+        }
+        if (block.type === 'ul') {
+          return (
+            <ul key={idx} className="space-y-1 my-1.5 pl-1 list-none">
+              {block.items.map((item, i) => (
+                <li key={i} className="flex items-start gap-2 text-on-surface dark:text-ink-950">
+                  <span className="inline-block size-1.5 rounded-full bg-primary/70 dark:bg-ink-700 shrink-0 mt-1.5" />
+                  <span className="flex-1">{parseInlineMarkdown(item)}</span>
+                </li>
+              ))}
+            </ul>
+          )
+        }
+        if (block.type === 'ol') {
+          return (
+            <ol key={idx} className="space-y-1 my-1.5 pl-1 list-none">
+              {block.items.map((item, i) => (
+                <li key={i} className="flex items-start gap-1.5 text-on-surface dark:text-ink-950">
+                  <span className="font-bold text-primary dark:text-ink-900 shrink-0 text-[11px] min-w-[16px]">
+                    {i + 1}.
+                  </span>
+                  <span className="flex-1">{parseInlineMarkdown(item)}</span>
+                </li>
+              ))}
+            </ol>
+          )
+        }
+        if (block.type === 'spacer') {
+          return <div key={idx} className="h-0.5" />
+        }
+        return (
+          <p key={idx} className="text-on-surface dark:text-ink-950">
+            {parseInlineMarkdown(block.text)}
+            {idx === blocks.length - 1 && isStreaming && (
+              <span className="inline-block w-1.5 h-3 bg-secondary-container dark:bg-secondary-fixed ml-1 animate-pulse align-middle rounded-xs" />
+            )}
+          </p>
+        )
+      })}
+    </div>
+  )
+}
+
 function welcomeMessage() {
   return {
     id: 'welcome',
@@ -247,12 +531,14 @@ export default function FloatingAiAssistant() {
                       : 'bg-surface-low border border-surface-variant/70 text-on-surface dark:border-ink-200 dark:bg-ink-100 dark:text-ink-950 rounded-bl-xs'
                   }`}
                 >
-                  <p className="whitespace-pre-wrap">
-                    {msg.content}
-                    {msg.isStreaming && (
-                      <span className="inline-block w-1.5 h-3.5 bg-secondary-container dark:bg-secondary-fixed ml-1 animate-pulse align-middle rounded-xs" />
-                    )}
-                  </p>
+                  {msg.role === 'user' ? (
+                    <p className="whitespace-pre-wrap">{msg.content}</p>
+                  ) : (
+                    <FormattedAiResponse
+                      content={msg.content}
+                      isStreaming={msg.isStreaming}
+                    />
+                  )}
 
                   {msg.role === 'ai' && !msg.isStreaming && (
                     <div className="mt-2 flex items-center justify-between pt-1 border-t border-surface-variant/40 dark:border-ink-200/40 text-[10px] text-outline dark:text-ink-400">

@@ -15,10 +15,8 @@ import {
   IconMessageCircle,
   IconStarFilled,
 } from '@tabler/icons-react'
-import { tutors } from '../api/mockUsers.js'
 import { getTutorById } from '../api/tutorApi.js'
 import { createBooking } from '../api/bookingApi.js'
-import { dummyNotes } from '../components/AuthNotesMarketplace.jsx'
 import Footer from '../components/Footer.jsx'
 import AppNavbar from '../components/AppNavbar.jsx'
 
@@ -77,11 +75,11 @@ function buildSlots(tutorId) {
   return slots
 }
 
-function RatingBreakdown({ rating }) {
+function RatingBreakdown({ rating = {} }) {
   const rows = [
-    { label: 'Subject Knowledge', value: rating.knowledge },
-    { label: 'Communication', value: rating.communication },
-    { label: 'Punctuality', value: rating.punctuality },
+    { label: 'Subject Knowledge', value: typeof rating?.knowledge === 'number' ? rating.knowledge : 5.0 },
+    { label: 'Communication', value: typeof rating?.communication === 'number' ? rating.communication : 5.0 },
+    { label: 'Punctuality', value: typeof rating?.punctuality === 'number' ? rating.punctuality : 5.0 },
   ]
   return (
     <div className="flex flex-col justify-between rounded-xl border border-surface-variant bg-surface p-6 shadow-level-1">
@@ -308,15 +306,15 @@ function BookingPanel({
   )
 }
 
-function NotesSection({ tutor, onNavigate }) {
+function NotesSection({ tutor, onNavigate, availableTutorials = [] }) {
   const notes = useMemo(() => {
-    const byDept = dummyNotes.filter((n) => n.department === tutor.department)
-    return (byDept.length > 0 ? byDept : dummyNotes).slice(0, 3).map((note, index) => ({
+    const byDept = availableTutorials.filter((n) => n.department === tutor.department)
+    return (byDept.length > 0 ? byDept : availableTutorials).slice(0, 3).map((note, index) => ({
       ...note,
       price: `$${[10, 5, 8][index] ?? 5}`,
       Icon: NOTE_ICONS[index % NOTE_ICONS.length],
     }))
-  }, [tutor.department])
+  }, [tutor.department, availableTutorials])
 
   return (
     <section className="flex flex-col gap-4">
@@ -370,12 +368,12 @@ function NotesSection({ tutor, onNavigate }) {
   )
 }
 
-export default function TutorDetailScreen({ user, onLogout, onNavigate, initialBookingStatus = 'idle' }) {
+export default function TutorDetailScreen({ user, onLogout, onNavigate, availableTutorials = [], initialBookingStatus = 'idle' }) {
   const { id } = useParams()
   const [selected, setSelected] = useState(null)
   const [confirmation, setConfirmation] = useState('')
   const [bookingStatus, setBookingStatus] = useState(initialBookingStatus)
-  const [tutor, setTutor] = useState(() => tutors.find((t) => t.id === id || t._id === id) || null)
+  const [tutor, setTutor] = useState(null)
 
   useEffect(() => {
     if (!id) return
@@ -386,12 +384,16 @@ export default function TutorDetailScreen({ user, onLogout, onNavigate, initialB
         const res = await getTutorById(id)
         if (isMounted && res?.user) {
           const doc = res.user
+          const rawRating = typeof doc.rating === 'object' && doc.rating !== null ? doc.rating : {}
           setTutor({
             ...doc,
             id: doc._id || doc.id,
-            rating: doc.rating?.knowledge
-              ? doc.rating
-              : { knowledge: 5.0, communication: 5.0, punctuality: 5.0, count: 1 },
+            rating: {
+              knowledge: typeof rawRating.knowledge === 'number' ? rawRating.knowledge : 5.0,
+              communication: typeof rawRating.communication === 'number' ? rawRating.communication : 5.0,
+              punctuality: typeof rawRating.punctuality === 'number' ? rawRating.punctuality : 5.0,
+              count: typeof rawRating.count === 'number' ? rawRating.count : 1,
+            },
           })
         }
       } catch {
@@ -532,7 +534,7 @@ export default function TutorDetailScreen({ user, onLogout, onNavigate, initialB
         </section>
 
         {/* Study Notes */}
-        <NotesSection tutor={tutor} onNavigate={onNavigate} />
+        <NotesSection tutor={tutor} onNavigate={onNavigate} availableTutorials={availableTutorials} />
       </main>
 
       <Footer onNavigate={onNavigate} user={user} />
