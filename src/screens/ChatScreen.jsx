@@ -351,7 +351,7 @@ export default function ChatScreen({ user, onLogout, onNavigate }) {
           }
         }
       })
-      .catch(() => {})
+      .catch(() => { })
     return () => {
       isMounted = false
     }
@@ -515,9 +515,8 @@ export default function ChatScreen({ user, onLogout, onNavigate }) {
 
       <main className="flex flex-1 overflow-hidden h-[calc(100vh-64px)]">
         <aside
-          className={`w-full md:w-80 lg:w-96 flex flex-col border-r border-surface-variant bg-surface-lowest ${
-            activePeer ? 'hidden md:flex' : 'flex'
-          }`}
+          className={`w-full md:w-80 lg:w-96 flex flex-col border-r border-surface-variant bg-surface-lowest ${activePeer ? 'hidden md:flex' : 'flex'
+            }`}
         >
           <div className="p-4 border-b border-surface-variant">
             <div className="flex items-center justify-between mb-3">
@@ -568,9 +567,8 @@ export default function ChatScreen({ user, onLogout, onNavigate }) {
                       setActivePeer(conv.peer)
                       onNavigate?.(`/chat/${conv.peer?._id}`)
                     }}
-                    className={`w-full p-4 text-left flex items-start gap-3 transition-colors hover:bg-surface-low cursor-pointer ${
-                      isSelected ? 'bg-surface-container-low border-l-4 border-primary' : ''
-                    }`}
+                    className={`w-full p-4 text-left flex items-start gap-3 transition-colors hover:bg-surface-low cursor-pointer ${isSelected ? 'bg-surface-container-low border-l-4 border-primary' : ''
+                      }`}
                   >
                     <PeerAvatar peer={conv.peer} size="md" />
                     <div className="flex-1 min-w-0">
@@ -600,9 +598,8 @@ export default function ChatScreen({ user, onLogout, onNavigate }) {
         </aside>
 
         <section
-          className={`flex-1 flex flex-col bg-surface-low ${
-            !activePeer ? 'hidden md:flex' : 'flex'
-          }`}
+          className={`flex-1 flex flex-col bg-surface-low ${!activePeer ? 'hidden md:flex' : 'flex'
+            }`}
         >
           {activePeer ? (
             <>
@@ -669,25 +666,6 @@ export default function ChatScreen({ user, onLogout, onNavigate }) {
                 Find & Message Tutors
               </button>
             </div>
-          </div>
-
-        </header>
-
-        <div className="flex flex-1 flex-col overflow-hidden bg-white/20 backdrop-blur-sm">
-          <ChatThread messages={messages} peer={peer} />
-        </div>
-
-        <MessageInput
-          onSend={handleSend}
-          onShareContact={() => setConsentOpen(true)}
-        />
-      </div>
-
-      <Footer onNavigate={onNavigate} user={user} />
-
-      <ConsentModal
-        isOpen={consentOpen}
-        peerName={peer.name}
           )}
         </section>
       </main>

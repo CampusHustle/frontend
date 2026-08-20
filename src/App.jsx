@@ -292,55 +292,9 @@ export function AppRoutes() {
               user={currentUser}
               onLogout={handleLogout}
               onNavigate={handleNavigate}
+              availableTutorials={availableTutorials}
             />
           }
-              } catch (err) {
-                console.error('Failed to update profile in database:', err)
-                throw err
-              }
-            }}
-          />
-        }
-      />
-      <Route
-        path="/tutor"
-        element={
-          <FindTutorScreen
-            user={currentUser}
-            onLogout={handleLogout}
-            onNavigate={handleNavigate}
-          />
-        }
-      />
-      <Route
-        path="/tutor/:id"
-        element={
-          <TutorDetailScreen
-            user={currentUser}
-            onLogout={handleLogout}
-            onNavigate={handleNavigate}
-            availableTutorials={availableTutorials}
-          />
-        }
-      />
-      <Route
-        path="/market"
-        element={
-          <MarketplaceScreen
-            user={currentUser}
-            onLogout={handleLogout}
-            onNavigate={handleNavigate}
-            availableTutorials={availableTutorials}
-          />
-        }
-      />
-      <Route 
-         path="/notes/:id" 
-         element={
-        <NoteDetailPage 
-         user={currentUser} 
-         onNavigate={handleNavigate} 
-         onLogout={handleLogout} 
         />
 
         <Route
@@ -384,6 +338,7 @@ export function AppRoutes() {
               user={currentUser}
               onLogout={handleLogout}
               onNavigate={handleNavigate}
+              onAddNote={handleAddNote}
             />
           }
         />
@@ -432,10 +387,45 @@ export function AppRoutes() {
           }
         />
 
+        <Route
+          path="/assistant"
+          element={
+            <AiChatScreen
+              user={currentUser}
+              onLogout={handleLogout}
+              onNavigate={handleNavigate}
+            />
+          }
+        />
+
+        <Route
+          path="/ai"
+          element={
+            <AiChatScreen
+              user={currentUser}
+              onLogout={handleLogout}
+              onNavigate={handleNavigate}
+            />
+          }
+        />
+
+        <Route
+          path="/admin"
+          element={<AdminLayout user={currentUser} onNavigate={handleNavigate} onLogout={handleLogout} />}
+        >
+          <Route index element={<DashboardOverviewScreen />} />
+          <Route path="users" element={<UserManagementScreen />} />
+          <Route path="verification" element={<VerificationQueueScreen />} />
+          <Route path="reports" element={<ReportsModerationScreen />} />
+          <Route path="reports/:id" element={<ReportDetailScreen />} />
+        </Route>
+
         <Route path="*" element={<Navigate to="/" replace />} />
       </Routes>
 
-      <FloatingAiAssistant user={currentUser} />
+      {!location.pathname.startsWith('/admin') && (
+        <FloatingAiAssistant user={currentUser} />
+      )}
 
       {showLogoutWarning && (
         <LogoutWarningModal
@@ -444,92 +434,6 @@ export function AppRoutes() {
           onCancel={() => setShowLogoutWarning(false)}
         />
       )}
-      } 
-    />
-      <Route
-        path="/profile"
-        element={
-          <ProfileScreen
-            user={currentUser}
-            onLogout={handleLogout}
-            onNavigate={handleNavigate}
-            onUpdateProfile={handleUpdateProfile}
-          />
-        }
-      />
-      <Route
-        path="/post-listing"
-        element={
-          <PostListingScreen
-            user={currentUser}
-            onLogout={handleLogout}
-            onNavigate={handleNavigate}
-            onAddNote={handleAddNote}
-          />
-        }
-      />
-      <Route
-        path="/bookings"
-        element={
-          <BookingScreen
-            user={currentUser}
-            onLogout={handleLogout}
-            onNavigate={handleNavigate}
-          />
-        }
-      />
-      <Route
-        path="/chat"
-        element={
-          <ChatScreen
-            user={currentUser}
-            onLogout={handleLogout}
-            onNavigate={handleNavigate}
-          />
-        }
-      />
-      <Route
-        path="/chat/:id"
-        element={
-          <ChatScreen
-            user={currentUser}
-            onLogout={handleLogout}
-            onNavigate={handleNavigate}
-          />
-        }
-      />
-      <Route
-        path="/assistant"
-        element={
-          <AiChatScreen
-            user={currentUser}
-            onLogout={handleLogout}
-            onNavigate={handleNavigate}
-          />
-        }
-      />
-      <Route
-        path="/ai"
-        element={
-          <AiChatScreen
-            user={currentUser}
-            onLogout={handleLogout}
-            onNavigate={handleNavigate}
-          />
-        }
-      />
-      <Route path="*" element={<Navigate to="/" replace />} />
-    </Routes>
-    {!location.pathname.startsWith('/admin') && (
-      <FloatingAiAssistant user={currentUser} />
-    )}
-    {showLogoutWarning && (
-      <LogoutWarningModal
-        user={currentUser}
-        onConfirm={handleConfirmLogout}
-        onCancel={handleCancelLogout}
-      />
-    )}
     </>
   )
 }

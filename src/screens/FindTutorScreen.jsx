@@ -104,28 +104,7 @@ function TutorCard({ tutor, onView }) {
       <div className="mt-auto flex justify-between items-center pt-4 border-t border-surface-variant z-10">
         <div className="text-base font-bold text-primary">
           ETB {tutor.hourlyRate || 25} <span className="text-xs text-on-surface-variant font-normal">/hr</span>
-      {/* Skills / Badges */}
-      <div className="flex flex-wrap gap-1 mb-4 relative z-10 min-h-[48px]">
-        {(tutor.skillsTeaching || tutor.skills || []).slice(0, 3).map((skill) => (
-          <span
-            key={skill}
-            className="text-[11px] font-medium bg-surface-container-highest text-on-surface-variant px-2.5 py-1 rounded-full border border-outline-variant/30"
-          >
-            {skill}
-          </span>
-        ))}
-      </div>
-
-      {/* Footer / Pricing & Action */}
-      <div className="mt-auto pt-3 border-t border-surface-variant flex items-center justify-between relative z-10">
-        <div>
-          <span className="text-[10px] uppercase font-bold text-outline block">Rate</span>
-          <span className="font-display font-bold text-base text-primary">
-            ${tutor.hourlyRate || 0}
-            <span className="text-xs font-normal text-outline">/hr</span>
-          </span>
         </div>
-
         <button
           type="button"
           onClick={(e) => {

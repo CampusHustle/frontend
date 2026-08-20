@@ -54,17 +54,6 @@ describe('TutorDetailPage', () => {
     })
   })
 
-  it('shows the rating breakdown, hourly rate, and skills', () => {
-    const tutor = tutors[0]
-    setup(tutor.id)
-
-    expect(screen.getByRole('heading', { name: 'Rating Breakdown' })).toBeInTheDocument()
-    expect(screen.getByText('Subject Knowledge')).toBeInTheDocument()
-    expect(screen.getByText('Communication')).toBeInTheDocument()
-    expect(screen.getByText('Punctuality')).toBeInTheDocument()
-    expect(screen.getByText(new RegExp(`ETB ${tutor.hourlyRate}`))).toBeInTheDocument()
-    tutor.skillsTeaching.forEach((skill) => {
-      expect(screen.getByText(skill)).toBeInTheDocument()
   it('shows the rating breakdown, hourly rate, and skills', async () => {
     setup(testTutor.id)
 
@@ -73,7 +62,7 @@ describe('TutorDetailPage', () => {
       expect(screen.getByText('Subject Knowledge')).toBeInTheDocument()
       expect(screen.getByText('Communication')).toBeInTheDocument()
       expect(screen.getByText('Punctuality')).toBeInTheDocument()
-      expect(screen.getByText(`$${testTutor.hourlyRate}`)).toBeInTheDocument()
+      expect(screen.getByText(new RegExp(`ETB ${testTutor.hourlyRate}`))).toBeInTheDocument()
       testTutor.skillsTeaching.forEach((skill) => {
         expect(screen.getByText(skill)).toBeInTheDocument()
       })
