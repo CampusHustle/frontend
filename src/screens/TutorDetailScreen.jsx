@@ -17,7 +17,6 @@ import {
 } from '@tabler/icons-react'
 import { getTutorById } from '../api/tutorApi.js'
 import { createBooking } from '../api/bookingApi.js'
-import { dummyNotes } from '../components/AuthNotesMarketplace.jsx'
 import Footer from '../components/Footer.jsx'
 import AppNavbar from '../components/AppNavbar.jsx'
 
@@ -307,15 +306,15 @@ function BookingPanel({
   )
 }
 
-function NotesSection({ tutor, onNavigate }) {
+function NotesSection({ tutor, onNavigate, availableTutorials = [] }) {
   const notes = useMemo(() => {
-    const byDept = dummyNotes.filter((n) => n.department === tutor.department)
-    return (byDept.length > 0 ? byDept : dummyNotes).slice(0, 3).map((note, index) => ({
+    const byDept = availableTutorials.filter((n) => n.department === tutor.department)
+    return (byDept.length > 0 ? byDept : availableTutorials).slice(0, 3).map((note, index) => ({
       ...note,
       price: `$${[10, 5, 8][index] ?? 5}`,
       Icon: NOTE_ICONS[index % NOTE_ICONS.length],
     }))
-  }, [tutor.department])
+  }, [tutor.department, availableTutorials])
 
   return (
     <section className="flex flex-col gap-4">
@@ -369,7 +368,7 @@ function NotesSection({ tutor, onNavigate }) {
   )
 }
 
-export default function TutorDetailScreen({ user, onLogout, onNavigate, initialBookingStatus = 'idle' }) {
+export default function TutorDetailScreen({ user, onLogout, onNavigate, availableTutorials = [], initialBookingStatus = 'idle' }) {
   const { id } = useParams()
   const [selected, setSelected] = useState(null)
   const [confirmation, setConfirmation] = useState('')
@@ -535,7 +534,7 @@ export default function TutorDetailScreen({ user, onLogout, onNavigate, initialB
         </section>
 
         {/* Study Notes */}
-        <NotesSection tutor={tutor} onNavigate={onNavigate} />
+        <NotesSection tutor={tutor} onNavigate={onNavigate} availableTutorials={availableTutorials} />
       </main>
 
       <Footer onNavigate={onNavigate} user={user} />
