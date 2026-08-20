@@ -18,14 +18,24 @@ import AppNavbar from '../components/AppNavbar.jsx'
 import Footer from '../components/Footer.jsx'
 import ConsentModal from '../components/ConsentModal.jsx'
 import { useSocket } from '../hooks/useSocket.js'
-import {
-  MOCK_PEER,
-  INITIAL_MESSAGES,
-  subscribeLiveMessages,
-} from '../api/mockChatApi.js'
+import { MOCK_PEER } from '../api/mockChatApi.js'
+import { getMessagesWithUser } from '../api/chatApi.js'
 import { tutors } from '../api/mockUsers.js'
 import { getTutorById } from '../api/tutorApi.js'
 import { sanitizeMessage, sanitizeDisplayText, MAX_MESSAGE_LENGTH } from '../utils/sanitize.js'
+import { encodeContactCard, decodeContactCard } from '../utils/contactCard.js'
+
+function mapMessage(m, myId) {
+  const card = decodeContactCard(m.content)
+  const base = {
+    id: m._id || m.id,
+    sender: m.senderId === myId ? 'me' : 'peer',
+    time: new Date(m.createdAt || Date.now()).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }),
+  }
+  return card
+    ? { ...base, type: 'contact', contact: card }
+    : { ...base, text: m.content }
+}
 
 const STATUS_CONFIG = {
   connecting: {
@@ -306,8 +316,8 @@ function MessageInput({ onSend, onShareContact }) {
 
 export default function ChatScreen({ user, onLogout, onNavigate }) {
   const { id } = useParams()
-  const { status } = useSocket()
-  const [messages, setMessages] = useState(INITIAL_MESSAGES)
+  const { status, getSocket } = useSocket()
+  const [messages, setMessages] = useState([])
   const [consentOpen, setConsentOpen] = useState(false)
   const [peer, setPeer] = useState(() => {
     if (id) {
@@ -335,45 +345,69 @@ export default function ChatScreen({ user, onLogout, onNavigate }) {
     }
   }, [id])
 
-  // Wire up the mock live-message subscription. Swap subscribeLiveMessages
-  // for socket.on('chat:message', onIncoming) when the real backend is ready.
   useEffect(() => {
-    function onIncoming(msg) {
-      setMessages((prev) => [...prev, msg])
+    if (!id || !user?._id) return
+    let isMounted = true
+    getMessagesWithUser(id)
+      .then((res) => {
+        if (!isMounted) return
+        const mapped = (res.messages ?? [])
+          .slice()
+          .reverse()
+          .map((m) => mapMessage(m, user._id))
+        setMessages(mapped)
+      })
+      .catch(() => setMessages([]))
+    return () => {
+      isMounted = false
     }
-    const unsubscribe = subscribeLiveMessages(onIncoming)
-    return unsubscribe
-  }, [])
+  }, [id, user?._id])
+
+  useEffect(() => {
+    if (!id || !user?._id) return
+    const socket = getSocket()
+    if (!socket) return
+
+    const conversationId = [user._id, id].sort().join('_')
+
+    function onReceive(msg) {
+      setMessages((prev) => [...prev, mapMessage(msg, user._id)])
+    }
+
+    function onError(err) {
+      console.error('[chat socket error]', err)
+    }
+
+    socket.emit('join_conversation', { conversationId })
+    socket.on('message:receive', onReceive)
+    socket.on('error', onError)
+
+    return () => {
+      socket.off('message:receive', onReceive)
+      socket.off('error', onError)
+    }
+  }, [id, user?._id, status, getSocket])
 
   const handleSend = useCallback((text) => {
-    setMessages((prev) => [
-      ...prev,
-      {
-        id: `msg-${Date.now()}`,
-        sender: 'me',
-        text,
-        time: new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }),
-      },
-    ])
-  }, [])
+    const socket = getSocket()
+    if (!socket || !id || !user?._id) return
+    const conversationId = [user._id, id].sort().join('_')
+    socket.emit('message:send', { conversationId, content: text })
+  }, [getSocket, id, user?._id])
 
   function handleConsentConfirm() {
     setConsentOpen(false)
-    const contact = {
-      name: sanitizeDisplayText(user?.name ?? 'Demo Student'),
-      email: sanitizeDisplayText(user?.email ?? 'student@campus.edu.et'),
+    const socket = getSocket()
+    if (!socket || !id || !user?._id) return
+
+    const conversationId = [user._id, id].sort().join('_')
+    const content = encodeContactCard({
+      name: sanitizeDisplayText(user?.name ?? ''),
+      email: sanitizeDisplayText(user?.email ?? ''),
       phone: user?.phone ? sanitizeDisplayText(user.phone) : null,
-    }
-    setMessages((prev) => [
-      ...prev,
-      {
-        id: `contact-${Date.now()}`,
-        type: 'contact',
-        sender: 'me',
-        contact,
-        time: new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }),
-      },
-    ])
+    })
+
+    socket.emit('message:send', { conversationId, content })
   }
 
   return (
@@ -440,7 +474,7 @@ export default function ChatScreen({ user, onLogout, onNavigate }) {
         </header>
 
         <div className="flex flex-1 flex-col overflow-hidden bg-white/20 backdrop-blur-sm">
-          <ChatThread messages={messages} peer={MOCK_PEER} />
+          <ChatThread messages={messages} peer={peer} />
         </div>
 
         <MessageInput
@@ -453,7 +487,7 @@ export default function ChatScreen({ user, onLogout, onNavigate }) {
 
       <ConsentModal
         isOpen={consentOpen}
-        peerName={MOCK_PEER.name}
+        peerName={peer.name || 'Tutor'}
         onCancel={() => setConsentOpen(false)}
         onConfirm={handleConsentConfirm}
       />
