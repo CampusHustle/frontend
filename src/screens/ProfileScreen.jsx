@@ -405,6 +405,8 @@ export default function ProfileScreen({
   const [localNotes, setLocalNotes] = useState(null)
   const [noteToDelete, setNoteToDelete] = useState(null)
   const [isDeleting, setIsDeleting] = useState(false)
+  const [switchingRole, setSwitchingRole] = useState(false)
+  const [blockingBookingsModal, setBlockingBookingsModal] = useState(null)
 
   const activeUser = localUser || user || null
   const isTutor = activeUser?.role === 'tutor' || activeUser?.isTutor === true

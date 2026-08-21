@@ -117,13 +117,23 @@ export async function request(endpoint, options = {}) {
     !endpoint.includes('/api/auth/register') &&
     !endpoint.includes('/api/auth/refresh')
   ) {
-    const newToken = await getRefreshedToken()
-    const retryHeaders = {
-      ...headers,
-      Authorization: `Bearer ${newToken}`,
+    const refreshToken = getRefreshToken()
+    if (refreshToken) {
+      try {
+        const newToken = await getRefreshedToken()
+        if (newToken) {
+          const retryHeaders = {
+            ...headers,
+            Authorization: `Bearer ${newToken}`,
+          }
+          const retryResponse = await fetch(url, { ...options, headers: retryHeaders })
+          return parseResponse(retryResponse)
+        }
+      } catch (err) {
+        clearSession()
+        throw err
+      }
     }
-    const retryResponse = await fetch(url, { ...options, headers: retryHeaders })
-    return parseResponse(retryResponse)
   }
 
   return parseResponse(response)
