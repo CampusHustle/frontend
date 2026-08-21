@@ -12,95 +12,113 @@ import PurchaseCard from '../components/PurchaseCard.jsx'
 import Footer from '../components/Footer.jsx'
 import { getNoteById } from '../api/noteApi.js'
 
-const DUMMY_NOTE = {
-  id: 'note_123',
-  title: 'Organic Chemistry: Reaction Mechanisms Masterclass',
-  course: 'Chemistry 201',
-  code: 'CHEM 201',
-  department: 'Chemistry',
-  lastUpdated: 'Oct 2026',
-  tutorName: 'Sarah Jenkins',
-  tutorRole: 'Senior, Chemistry Major',
-  tutorUniversity: 'Addis Ababa University',
-  tutorRating: 4.9,
-  tutorReviewsCount: 42,
-  tutorAvatar:
-    'https://lh3.googleusercontent.com/aida-public/AB6AXuDjOwJWmOo4wnikb1axjka0-v8R-36PRThsxPguoCaIV0CuU3MhOYfisMUFouccaprNJZCu-RIpfzSH_IC5Yhik4Kwpa62gUTeb8qUVvOOD48UyGsf1WWlOM6TSfKMiH3S_9aZ1gjoa6GoCPYywaQWXeD3BDR7FBanMILpkjsnGIqFqxwRLaeokfRIpgxu4pYWrfm2yPGE4S7dwna2tdkN8GupeByJP0dQleHAXMWVfYhVt_CP6uUwzlA',
-  price: 18.5,
-  priceEtb: 150,
-  format: 'PDF (12MB)',
-  length: '42 Pages',
-  sales: '120+ Downloads',
-  previewPagesCount: 42,
-  previewSlides: [
-    {
-      id: 1,
-      title: 'Chapter 7: Nucleophilic Addition to Carbonyls',
-      url: 'https://lh3.googleusercontent.com/aida-public/AB6AXuCSq0rO8PGRYNgwRirJSUHaLSsluvB5AdFaGKr3unHqsBmUSW1AAVOjPpKf01tOVNC8z5_GJTK2NCK26gifDFEahJZIpQrMf5fEOXXFYqXpZHx-YR9cAz-NM2QtwoWuaamNhyDd--VjYR7e5NjQ97YKr-roz46ddA5YL2mSz2jVuqoAm4aGWBaJzOnu2qR0gFlAti4su92_4tc1BjghdPqvUs_3fCE4HJtQ7mYQCXRt-9ETsc8VUcjBlg',
-    },
-    {
-      id: 2,
-      title: 'Chapter 8: Acid-Catalyzed Hydration & Hemiacetal Formation',
-      url: 'https://images.unsplash.com/photo-1606326608606-aa0b62935f2b?q=80&w=1000&auto=format&fit=crop',
-    },
-    {
-      id: 3,
-      title: 'Chapter 9: Grignard Reagents & Alcohol Synthesis Worksheets',
-      url: 'https://images.unsplash.com/photo-1555099962-4199c345e5dd?q=80&w=1000&auto=format&fit=crop',
-    },
-  ],
-  description:
-    'Comprehensive reaction mechanisms masterclass covering SN1/SN2, E1/E2, carbonyl chemistry, and aromatic substitutions with step-by-step electron pushing.',
-  whatsInside: [
-    '32 pages of high-yield reaction mechanisms',
-    'Printable A4 exam summary cheat sheets',
-    '50+ solved practice problems with keys',
-  ],
+function formatDbNoteDetail(doc, id) {
+  if (!doc) return null
+  const tutor = doc.tutorId || {}
+  const priceNum = typeof doc.price === 'number' ? doc.price : 0
+  const ratingObj = typeof tutor.rating === 'object' && tutor.rating !== null ? tutor.rating : {}
+  const ratingKnowledge = typeof ratingObj.knowledge === 'number' ? ratingObj.knowledge : 5.0
+  const ratingCount = typeof ratingObj.count === 'number' ? ratingObj.count : 1
+
+  return {
+    id: doc._id || doc.id || id,
+    _id: doc._id || doc.id || id,
+    title: doc.title || 'Academic Study Notes',
+    course: doc.course || 'General Academic',
+    code: doc.course || 'COURSE',
+    department: doc.department || tutor.department || 'Academic',
+    lastUpdated: doc.updatedAt ? new Date(doc.updatedAt).toLocaleDateString('en-US', { month: 'short', year: 'numeric' }) : 'Recently',
+    tutorId: tutor._id || tutor.id || null,
+    tutorName: tutor.name || 'Campus Contributor',
+    tutorRole: `${tutor.department || 'Student'} Contributor`,
+    tutorUniversity: tutor.university || 'Ethiopian University',
+    tutorRating: ratingKnowledge.toFixed(1),
+    tutorReviewsCount: ratingCount,
+    tutorAvatar: tutor.profilePicUrl || null,
+    price: priceNum,
+    priceEtb: priceNum,
+    format: doc.fileUrl?.endsWith('.pdf') ? 'Digital PDF' : 'Study Notes',
+    length: `${doc.previewPages || 4} Preview Pages`,
+    sales: `${doc.purchaseCount || 0} Downloads`,
+    previewPagesCount: doc.previewPages || 4,
+    previewSlides: [
+      {
+        id: 1,
+        title: `${doc.title || 'Note'} - High-Yield Overview`,
+        url: doc.coverImage || 'https://images.unsplash.com/photo-1516116216624-53e697fedbea?w=800&q=80',
+      },
+      {
+        id: 2,
+        title: `Key Formulas & Concepts - ${doc.course || 'Lecture'}`,
+        url: 'https://images.unsplash.com/photo-1606326608606-aa0b62935f2b?w=800&q=80',
+      },
+      {
+        id: 3,
+        title: 'Worked Practice Problems & Exam Solutions',
+        url: 'https://images.unsplash.com/photo-1555099962-4199c345e5dd?w=800&q=80',
+      },
+    ],
+    description: doc.description || `Comprehensive study notes and reference material for ${doc.course || 'this course'}. Includes worked examples, summaries, and exam prep tips.`,
+    whatsInside: [
+      `High-yield exam summaries & lecture notes for ${doc.course || 'this subject'}`,
+      'Verified peer-reviewed material',
+      'Instant digital download & offline access',
+    ],
+    fileUrl: doc.fileUrl,
+  }
 }
 
 export default function NoteDetailScreen({ user, onNavigate, onLogout }) {
   const { id } = useParams()
+  const noteId = id || 'note_123'
   const [note, setNote] = useState(null)
   const [isLoading, setIsLoading] = useState(true)
 
   useEffect(() => {
     let isMounted = true
-    const fetchNote = async () => {
-      setIsLoading(true)
+
+    async function fetchNote() {
+      if (!noteId) {
+        if (isMounted) setIsLoading(false)
+        return
+      }
       try {
-        const res = await getNoteById(id || 'note_123')
+        const res = await getNoteById(noteId)
         if (isMounted && (res?.note || res?.data)) {
           const doc = res.note || res.data
-          setNote({
-            ...DUMMY_NOTE,
-            ...doc,
-            id: doc._id || doc.id || id,
-            price: doc.price || 18.5,
-            priceEtb: doc.price ? Math.round(doc.price * 10) : 150,
-            tutorName: doc.tutorId?.name || doc.tutorName || DUMMY_NOTE.tutorName,
-            tutorUniversity: doc.tutorId?.university || DUMMY_NOTE.tutorUniversity,
-          })
+          setNote(formatDbNoteDetail(doc, noteId))
         } else if (isMounted) {
-          setNote({ ...DUMMY_NOTE, id: id || 'note_123' })
+          setNote(null)
         }
       } catch {
-        if (isMounted) setNote({ ...DUMMY_NOTE, id: id || 'note_123' })
+        if (isMounted) setNote(null)
       } finally {
         if (isMounted) setIsLoading(false)
       }
     }
 
     fetchNote()
+
     return () => {
       isMounted = false
     }
-  }, [id])
+  }, [noteId])
 
   const handleMakePayment = () => {
+    if (!note?.id) return
     if (onNavigate) {
-      onNavigate(`/notes/${note?.id || 'note_123'}/payment`)
+      onNavigate(`/notes/${note.id}/payment`)
     } else {
-      window.location.assign(`/notes/${note?.id || 'note_123'}/payment`)
+      window.location.assign(`/notes/${note.id}/payment`)
+    }
+  }
+
+  const handleMessageSeller = () => {
+    const target = note?.tutorId ? `/chat/${note.tutorId}` : '/chat'
+    if (onNavigate) {
+      onNavigate(target)
+    } else {
+      window.location.assign(target)
     }
   }
 
@@ -121,7 +139,7 @@ export default function NoteDetailScreen({ user, onNavigate, onLogout }) {
         <AppNavbar user={user} activeView="marketplace" onNavigate={onNavigate} onLogout={onLogout} />
         <main className="flex flex-1 flex-col items-center justify-center p-6 text-center">
           <h1 className="text-2xl font-bold text-primary font-display">Note Not Found</h1>
-          <p className="mt-2 text-sm text-on-surface-variant">The requested study note is no longer available.</p>
+          <p className="mt-2 text-sm text-on-surface-variant">The requested study note is no longer available in the database.</p>
           <button
             type="button"
             onClick={() => (onNavigate ? onNavigate('marketplace') : window.location.assign('/market'))}
@@ -186,12 +204,18 @@ export default function NoteDetailScreen({ user, onNavigate, onLogout }) {
 
             {/* Seller Profile Card (Below Payment Card) */}
             <div className="flex flex-col items-center rounded-2xl border border-surface-variant bg-surface-lowest p-4 text-center shadow-level-1">
-              <div className="relative mb-2 h-16 w-16 overflow-hidden rounded-full border-2 border-secondary-container">
-                <img
-                  src={note.tutorAvatar}
-                  alt={note.tutorName}
-                  className="h-full w-full object-cover"
-                />
+              <div className="relative mb-2 h-16 w-16 overflow-hidden rounded-full border-2 border-secondary-container flex items-center justify-center bg-surface-container">
+                {note.tutorAvatar ? (
+                  <img
+                    src={note.tutorAvatar}
+                    alt={note.tutorName}
+                    className="h-full w-full object-cover"
+                  />
+                ) : (
+                  <div className="h-full w-full bg-primary text-on-primary flex items-center justify-center font-bold text-xl">
+                    {(note.tutorName || 'T')[0]?.toUpperCase()}
+                  </div>
+                )}
                 <div className="absolute right-0 bottom-0 flex h-4 w-4 items-center justify-center rounded-full border-2 border-surface bg-secondary-container">
                   <IconCircleCheckFilled size={11} className="text-on-secondary-container" />
                 </div>
@@ -207,7 +231,7 @@ export default function NoteDetailScreen({ user, onNavigate, onLogout }) {
               </div>
               <button
                 type="button"
-                onClick={() => (onNavigate ? onNavigate('/chat/sarah-jenkins') : window.location.assign('/chat/sarah-jenkins'))}
+                onClick={handleMessageSeller}
                 className="w-full flex items-center justify-center gap-1.5 rounded-xl bg-surface-low border border-surface-variant py-2.5 text-xs font-bold text-on-surface hover:bg-surface-high hover:text-primary transition-colors active:scale-95 cursor-pointer"
               >
                 <IconMessageCircle size={15} />

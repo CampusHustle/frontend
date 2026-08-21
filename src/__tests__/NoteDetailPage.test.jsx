@@ -4,8 +4,29 @@ import userEvent from '@testing-library/user-event'
 import NoteDetailPage from '../pages/NoteDetailPage.jsx'
 import NotePaymentPage from '../pages/NotePaymentPage.jsx'
 
+const testDbNote = {
+  _id: 'note_123',
+  title: 'Organic Chemistry: Reaction Mechanisms Masterclass',
+  course: 'Chemistry 201',
+  department: 'Chemistry',
+  price: 150,
+  description: 'Comprehensive reaction mechanisms masterclass covering SN1/SN2.',
+  fileUrl: 'https://example.com/chem.pdf',
+  tutorId: {
+    name: 'Sarah Jenkins',
+    department: 'Chemistry',
+    university: 'Addis Ababa University',
+    profilePicUrl: null,
+    rating: { knowledge: 4.9, count: 42 },
+  },
+}
+
 vi.mock('../api/noteApi.js', () => ({
-  getNoteById: vi.fn().mockRejectedValue(new Error('Network unavailable')),
+  getNoteById: vi.fn().mockImplementation(async (id) => ({
+    success: true,
+    note: { ...testDbNote, _id: id || 'note_123' },
+  })),
+  purchaseNote: vi.fn().mockResolvedValue({ success: true, message: 'Purchased' }),
 }))
 
 describe('NoteDetailPage & NotePaymentPage', () => {

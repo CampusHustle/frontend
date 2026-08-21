@@ -1,4 +1,4 @@
-import { useState } from 'react'
+import { useState, useEffect } from 'react'
 import { useParams } from 'react-router-dom'
 import {
   IconArrowLeft,
@@ -16,33 +16,18 @@ import {
 } from '@tabler/icons-react'
 import AppNavbar from '../components/AppNavbar.jsx'
 import Footer from '../components/Footer.jsx'
-import { purchaseNote } from '../api/noteApi.js'
-
-const DUMMY_NOTES_MAP = {
-  note_123: {
-    id: 'note_123',
-    title: 'Organic Chemistry: Reaction Mechanisms Masterclass',
-    course: 'Chemistry 201',
-    code: 'CHEM 201',
-    tutorName: 'Sarah Jenkins',
-    tutorUniversity: 'Addis Ababa University',
-    department: 'Chemistry',
-    priceEtb: 150,
-    priceUsd: 18.5,
-    pagesCount: 42,
-  },
-}
+import { purchaseNote, getNoteById } from '../api/noteApi.js'
 
 const PAYMENT_ACCOUNTS = [
   {
     id: 'telebirr',
     name: 'Telebirr',
     brandBadge: 'Recommended · Instant',
-    accountName: 'CampusHustle Inc (Sarah Jenkins)',
+    accountName: 'CampusHustle Peer Marketplace',
     accountNumber: '0911 23 45 67',
     type: 'Ethio Telecom Mobile Money',
     icon: IconDeviceMobile,
-    instruction: 'Open Telebirr App or dial *127#, send 150 ETB to 0911234567, and capture the payment confirmation screenshot.',
+    instruction: 'Open Telebirr App or dial *127#, send the exact ETB amount to 0911234567, and capture the payment confirmation screenshot.',
   },
   {
     id: 'cbe',
@@ -68,18 +53,47 @@ const PAYMENT_ACCOUNTS = [
 
 export default function NotePaymentScreen({ user, onNavigate, onLogout, initialSubmitted = false }) {
   const { id } = useParams()
-  const note = DUMMY_NOTES_MAP[id] || {
-    id: id || 'note_123',
-    title: 'Organic Chemistry: Reaction Mechanisms Masterclass',
-    course: 'Chemistry 201',
-    code: 'CHEM 201',
-    tutorName: 'Sarah Jenkins',
-    tutorUniversity: 'Addis Ababa University',
-    department: 'Chemistry',
+  const [note, setNote] = useState({
+    id: id || '',
+    title: 'Academic Study Note',
+    course: 'Academic Course',
+    code: 'COURSE',
+    tutorName: 'Campus Contributor',
+    tutorUniversity: 'University',
+    department: 'Academic',
     priceEtb: 150,
-    priceUsd: 18.5,
-    pagesCount: 42,
-  }
+    priceUsd: 15,
+    pagesCount: 5,
+  })
+
+  useEffect(() => {
+    if (!id) return
+    let isMounted = true
+    getNoteById(id)
+      .then((res) => {
+        if (isMounted && (res?.note || res?.data)) {
+          const doc = res.note || res.data
+          const tutor = doc.tutorId || {}
+          const priceNum = typeof doc.price === 'number' ? doc.price : 150
+          setNote({
+            id: doc._id || doc.id || id,
+            title: doc.title || 'Academic Study Note',
+            course: doc.course || 'Academic Course',
+            code: doc.course || 'COURSE',
+            tutorName: tutor.name || 'Campus Contributor',
+            tutorUniversity: tutor.university || 'University',
+            department: tutor.department || doc.department || 'Academic',
+            priceEtb: priceNum,
+            priceUsd: Math.round(priceNum / 10),
+            pagesCount: doc.previewPages || 5,
+          })
+        }
+      })
+      .catch(() => {})
+    return () => {
+      isMounted = false
+    }
+  }, [id])
 
   const [selectedMethod, setSelectedMethod] = useState('telebirr')
   const [copiedAccount, setCopiedAccount] = useState(null)
