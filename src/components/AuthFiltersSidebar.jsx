@@ -78,15 +78,16 @@ export default function AuthFiltersSidebar({
           <input
             type="range"
             min="0"
-            max="100"
+            max="500"
+            step="25"
             value={maxPrice}
             onChange={(e) => onMaxPriceChange(Number(e.target.value))}
             className="w-full accent-primary cursor-pointer"
           />
           <div className="mt-2 flex justify-between text-xs font-medium text-outline">
             <span>Free</span>
-            <span>${maxPrice}</span>
-            <span>$100+</span>
+            <span>{maxPrice >= 500 ? '500+ ETB' : `${maxPrice} ETB`}</span>
+            <span>500+ ETB</span>
           </div>
         </div>
       </div>

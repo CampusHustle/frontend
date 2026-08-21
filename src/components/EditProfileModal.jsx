@@ -341,15 +341,15 @@ function EditProfileForm({ user, onClose, onSave }) {
         {/* Hourly Rate */}
         <div className="flex flex-col gap-1">
           <label htmlFor="edit-rate" className={labelClass}>
-            Hourly Tutoring Rate ($/hr)
+            Hourly Tutoring Rate (ETB/hr)
           </label>
           <input
             id="edit-rate"
             type="number"
             min="0"
-            step="5"
+            step="any"
             className={fieldClass}
-            placeholder="Leave empty if buying only"
+            placeholder="e.g. 150 (leave empty if buying only)"
             value={hourlyRate}
             onChange={(e) => setHourlyRate(e.target.value)}
           />

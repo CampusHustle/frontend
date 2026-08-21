@@ -10,7 +10,7 @@ export default function MarketplaceScreen({ user, onLogout, onNavigate, availabl
   const [searchQuery, setSearchQuery] = useState('')
   const [selectedDepts, setSelectedDepts] = useState([])
   const [contentTypeFilter, setContentTypeFilter] = useState('All')
-  const [maxPrice, setMaxPrice] = useState(50)
+  const [maxPrice, setMaxPrice] = useState(500)
   const [sortBy, setSortBy] = useState('Recommended')
   const [visibleCount, setVisibleCount] = useState(VISIBLE_STEP)
 
@@ -24,7 +24,7 @@ export default function MarketplaceScreen({ user, onLogout, onNavigate, availabl
   const handleClearAll = () => {
     setSelectedDepts([])
     setContentTypeFilter('All')
-    setMaxPrice(50)
+    setMaxPrice(500)
     setSearchQuery('')
     setVisibleCount(VISIBLE_STEP)
   }
@@ -34,7 +34,7 @@ export default function MarketplaceScreen({ user, onLogout, onNavigate, availabl
     let result = availableTutorials.filter((item) => {
       const matchDept = selectedDepts.length === 0 || selectedDepts.includes(item.department)
       const matchFormat = contentTypeFilter === 'All' || item.contentType === contentTypeFilter
-      const matchPrice = item.numericPrice <= maxPrice
+      const matchPrice = maxPrice >= 500 ? true : item.numericPrice <= maxPrice
       const matchQuery =
         !q ||
         item.title.toLowerCase().includes(q) ||

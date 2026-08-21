@@ -377,19 +377,19 @@ export default function CompleteProfileScreen({ user, onFinish }) {
               </div>
               <div className="flex max-w-[200px] flex-col gap-1">
                 <label className={labelClass} htmlFor="rate">
-                  Hourly Rate ($)
+                  Hourly Rate (ETB/hr)
                 </label>
                 <div className="relative">
-                  <span className="absolute left-3 top-1/2 -translate-y-1/2 text-base text-outline">
-                    $
+                  <span className="pointer-events-none absolute left-3 top-1/2 -translate-y-1/2 text-xs font-bold text-outline">
+                    ETB
                   </span>
                   <input
                     id="rate"
                     type="number"
                     min="0"
-                    step="5"
-                    className={`${fieldClass} pl-8`}
-                    placeholder="25"
+                    step="any"
+                    className={`${fieldClass} pl-12`}
+                    placeholder="150"
                     value={form.hourlyRate}
                     onChange={set('hourlyRate')}
                   />

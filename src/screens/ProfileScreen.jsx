@@ -166,6 +166,7 @@ export default function ProfileScreen({ user, onNavigate, onLogout, onUpdateProf
 
   const handleSaveProfile = (updatedUser) => {
     setLocalUser(updatedUser)
+    setIsEditing(false)
     onUpdateProfile?.(updatedUser)
     setSavedToast(true)
     setTimeout(() => setSavedToast(false), 3000)
