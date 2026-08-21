@@ -129,9 +129,9 @@ export default function Footer({ onNavigate, isLanding = false }) {
         whileInView={{ y: 0, opacity: 1 }}
         viewport={{ once: true, amount: 0.4 }}
         transition={{ duration: 0.9, ease: [0.16, 1, 0.3, 1] }}
-        className="w-full select-none overflow-hidden px-2 pb-8 text-center"
+        className="w-full select-none overflow-hidden px-2 pb-8 text-center break-words"
       >
-        <span className="block whitespace-nowrap font-display text-[clamp(3.5rem,12vw,10.5rem)] font-bold leading-none tracking-tighter">
+        <span className="block whitespace-normal font-display text-5xl md:text-7xl lg:text-[10.5rem] font-bold leading-none tracking-tighter">
           <span className="text-surface-container-high">Campus</span>{' '}
           <span className="text-transparent [-webkit-text-stroke:1px_var(--color-outline-variant)]">
             Hustle
