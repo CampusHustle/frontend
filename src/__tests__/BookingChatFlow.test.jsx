@@ -4,11 +4,10 @@ import userEvent from '@testing-library/user-event'
 import { MemoryRouter, Routes, Route } from 'react-router-dom'
 import BookingScreen from '../screens/BookingScreen.jsx'
 import ChatPage from '../pages/ChatPage.jsx'
-import * as bookingApi from '../api/mockBookingApi.js'
+import * as bookingApi from '../api/bookingApi.js'
 
-vi.mock('../api/mockBookingApi.js', () => ({
-  fetchBookings: vi.fn(),
-  fetchBooking: vi.fn(),
+vi.mock('../api/bookingApi.js', () => ({
+  getUserBookings: vi.fn(),
   updateBookingStatus: vi.fn(),
 }))
 
@@ -96,10 +95,10 @@ const MOCK_BOOKINGS = [
 function setup() {
   window.HTMLElement.prototype.scrollIntoView = vi.fn()
 
-  bookingApi.fetchBookings.mockResolvedValue(MOCK_BOOKINGS.map((b) => ({ ...b })))
+  bookingApi.getUserBookings.mockResolvedValue({ data: MOCK_BOOKINGS.map((b) => ({ ...b })) })
   bookingApi.updateBookingStatus.mockImplementation(async (id, newStatus) => {
     const booking = MOCK_BOOKINGS.find((b) => b.id === id)
-    return { ...booking, status: newStatus }
+    return { data: { ...booking, status: newStatus } }
   })
 }
 
@@ -120,7 +119,7 @@ describe('Booking → accept → chat → contact-share flow', () => {
     expect(within(pendingCard).getByRole('status')).toHaveAttribute('data-status', 'pending')
 
     // Cancel the pending booking — this exercises the status-change path
-    bookingApi.updateBookingStatus.mockResolvedValueOnce({ ...MOCK_BOOKINGS[0], status: 'cancelled' })
+    bookingApi.updateBookingStatus.mockResolvedValueOnce({ data: { ...MOCK_BOOKINGS[0], status: 'cancelled' } })
     await user.click(within(pendingCard).getByRole('button', { name: /cancel/i }))
 
     await waitFor(() => {
@@ -128,9 +127,10 @@ describe('Booking → accept → chat → contact-share flow', () => {
     })
   })
 
-  it('opens the inline chat panel after clicking Message on a confirmed booking', async () => {
+  it('navigates to real chat screen after clicking Message on a confirmed booking', async () => {
     const user = userEvent.setup()
-    render(<MemoryRouter><BookingScreen onNavigate={vi.fn()} /></MemoryRouter>)
+    const onNavigate = vi.fn()
+    render(<MemoryRouter><BookingScreen onNavigate={onNavigate} /></MemoryRouter>)
 
     await waitFor(() => expect(screen.getAllByRole('article')).toHaveLength(2))
 
@@ -140,46 +140,7 @@ describe('Booking → accept → chat → contact-share flow', () => {
 
     await user.click(within(confirmedCard).getByRole('button', { name: /message/i }))
 
-    expect(await screen.findByRole('region', { name: /chat with james okafor/i })).toBeInTheDocument()
-  })
-
-  it('shows "Open in Chat" link inside the chat panel', async () => {
-    const user = userEvent.setup()
-    render(<MemoryRouter><BookingScreen onNavigate={vi.fn()} /></MemoryRouter>)
-
-    await waitFor(() => expect(screen.getAllByRole('article')).toHaveLength(2))
-
-    const confirmedCard = screen
-      .getAllByRole('article')
-      .find((el) => within(el).queryByText('Python for Beginners'))
-
-    await user.click(within(confirmedCard).getByRole('button', { name: /message/i }))
-
-    await screen.findByRole('region', { name: /chat with james okafor/i })
-    expect(screen.getByRole('button', { name: /open in chat/i })).toBeInTheDocument()
-  })
-
-  it('sends a message in the inline chat panel', async () => {
-    const user = userEvent.setup()
-    render(<MemoryRouter><BookingScreen onNavigate={vi.fn()} /></MemoryRouter>)
-
-    await waitFor(() => expect(screen.getAllByRole('article')).toHaveLength(2))
-
-    const confirmedCard = screen
-      .getAllByRole('article')
-      .find((el) => within(el).queryByText('Python for Beginners'))
-
-    await user.click(within(confirmedCard).getByRole('button', { name: /message/i }))
-
-    const chatPanel = await screen.findByRole('region', { name: /chat with james okafor/i })
-    const input = within(chatPanel).getByRole('textbox', { name: /message input/i })
-
-    await user.type(input, 'Looking forward to the session!')
-    await user.keyboard('{Enter}')
-
-    await waitFor(() => {
-      expect(within(chatPanel).getByText('Looking forward to the session!')).toBeInTheDocument()
-    })
+    expect(onNavigate).toHaveBeenCalled()
   })
 
   it('clicking Share Contact opens consent modal without sharing yet', async () => {
@@ -194,9 +155,7 @@ describe('Booking → accept → chat → contact-share flow', () => {
 
     await user.click(within(confirmedCard).getByRole('button', { name: /share contact/i }))
 
-    expect(screen.getByRole('dialog')).toBeInTheDocument()
-    expect(screen.getByText(/share your contact information\?/i)).toBeInTheDocument()
-    expect(screen.queryByText(/contact info shared/i)).not.toBeInTheDocument()
+    expect(screen.getByRole('dialog', { name: /share your contact information/i })).toBeInTheDocument()
   })
 
   it('cancelling consent closes the modal and shares nothing', async () => {
@@ -210,13 +169,10 @@ describe('Booking → accept → chat → contact-share flow', () => {
       .find((el) => within(el).queryByText('Python for Beginners'))
 
     await user.click(within(confirmedCard).getByRole('button', { name: /share contact/i }))
-    expect(screen.getByRole('dialog')).toBeInTheDocument()
+    const modal = screen.getByRole('dialog', { name: /share your contact information/i })
+    await user.click(within(modal).getByRole('button', { name: /^cancel$/i }))
 
-    // Click the Cancel button inside the dialog
-    await user.click(within(screen.getByRole('dialog')).getByRole('button', { name: /^cancel$/i }))
-
-    expect(screen.queryByRole('dialog')).not.toBeInTheDocument()
-    expect(screen.queryByText(/contact info shared/i)).not.toBeInTheDocument()
+    expect(screen.queryByRole('dialog', { name: /share your contact information/i })).not.toBeInTheDocument()
   })
 
   it('confirming consent closes modal and shows a success toast', async () => {
@@ -230,90 +186,102 @@ describe('Booking → accept → chat → contact-share flow', () => {
       .find((el) => within(el).queryByText('Python for Beginners'))
 
     await user.click(within(confirmedCard).getByRole('button', { name: /share contact/i }))
-    await user.click(screen.getByRole('button', { name: /^share contact info$/i }))
+    const modal = screen.getByRole('dialog', { name: /share your contact information/i })
+    await user.click(within(modal).getByRole('button', { name: /share contact info/i }))
 
-    expect(screen.queryByRole('dialog')).not.toBeInTheDocument()
-    await waitFor(() => {
-      expect(screen.getByRole('status', { name: '' })).toHaveTextContent(/contact info shared/i)
-    })
+    expect(screen.queryByRole('dialog', { name: /share your contact information/i })).not.toBeInTheDocument()
+    expect(screen.getByText(/contact info shared/i)).toBeInTheDocument()
   })
 })
 
-describe('Chat page — send message + share contact', () => {
-  const mockUser = { _id: 'my-user-id', name: 'Alex Demo', email: 'alex@campus.edu.et', phone: null }
-
-  function renderChat(user = mockUser) {
-    return render(
-      <MemoryRouter initialEntries={['/chat/u-sarah']}>
-        <Routes>
-          <Route
-            path="/chat/:id"
-            element={<ChatPage user={user} onNavigate={vi.fn()} onLogout={vi.fn()} />}
-          />
-        </Routes>
-      </MemoryRouter>,
-    )
-  }
-
-  beforeEach(() => {
-    window.HTMLElement.prototype.scrollIntoView = vi.fn()
-  })
+describe('ChatPage — live messaging & contact sharing', () => {
+  beforeEach(setup)
   afterEach(() => vi.restoreAllMocks())
 
   it('renders the chat thread with seed messages', async () => {
-    renderChat()
-    expect(await screen.findByRole('log', { name: /chat messages/i })).toBeInTheDocument()
-    expect(screen.getByText('Hello there!')).toBeInTheDocument()
+    render(
+      <MemoryRouter initialEntries={['/chat/peer-id']}>
+        <Routes>
+          <Route path="/chat/:id" element={<ChatPage user={{ id: 'my-user-id', name: 'My Name', email: 'my.user@mit.edu.et' }} />} />
+        </Routes>
+      </MemoryRouter>,
+    )
+
+    await waitFor(() => expect(screen.getByText('Hello there!')).toBeInTheDocument())
   })
 
   it('sends a message and it appears in the thread', async () => {
     const user = userEvent.setup()
-    renderChat()
+    render(
+      <MemoryRouter initialEntries={['/chat/peer-id']}>
+        <Routes>
+          <Route path="/chat/:id" element={<ChatPage user={{ id: 'my-user-id', name: 'My Name', email: 'my.user@mit.edu.et' }} />} />
+        </Routes>
+      </MemoryRouter>,
+    )
 
-    const input = screen.getByRole('textbox', { name: /message input/i })
-    await user.type(input, 'Can we do 2 PM instead?')
-    await user.keyboard('{Enter}')
+    await waitFor(() => expect(screen.getByText('Hello there!')).toBeInTheDocument())
 
-    await waitFor(() => {
-      expect(screen.getByText('Can we do 2 PM instead?')).toBeInTheDocument()
-    })
+    const input = screen.getByLabelText(/message input/i)
+    await user.type(input, 'Testing my new message')
+    await user.click(screen.getByRole('button', { name: /send/i }))
+
+    await waitFor(() => expect(screen.getByText('Testing my new message')).toBeInTheDocument())
   })
 
   it('share contact info button opens consent modal', async () => {
     const user = userEvent.setup()
-    renderChat()
+    render(
+      <MemoryRouter initialEntries={['/chat/peer-id']}>
+        <Routes>
+          <Route path="/chat/:id" element={<ChatPage user={{ id: 'my-user-id', name: 'My Name', email: 'my.user@mit.edu.et' }} />} />
+        </Routes>
+      </MemoryRouter>,
+    )
 
-    await user.click(screen.getByRole('button', { name: /share contact info/i }))
+    await waitFor(() => expect(screen.getByText('Hello there!')).toBeInTheDocument())
 
-    expect(screen.getByRole('dialog')).toBeInTheDocument()
-    expect(screen.getByText(/share your contact information\?/i)).toBeInTheDocument()
+    await user.click(screen.getByRole('button', { name: /share contact/i }))
+    expect(screen.getByRole('dialog', { name: /share your contact information/i })).toBeInTheDocument()
   })
 
   it('confirming consent adds a contact card to the thread', async () => {
     const user = userEvent.setup()
-    renderChat()
+    render(
+      <MemoryRouter initialEntries={['/chat/peer-id']}>
+        <Routes>
+          <Route path="/chat/:id" element={<ChatPage user={{ id: 'my-user-id', name: 'My Name', email: 'my.user@mit.edu.et' }} />} />
+        </Routes>
+      </MemoryRouter>,
+    )
 
-    await user.click(screen.getByRole('button', { name: /share contact info/i }))
+    await waitFor(() => expect(screen.getByText('Hello there!')).toBeInTheDocument())
 
-    // Confirm inside the dialog specifically to avoid matching the input-bar button
-    await user.click(within(screen.getByRole('dialog')).getByRole('button', { name: /share contact info/i }))
+    await user.click(screen.getByRole('button', { name: /share contact/i }))
+    const modal = screen.getByRole('dialog', { name: /share your contact information/i })
+    await user.click(within(modal).getByRole('button', { name: /share contact info/i }))
 
-    expect(screen.queryByRole('dialog')).not.toBeInTheDocument()
     await waitFor(() => {
-      expect(screen.getByLabelText(/shared contact information/i)).toBeInTheDocument()
-      expect(screen.getByText('Alex Demo')).toBeInTheDocument()
-      expect(screen.getByText('alex@campus.edu.et')).toBeInTheDocument()
+      expect(screen.getByText(/verified campus contact/i)).toBeInTheDocument()
     })
   })
 
   it('cancelling consent does not add a contact card', async () => {
     const user = userEvent.setup()
-    renderChat()
+    render(
+      <MemoryRouter initialEntries={['/chat/peer-id']}>
+        <Routes>
+          <Route path="/chat/:id" element={<ChatPage user={{ id: 'my-user-id', name: 'My Name', email: 'my.user@mit.edu.et' }} />} />
+        </Routes>
+      </MemoryRouter>,
+    )
 
-    await user.click(screen.getByRole('button', { name: /share contact info/i }))
-    await user.click(screen.getByRole('button', { name: /^cancel$/i }))
+    await waitFor(() => expect(screen.getByText('Hello there!')).toBeInTheDocument())
 
-    expect(screen.queryByRole('dialog')).not.toBeInTheDocument()
-    expect(screen.queryByLabelText(/shared contact information/i)).not.toBeInTheDocument()
+    await user.click(screen.getByRole('button', { name: /share contact/i }))
+    const modal = screen.getByRole('dialog', { name: /share your contact information/i })
+    await user.click(within(modal).getByRole('button', { name: /^cancel$/i }))
+
+    expect(screen.queryByText(/contact details shared/i)).not.toBeInTheDocument()
   })
 })

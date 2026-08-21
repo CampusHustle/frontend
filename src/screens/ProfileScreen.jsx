@@ -5,6 +5,8 @@ import {
   IconAlertCircleFilled,
   IconStarFilled,
   IconEdit,
+  IconRefresh,
+  IconFileText,
   IconTrash,
   IconPlus,
   IconUpload,
@@ -14,7 +16,9 @@ import {
 import AppNavbar from '../components/AppNavbar.jsx'
 import Footer from '../components/Footer.jsx'
 import EditProfileModal from '../components/EditProfileModal.jsx'
+import AvailabilityManager from '../components/AvailabilityManager.jsx'
 import DeleteNoteModal from '../components/DeleteNoteModal.jsx'
+import { switchUserRole } from '../api/authApi.js'
 import { deleteNote, getMyUploadedNotes } from '../api/noteApi.js'
 
 function initialsOf(name) {
@@ -130,7 +134,7 @@ function ProfileCard({ user }) {
               )}
 
               <span className="inline-flex items-center gap-1.5 rounded-full bg-surface-high px-4 py-1.5 text-sm font-semibold text-on-surface">
-                <IconStarFilled size={16} className="text-amber-500 dark:text-amber-400" aria-hidden="true" />
+                <IconStarFilled size={16} className="text-primary-container" aria-hidden="true" />
                 {hasRatings ? `${average.toFixed(1)} (${rating.count} ratings)` : 'No ratings yet'}
               </span>
             </div>
@@ -216,8 +220,9 @@ function MyNotesSection({ notes = [], onEditNote, onDeleteNote, onUploadNew, use
       {/* Clean Header: Title + Search Bar */}
       <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between mb-6">
         <div className="flex items-center gap-2">
-          <h3 id="my-notes-heading" className="font-display text-xl font-bold text-primary sm:text-2xl">
-            My Notes
+          <h3 id="my-notes-heading" className="font-display text-xl font-bold text-primary sm:text-2xl flex items-center gap-2">
+            <IconFileText size={22} className="text-secondary" aria-hidden="true" />
+            <span>My Notes</span>
           </h3>
           <span className="rounded-full bg-surface-container px-2.5 py-0.5 text-xs font-bold text-on-surface-variant border border-surface-variant">
             {userOwnedNotes.length}
@@ -265,7 +270,7 @@ function MyNotesSection({ notes = [], onEditNote, onDeleteNote, onUploadNew, use
           <button
             type="button"
             onClick={onUploadNew}
-            className="mt-5 inline-flex items-center gap-1.5 rounded-xl bg-secondary-container px-4 py-2.5 text-xs font-bold text-on-secondary-container shadow-xs hover:brightness-105 transition-all cursor-pointer font-display"
+            className="mt-4 inline-flex items-center gap-1.5 rounded-lg bg-secondary-container px-4 py-2 text-xs font-bold text-on-secondary-container shadow-xs hover:brightness-105 transition-all cursor-pointer font-display"
           >
             <IconUpload size={16} />
             <span>Upload Your First Note</span>
@@ -278,7 +283,6 @@ function MyNotesSection({ notes = [], onEditNote, onDeleteNote, onUploadNew, use
           </p>
         </div>
       ) : (
-        /* Reusing the exact Marketplace card layout with Edit & Delete action buttons at bottom */
         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
           {filteredNotes.map((note) => {
             const displayPrice =
@@ -345,7 +349,7 @@ function MyNotesSection({ notes = [], onEditNote, onDeleteNote, onUploadNew, use
                     />
                   </div>
 
-                  {/* Bottom Edit & Delete Actions (Only for user's own notes) */}
+                  {/* Bottom Edit & Delete Actions */}
                   {isOwner && (
                     <div className="mt-3 flex items-center justify-end gap-2 border-t border-surface-variant/40 pt-3">
                       <button
@@ -387,7 +391,13 @@ export default function ProfileScreen({
   userNotes = [],
   onDeleteNote,
 }) {
-  const navigate = useNavigate()
+  let navigate = null
+  try {
+    // eslint-disable-next-line react-hooks/rules-of-hooks
+    navigate = useNavigate()
+  } catch {
+    // Rendered outside Router context
+  }
   const [localUser, setLocalUser] = useState(null)
   const [isEditing, setIsEditing] = useState(false)
   const [savedToast, setSavedToast] = useState('')
@@ -397,6 +407,7 @@ export default function ProfileScreen({
   const [isDeleting, setIsDeleting] = useState(false)
 
   const activeUser = localUser || user || null
+  const isTutor = activeUser?.role === 'tutor' || activeUser?.isTutor === true
   const notes = localNotes !== null ? localNotes : userNotes
 
   const showToast = (message, type = 'success') => {
@@ -435,6 +446,29 @@ export default function ProfileScreen({
     setIsEditing(false)
     onUpdateProfile?.(updatedUser)
     showToast('Profile updated successfully!')
+  }
+
+  const handleToggleRole = async () => {
+    const targetRole = isTutor ? 'student' : 'tutor'
+    setSwitchingRole(true)
+    try {
+      const res = await switchUserRole(targetRole)
+      if (res?.user) {
+        setLocalUser(res.user)
+        onUpdateProfile?.(res.user)
+        setSavedToast(`Mode updated to ${targetRole === 'tutor' ? 'Tutor Mode' : 'Student Mode'}!`)
+        setTimeout(() => setSavedToast(''), 3000)
+      }
+    } catch (err) {
+      if (err?.code === 'ACTIVE_BOOKINGS_EXIST' || err?.data?.code === 'ACTIVE_BOOKINGS_EXIST') {
+        const list = err?.blockingBookings || err?.data?.blockingBookings || []
+        setBlockingBookingsModal(list)
+      } else {
+        alert(err?.message || 'Failed to switch role.')
+      }
+    } finally {
+      setSwitchingRole(false)
+    }
   }
 
   const handleEditNote = (note) => {
@@ -527,9 +561,46 @@ export default function ProfileScreen({
           </button>
         </header>
 
+        {/* Role Switch Banner */}
+        <section className="mb-6 rounded-xl border border-primary/20 bg-primary-container/10 p-5 flex flex-col sm:flex-row sm:items-center justify-between gap-4">
+          <div>
+            <span className="text-xs font-bold uppercase tracking-wider text-primary">Current Mode</span>
+            <h3 className="font-display text-lg font-bold text-primary">
+              {isTutor ? 'Tutor Mode' : 'Student Mode'}
+            </h3>
+            <p className="text-xs text-on-surface-variant mt-0.5">
+              {isTutor
+                ? 'You are listed as an active tutor. Students can discover your profile and book your availability.'
+                : 'You are in student mode. Explore tutors, request sessions, and access study materials.'}
+            </p>
+          </div>
+          <button
+            type="button"
+            disabled={switchingRole}
+            onClick={handleToggleRole}
+            className="shrink-0 rounded-lg bg-secondary-container px-4 py-2 text-xs font-bold text-on-secondary-container shadow-sm hover:brightness-105 active:scale-95 disabled:opacity-50 cursor-pointer"
+          >
+            {switchingRole ? (
+              <span className="inline-flex items-center gap-1">
+                <IconRefresh size={14} className="animate-spin" /> Switching…
+              </span>
+            ) : isTutor ? (
+              'Switch to Student Mode'
+            ) : (
+              'Activate Tutor Profile'
+            )}
+          </button>
+        </section>
+
         <ProfileCard user={activeUser} />
 
-        {/* My Uploaded Notes Section */}
+        {isTutor && (
+          <div className="mt-6">
+            <AvailabilityManager />
+          </div>
+        )}
+
+        {/* My Notes section - directly after Availability section */}
         <MyNotesSection
           notes={notes}
           onEditNote={handleEditNote}
@@ -558,6 +629,35 @@ export default function ProfileScreen({
         onClose={() => setIsEditing(false)}
         onSave={handleSaveProfile}
       />
+
+      {/* Active Bookings Conflict Modal */}
+      {blockingBookingsModal && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50 p-4 backdrop-blur-xs">
+          <div className="w-full max-w-md rounded-2xl bg-surface-lowest p-6 shadow-level-3 border border-surface-variant">
+            <h3 className="font-display text-lg font-bold text-error">Cannot Switch Role</h3>
+            <p className="mt-2 text-xs text-on-surface-variant">
+              You have active confirmed tutoring sessions. Please complete or cancel these sessions before switching to Student Mode:
+            </p>
+            <ul className="mt-3 max-h-40 overflow-y-auto space-y-2 text-xs">
+              {blockingBookingsModal.map((b) => (
+                <li key={b._id || b.id} className="rounded-lg bg-surface-low p-2.5 border border-surface-variant flex justify-between items-center">
+                  <span className="font-semibold text-primary">{b.studentId?.name || 'Student'}</span>
+                  <span className="rounded-full bg-emerald-100 dark:bg-emerald-950 px-2 py-0.5 text-[10px] font-bold text-emerald-700 dark:text-emerald-300">
+                    Confirmed
+                  </span>
+                </li>
+              ))}
+            </ul>
+            <button
+              type="button"
+              onClick={() => setBlockingBookingsModal(null)}
+              className="mt-5 w-full rounded-lg bg-primary py-2 text-xs font-semibold text-on-primary shadow-sm cursor-pointer"
+            >
+              Close
+            </button>
+          </div>
+        </div>
+      )}
 
       {/* Delete Note Confirmation Modal */}
       <DeleteNoteModal

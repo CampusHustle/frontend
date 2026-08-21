@@ -16,14 +16,14 @@ function Avatar({ name, profilePicUrl }) {
       <img
         src={profilePicUrl}
         alt={`${name} profile photo`}
-        className="size-14 shrink-0 rounded-full border-2 border-surface-variant object-cover shadow-sm"
+        className="size-14 shrink-0 rounded-full border-2 border-white object-cover shadow-sm"
       />
     )
   }
   return (
     <div
       aria-hidden="true"
-      className="size-14 shrink-0 rounded-full border-2 border-surface-variant bg-primary-container text-lg font-bold text-on-primary-container shadow-sm flex items-center justify-center"
+      className="size-14 shrink-0 rounded-full border-2 border-white bg-primary-fixed text-lg font-bold text-primary shadow-sm flex items-center justify-center"
     >
       {initialsOf(name)}
     </div>
@@ -50,6 +50,8 @@ export default function BookingCard({
   onChat,
   onCancel,
   onShareContact,
+  onAccept,
+  onDecline,
 }) {
   const { id, title, tutorName, tutorProfilePicUrl, status, scheduledDate } =
     booking
@@ -57,6 +59,7 @@ export default function BookingCard({
   const canCancel = status === 'pending' || status === 'confirmed'
   const canShare = status === 'confirmed'
   const canChat = status === 'pending' || status === 'confirmed'
+  const isPending = status === 'pending'
 
   return (
     <article
@@ -71,7 +74,7 @@ export default function BookingCard({
         <div className="flex items-center gap-4">
           <Avatar name={tutorName} profilePicUrl={tutorProfilePicUrl} />
           <div>
-            <h3 className="font-semibold text-base text-primary font-display leading-snug">
+            <h3 className="font-semibold text-base text-primary leading-snug">
               {title}
             </h3>
             <p className="text-sm text-on-surface-variant mt-0.5">
@@ -85,11 +88,31 @@ export default function BookingCard({
           <BookingStatusBadge status={status} date={scheduledDate} />
 
           <div className="flex flex-wrap gap-2 mt-1">
+            {isPending && onAccept && (
+              <button
+                type="button"
+                onClick={() => onAccept(id)}
+                className="inline-flex items-center gap-1.5 rounded-full border border-emerald-500/30 bg-emerald-500/10 px-3.5 py-1.5 text-xs font-semibold text-emerald-700 dark:text-emerald-400 backdrop-blur-sm transition-colors hover:bg-emerald-500/20 cursor-pointer"
+              >
+                Accept
+              </button>
+            )}
+
+            {isPending && onDecline && (
+              <button
+                type="button"
+                onClick={() => onDecline(id)}
+                className="inline-flex items-center gap-1.5 rounded-full border border-rose-500/30 bg-rose-500/10 px-3.5 py-1.5 text-xs font-semibold text-rose-700 dark:text-rose-400 backdrop-blur-sm transition-colors hover:bg-rose-500/20 cursor-pointer"
+              >
+                Decline
+              </button>
+            )}
+
             {canShare && (
               <button
                 type="button"
                 onClick={() => onShareContact?.(id)}
-                className="inline-flex items-center gap-1.5 rounded-full border border-surface-variant bg-surface-lowest/80 px-3.5 py-1.5 text-xs font-semibold text-primary backdrop-blur-sm transition-colors hover:bg-surface-high cursor-pointer"
+                className="inline-flex items-center gap-1.5 rounded-full border border-primary/20 bg-white/50 px-3.5 py-1.5 text-xs font-semibold text-primary backdrop-blur-sm transition-colors hover:bg-surface-container-low cursor-pointer"
               >
                 <IconShare2 size={14} aria-hidden="true" />
                 Share Contact
@@ -100,18 +123,18 @@ export default function BookingCard({
               <button
                 type="button"
                 onClick={() => onChat?.(id)}
-                className="inline-flex items-center gap-1.5 rounded-full border border-surface-variant bg-surface-lowest/80 px-3.5 py-1.5 text-xs font-semibold text-primary backdrop-blur-sm transition-colors hover:bg-surface-high cursor-pointer"
+                className="inline-flex items-center gap-1.5 rounded-full border border-primary/20 bg-white/50 px-3.5 py-1.5 text-xs font-semibold text-primary backdrop-blur-sm transition-colors hover:bg-surface-container-low cursor-pointer"
               >
                 <IconMessageCircle size={14} aria-hidden="true" />
                 Message
               </button>
             )}
 
-            {canCancel && (
+            {canCancel && !onAccept && (
               <button
                 type="button"
                 onClick={() => onCancel?.(id)}
-                className="inline-flex items-center gap-1.5 rounded-full border border-error/30 bg-surface-lowest/80 px-3.5 py-1.5 text-xs font-semibold text-error backdrop-blur-sm transition-colors hover:bg-error-container/30 cursor-pointer"
+                className="inline-flex items-center gap-1.5 rounded-full border border-error/20 bg-white/50 px-3.5 py-1.5 text-xs font-semibold text-error backdrop-blur-sm transition-colors hover:bg-error-container cursor-pointer"
               >
                 <IconX size={14} aria-hidden="true" />
                 Cancel

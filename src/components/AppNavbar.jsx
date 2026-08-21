@@ -279,6 +279,36 @@ export default function AppNavbar({
           >
             Tutors
           </a>
+          <a
+            href="#"
+            onClick={(e) => {
+              e.preventDefault()
+              onNavigate?.('bookings')
+            }}
+            className={
+              activeView === 'bookings'
+                ? 'border-b-2 border-secondary-container pb-1 text-primary font-bold'
+                : 'text-on-surface-variant transition-colors hover:text-primary'
+            }
+          >
+            Bookings
+          </a>
+          {(user?.role === 'tutor' || user?.isTutor) && (
+            <a
+              href="#"
+              onClick={(e) => {
+                e.preventDefault()
+                onNavigate?.('tutor-requests')
+              }}
+              className={
+                activeView === 'tutor-requests'
+                  ? 'border-b-2 border-secondary-container pb-1 text-primary font-bold'
+                  : 'text-on-surface-variant transition-colors hover:text-primary'
+              }
+            >
+              Requests
+            </a>
+          )}
         </div>
 
         <div className="flex items-center gap-2 sm:gap-3">

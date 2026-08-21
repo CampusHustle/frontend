@@ -1,206 +1,13 @@
-import { useState, useEffect, useRef, useCallback } from 'react'
-import {
-  IconSend,
-  IconPaperclip,
-  IconDotsVertical,
-  IconMessageCircle,
-  IconRefresh,
-  IconArrowRight,
-} from '@tabler/icons-react'
+import { useState, useEffect, useCallback } from 'react'
+import { IconRefresh } from '@tabler/icons-react'
 import AppNavbar from '../components/AppNavbar.jsx'
 import BookingCard from '../components/BookingCard.jsx'
 import ConsentModal from '../components/ConsentModal.jsx'
 import Footer from '../components/Footer.jsx'
 import {
-  fetchBookings,
-  updateBookingStatus as updateMockBookingStatus,
-} from '../api/mockBookingApi.js'
-import { sanitizeMessage, MAX_MESSAGE_LENGTH } from '../utils/sanitize.js'
-import {
   getUserBookings,
   updateBookingStatus as updateLiveBookingStatus,
 } from '../api/bookingApi.js'
-
-
-
-const SEED_MESSAGES = [
-  {
-    id: 'm-1',
-    sender: 'tutor',
-    text: 'Hi! I saw you booked the Calculus session. Let me know what specific topics you want to cover so I can prepare!',
-    time: '9:01 AM',
-  },
-  {
-    id: 'm-2',
-    sender: 'student',
-    text: "Hey Sarah! Thanks for reaching out. I'm struggling a bit with derivatives and the chain rule.",
-    time: '9:04 AM',
-  },
-  {
-    id: 'm-3',
-    sender: 'tutor',
-    text: "Perfect, I have some great practice problems for the chain rule. We'll make sure you get it down.",
-    time: '9:06 AM',
-  },
-]
-
-function initialsOf(name) {
-  return (name || '')
-    .split(' ')
-    .filter(Boolean)
-    .slice(0, 2)
-    .map((p) => p[0]?.toUpperCase())
-    .join('')
-}
-
-function TutorAvatar({ name, url }) {
-  if (url) {
-    return (
-      <img
-        src={url}
-        alt={`${name} avatar`}
-        className="size-8 shrink-0 rounded-full object-cover shadow-sm mt-1"
-      />
-    )
-  }
-  return (
-    <div
-      aria-hidden="true"
-      className="size-8 shrink-0 rounded-full bg-primary-fixed text-xs font-bold text-primary flex items-center justify-center mt-1 shadow-sm"
-    >
-      {initialsOf(name)}
-    </div>
-  )
-}
-
-
-
-function ChatPanel({ booking }) {
-  const [messages, setMessages] = useState(SEED_MESSAGES)
-  const [draft, setDraft] = useState('')
-  const bottomRef = useRef(null)
-
-  useEffect(() => {
-    bottomRef.current?.scrollIntoView({ behavior: 'smooth' })
-  }, [messages])
-
-  function handleSend() {
-    const text = sanitizeMessage(draft)
-    if (!text) return
-    setMessages((prev) => [
-      ...prev,
-      {
-        id: `m-${Date.now()}`,
-        sender: 'student',
-        text,
-        time: new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }),
-      },
-    ])
-    setDraft('')
-  }
-
-  function handleKey(e) {
-    if (e.key === 'Enter' && !e.shiftKey) {
-      e.preventDefault()
-      handleSend()
-    }
-  }
-
-  const tutorName = booking?.tutorName ?? 'Tutor'
-  const tutorPic = booking?.tutorProfilePicUrl ?? null
-
-  return (
-    <section
-      aria-label={`Chat with ${tutorName}`}
-      className="w-full max-w-3xl flex flex-col glass-card rounded-2xl overflow-hidden border border-surface-variant"
-      style={{ height: 520 }}
-    >
-      {/* header */}
-      <div className="px-5 py-4 border-b border-surface-variant flex items-center justify-between bg-surface-low backdrop-blur-md shrink-0">
-        <div className="flex items-center gap-3">
-          <IconMessageCircle size={22} className="text-primary" aria-hidden="true" />
-          <h2 className="font-semibold text-base text-primary font-display">
-            Chat with {tutorName}
-          </h2>
-        </div>
-        <button
-          type="button"
-          aria-label="More options"
-          className="text-on-surface-variant hover:text-primary transition-colors rounded-full p-1 hover:bg-surface-high cursor-pointer"
-        >
-          <IconDotsVertical size={20} aria-hidden="true" />
-        </button>
-      </div>
-
-      {/* messages */}
-      <div className="flex-grow overflow-y-auto flex flex-col gap-4 px-5 py-4 bg-surface-lowest backdrop-blur-sm">
-        <div className="flex justify-center">
-          <span className="bg-surface-container text-on-surface-variant text-xs font-medium py-1 px-4 rounded-full border border-surface-variant">
-            Today
-          </span>
-        </div>
-
-        {messages.map((msg) =>
-          msg.sender === 'tutor' ? (
-            <div key={msg.id} className="flex items-start gap-3 max-w-[80%]">
-              <TutorAvatar name={tutorName} url={tutorPic} />
-              <div>
-                <div className="bg-surface-low text-on-surface p-3.5 rounded-2xl rounded-tl-sm text-sm border border-surface-variant shadow-sm leading-relaxed">
-                  {msg.text}
-                </div>
-                <span className="text-[11px] text-outline mt-1 ml-1 block">{msg.time}</span>
-              </div>
-            </div>
-          ) : (
-            <div
-              key={msg.id}
-              className="flex items-start gap-3 max-w-[80%] self-end flex-row-reverse"
-            >
-              <div>
-                <div className="bg-secondary-container text-on-secondary-container p-3.5 rounded-2xl rounded-tr-sm text-sm shadow-sm leading-relaxed border border-secondary-container/20 font-medium">
-                  {msg.text}
-                </div>
-                <span className="text-[11px] text-outline mt-1 mr-1 block text-right">{msg.time}</span>
-              </div>
-            </div>
-          ),
-        )}
-        <div ref={bottomRef} />
-      </div>
-
-      {/* input */}
-      <div className="px-4 py-3 border-t border-surface-variant bg-surface-low backdrop-blur-md flex items-center gap-3 shrink-0">
-        <button
-          type="button"
-          aria-label="Attach file"
-          className="text-on-surface-variant hover:text-primary transition-colors p-2 rounded-full hover:bg-surface-high cursor-pointer"
-        >
-          <IconPaperclip size={20} aria-hidden="true" />
-        </button>
-        <input
-          type="text"
-          value={draft}
-          onChange={(e) => setDraft(e.target.value)}
-          onKeyDown={handleKey}
-          placeholder="Type a message…"
-          maxLength={MAX_MESSAGE_LENGTH}
-          aria-label="Message input"
-          className="flex-grow bg-surface-lowest border border-surface-variant rounded-full py-2.5 px-4 text-sm focus:ring-2 focus:ring-secondary-container focus:border-secondary-container focus:outline-none placeholder:text-outline shadow-inner text-on-surface"
-        />
-        <button
-          type="button"
-          onClick={handleSend}
-          aria-label="Send message"
-          className="bg-primary text-on-primary size-10 rounded-full hover:bg-primary-container transition-colors flex items-center justify-center shadow-md hover:shadow-lg shrink-0 cursor-pointer"
-        >
-          <IconSend size={18} aria-hidden="true" />
-        </button>
-      </div>
-    </section>
-  )
-}
-
-
 
 const STATUS_TABS = [
   { key: 'all', label: 'All' },
@@ -210,65 +17,72 @@ const STATUS_TABS = [
   { key: 'cancelled', label: 'Cancelled' },
 ]
 
-
-
 export default function BookingScreen({ user, onLogout, onNavigate }) {
   const [bookings, setBookings] = useState([])
   const [loading, setLoading] = useState(true)
   const [error, setError] = useState(null)
   const [activeTab, setActiveTab] = useState('all')
-  const [activeChat, setActiveChat] = useState(null)
   const [toastMsg, setToastMsg] = useState(null)
   const [consentBookingId, setConsentBookingId] = useState(null)
-  const chatPanelRef = useRef(null)
 
-  // Scroll the chat panel into view whenever a booking chat is opened
-  useEffect(() => {
-    if (activeChat && chatPanelRef.current) {
-      chatPanelRef.current.scrollIntoView({ behavior: 'smooth', block: 'start' })
-    }
-  }, [activeChat])
-
-  /* ── load bookings from backend with mock fallback ── */
+  /* ── load student bookings exclusively from live API ── */
   const loadBookings = useCallback(async () => {
-    setLoading(true)
     setError(null)
     try {
-      const res = await getUserBookings()
-      if (res?.data && Array.isArray(res.data) && res.data.length > 0) {
-        const formatted = res.data.map((b) => ({
-          ...b,
-          id: b._id || b.id,
-          tutorName: b.tutorId?.name || b.tutorName || 'Tutor',
-          tutorPic: b.tutorId?.profilePicUrl || b.tutorPic || '',
-          studentName: b.studentId?.name || b.studentName || 'Student',
-          time: b.availabilityId
-            ? `${b.availabilityId.dayOfWeek || ''} at ${b.availabilityId.startTime || ''}`.trim() || 'Upcoming'
-            : b.time || 'Upcoming',
-          subject: b.subject || 'Tutoring Session',
-          price: b.price || b.tutorId?.hourlyRate || 35,
-        }))
-        setBookings(formatted)
-      } else {
-        const data = await fetchBookings()
-        setBookings(data)
-      }
-    } catch {
-      try {
-        const data = await fetchBookings()
-        setBookings(data)
-      } catch {
-        setError('Failed to load bookings. Please try again.')
-      }
+      const res = await getUserBookings({ role: 'student' })
+      const list = res?.data || res?.bookings || []
+      const formatted = list.map((b) => ({
+        ...b,
+        id: b._id || b.id,
+        tutorName: b.tutorId?.name || b.tutorName || 'Tutor',
+        tutorProfilePicUrl: b.tutorId?.profilePicUrl || b.tutorPic || b.tutorProfilePicUrl || '',
+        studentName: b.studentId?.name || b.studentName || 'Student',
+        scheduledDate: b.availabilityId
+          ? `${b.availabilityId.dayOfWeek || ''} at ${b.availabilityId.startTime || ''}`.trim() || 'Upcoming'
+          : b.time || b.scheduledDate || 'Upcoming',
+        subject: b.subject || 'Tutoring Session',
+        title: b.title || b.subject || 'Tutoring Session',
+        price: b.price || b.tutorId?.hourlyRate || 35,
+      }))
+      setBookings(formatted)
+    } catch (err) {
+      setError(err?.message || 'Failed to load bookings. Please try again.')
     } finally {
       setLoading(false)
     }
   }, [])
 
   useEffect(() => {
-    // eslint-disable-next-line react-hooks/set-state-in-effect
-    loadBookings()
-  }, [loadBookings])
+    let isMounted = true
+    getUserBookings({ role: 'student' })
+      .then((res) => {
+        if (!isMounted) return
+        const list = res?.data || res?.bookings || []
+        const formatted = list.map((b) => ({
+          ...b,
+          id: b._id || b.id,
+          tutorName: b.tutorId?.name || b.tutorName || 'Tutor',
+          tutorProfilePicUrl: b.tutorId?.profilePicUrl || b.tutorPic || b.tutorProfilePicUrl || '',
+          studentName: b.studentId?.name || b.studentName || 'Student',
+          scheduledDate: b.availabilityId
+            ? `${b.availabilityId.dayOfWeek || ''} at ${b.availabilityId.startTime || ''}`.trim() || 'Upcoming'
+            : b.time || b.scheduledDate || 'Upcoming',
+          subject: b.subject || 'Tutoring Session',
+          title: b.title || b.subject || 'Tutoring Session',
+          price: b.price || b.tutorId?.hourlyRate || 35,
+        }))
+        setBookings(formatted)
+      })
+      .catch((err) => {
+        if (isMounted) setError(err?.message || 'Failed to load bookings. Please try again.')
+      })
+      .finally(() => {
+        if (isMounted) setLoading(false)
+      })
+    return () => {
+      isMounted = false
+    }
+  }, [])
 
   /* ── toast helper ── */
   function showToast(msg) {
@@ -277,15 +91,18 @@ export default function BookingScreen({ user, onLogout, onNavigate }) {
   }
 
   async function handleStatusChange(id, newStatus) {
+    const prevBooking = bookings.find((b) => b.id === id)
+    const prevStatus = prevBooking?.status
+
     setBookings((prev) =>
-      prev.map((b) => (b.id === id ? { ...b, status: newStatus } : b)),
+      prev.map((b) => (b.id === id ? { ...b, _prevStatus: prevStatus, status: newStatus } : b)),
     )
+
     try {
-      updateLiveBookingStatus(id, newStatus).catch(() => { })
-      const updated = await updateMockBookingStatus(id, newStatus)
-      // apply confirmed data from server
+      const res = await updateLiveBookingStatus(id, newStatus)
+      const updatedData = res?.data || res?.booking || res
       setBookings((prev) =>
-        prev.map((b) => (b.id === id ? { ...b, ...updated, status: newStatus } : b)),
+        prev.map((b) => (b.id === id ? { ...b, ...updatedData, status: newStatus } : b)),
       )
       const labels = {
         confirmed: 'Booking confirmed.',
@@ -295,13 +112,22 @@ export default function BookingScreen({ user, onLogout, onNavigate }) {
       }
       showToast(labels[newStatus] ?? 'Status updated.')
     } catch (err) {
-      // roll back on failure
       setBookings((prev) =>
         prev.map((b) =>
-          b.id === id ? { ...b, status: b._prevStatus ?? b.status } : b,
+          b.id === id ? { ...b, status: b._prevStatus ?? prevStatus ?? b.status } : b,
         ),
       )
-      showToast(`Error: ${err.message}`)
+      showToast(`Error: ${err?.message || 'Failed to update booking status'}`)
+    }
+  }
+
+  const handleOpenChat = (booking) => {
+    const peerId = booking.tutorId?._id || booking.tutorId?.id || booking.tutorId || booking.tutorIdStr
+    const target = peerId || booking.id
+    if (target) {
+      onNavigate?.(`/chat/${target}`)
+    } else {
+      onNavigate?.('chat')
     }
   }
 
@@ -310,10 +136,6 @@ export default function BookingScreen({ user, onLogout, onNavigate }) {
     activeTab === 'all'
       ? bookings
       : bookings.filter((b) => b.status === activeTab)
-
-  const chatBooking = activeChat
-    ? bookings.find((b) => b.id === activeChat.id) ?? activeChat
-    : null
 
   const consentPeer = consentBookingId
     ? bookings.find((b) => b.id === consentBookingId)?.tutorName ?? 'this tutor'
@@ -328,7 +150,7 @@ export default function BookingScreen({ user, onLogout, onNavigate }) {
     <div className="flex min-h-screen flex-col bg-background text-on-background font-body-md overflow-x-hidden">
       <AppNavbar
         user={user}
-        activeView="tutor"
+        activeView="bookings"
         onNavigate={onNavigate}
         onLogout={onLogout}
       />
@@ -363,7 +185,7 @@ export default function BookingScreen({ user, onLogout, onNavigate }) {
                 className={`shrink-0 rounded-full px-4 py-1.5 text-xs font-semibold transition-colors cursor-pointer ${
                   activeTab === tab.key
                     ? 'bg-primary text-on-primary shadow-sm'
-                    : 'bg-surface-lowest border border-surface-variant text-on-surface-variant hover:bg-surface-high hover:text-on-surface'
+                    : 'bg-white/60 border border-outline-variant text-on-surface-variant hover:bg-surface-container-low'
                 }`}
               >
                 {tab.label}
@@ -404,7 +226,7 @@ export default function BookingScreen({ user, onLogout, onNavigate }) {
               <button
                 type="button"
                 onClick={loadBookings}
-                className="inline-flex items-center gap-1 font-semibold text-xs hover:underline"
+                className="inline-flex items-center gap-1 font-semibold text-xs hover:underline cursor-pointer"
               >
                 <IconRefresh size={14} aria-hidden="true" />
                 Retry
@@ -422,45 +244,12 @@ export default function BookingScreen({ user, onLogout, onNavigate }) {
             <BookingCard
               key={booking.id}
               booking={booking}
-              onChat={(id) => {
-                const b = bookings.find((x) => x.id === id)
-                setActiveChat(b ?? null)
-              }}
+              onChat={() => handleOpenChat(booking)}
               onCancel={(id) => handleStatusChange(id, 'cancelled')}
               onShareContact={(id) => setConsentBookingId(id)}
             />
           ))}
         </div>
-
-
-        {/* chat panel (shown when a booking is selected) */}
-        {chatBooking && (
-          <div ref={chatPanelRef} className="w-full max-w-3xl flex flex-col gap-3">
-            <div className="flex items-center justify-between">
-              <h2 className="font-semibold text-sm text-primary">
-                Messages — {chatBooking.subject ?? chatBooking.title ?? 'Session'}
-              </h2>
-              <div className="flex items-center gap-3">
-                <button
-                  type="button"
-                  onClick={() => onNavigate('chat')}
-                  className="inline-flex items-center gap-1 text-xs font-semibold text-primary hover:underline"
-                >
-                  Open in Chat
-                  <IconArrowRight size={13} aria-hidden="true" />
-                </button>
-                <button
-                  type="button"
-                  onClick={() => setActiveChat(null)}
-                  className="text-xs text-on-surface-variant hover:text-primary transition-colors"
-                >
-                  Close
-                </button>
-              </div>
-            </div>
-            <ChatPanel booking={chatBooking} />
-          </div>
-        )}
       </main>
 
       <Footer onNavigate={onNavigate} user={user} />
