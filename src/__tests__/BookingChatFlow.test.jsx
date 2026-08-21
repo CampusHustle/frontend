@@ -222,7 +222,7 @@ describe('ChatPage — live messaging & contact sharing', () => {
 
     await waitFor(() => expect(screen.getByText('Hello there!')).toBeInTheDocument())
 
-    const input = screen.getByPlaceholderText(/type a message/i)
+    const input = screen.getByLabelText(/message input/i)
     await user.type(input, 'Testing my new message')
     await user.click(screen.getByRole('button', { name: /send/i }))
 
@@ -262,7 +262,7 @@ describe('ChatPage — live messaging & contact sharing', () => {
     await user.click(within(modal).getByRole('button', { name: /share contact info/i }))
 
     await waitFor(() => {
-      expect(screen.getByText('Verified Contact Shared')).toBeInTheDocument()
+      expect(screen.getByText(/verified campus contact/i)).toBeInTheDocument()
     })
   })
 

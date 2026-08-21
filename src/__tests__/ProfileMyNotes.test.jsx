@@ -9,6 +9,12 @@ vi.mock('../api/noteApi.js', () => ({
   getMyUploadedNotes: vi.fn(() => Promise.resolve({ success: true, notes: [] })),
 }))
 
+vi.mock('../api/bookingApi.js', () => ({
+  getMyAvailability: vi.fn(() => Promise.resolve({ success: true, data: [] })),
+  createAvailabilitySlot: vi.fn(() => Promise.resolve({ success: true })),
+  deleteAvailabilitySlot: vi.fn(() => Promise.resolve({ success: true })),
+}))
+
 describe('ProfileScreen My Notes Section (View, Edit, Delete)', () => {
   const initialUser = {
     id: 'u-1',
@@ -220,5 +226,24 @@ describe('ProfileScreen My Notes Section (View, Edit, Delete)', () => {
 
     // Other user's note is filtered out
     expect(screen.queryByText('Stranger External Material')).not.toBeInTheDocument()
+  })
+
+  it('renders My Notes section positionally directly below the Availability section', () => {
+    const tutorUser = { ...initialUser, role: 'tutor' }
+    render(
+      <MemoryRouter>
+        <ProfilePage user={tutorUser} userNotes={sampleNotes} />
+      </MemoryRouter>
+    )
+
+    const availabilityRegion = screen.getByRole('region', { name: /Tutor Availability Management/i })
+    const myNotesHeading = screen.getByRole('heading', { name: /My Notes/i })
+
+    expect(availabilityRegion).toBeInTheDocument()
+    expect(myNotesHeading).toBeInTheDocument()
+
+    // Assert Availability section comes before My Notes heading in DOM order
+    const positionCheck = availabilityRegion.compareDocumentPosition(myNotesHeading)
+    expect(Boolean(positionCheck & Node.DOCUMENT_POSITION_FOLLOWING)).toBe(true)
   })
 })
