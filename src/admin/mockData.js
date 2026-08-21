@@ -31,11 +31,11 @@ export const INITIAL_KPIS = [
   {
     id: 'kpi-total-volume',
     title: 'Total Volume',
-    value: '$142,850',
+    value: 'ETB 8,142,450',
     change: '+23.8%',
     isPositive: true,
     timeframe: 'vs last month',
-    subtext: 'ETB 8,142,450 processed',
+    subtext: 'Processed via Telebirr & CBE',
   },
   {
     id: 'kpi-daily-hustles',

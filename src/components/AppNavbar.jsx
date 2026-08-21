@@ -16,6 +16,9 @@ import {
   getUnreadNotificationCount,
   markAllNotificationsAsRead,
 } from '../api/notificationApi.js'
+import { Menu, X } from 'lucide-react'
+import { getUnreadMessageCount } from '../api/chatApi.js'
+import { getSharedSocket } from '../services/socket.js'
 
 function getInitial(name) {
   return (name || 'Student').trim().charAt(0).toUpperCase() || 'S'
@@ -55,7 +58,9 @@ export default function AppNavbar({
     document.documentElement.classList.contains('dark'),
   )
   const [isSearchExpanded, setIsSearchExpanded] = useState(false)
+  const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false)
   const [unreadCount, setUnreadCount] = useState(0)
+  const [unreadMessageCount, setUnreadMessageCount] = useState(0)
   const [notifications, setNotifications] = useState([])
   const [showNotifications, setShowNotifications] = useState(false)
   const searchInputRef = useRef(null)
@@ -72,6 +77,44 @@ export default function AppNavbar({
         }
       })
       .catch(() => {})
+
+    getUnreadMessageCount()
+      .then((res) => {
+        if (isMounted && typeof res?.count === 'number') {
+          setUnreadMessageCount(res.count)
+        }
+      })
+      .catch(() => {})
+
+    const socket = getSharedSocket()
+    if (socket) {
+      const handleMessageNotify = () => {
+        setUnreadMessageCount((prev) => prev + 1)
+      }
+      const handleUnreadUpdated = () => {
+        getUnreadMessageCount()
+          .then((res) => {
+            if (isMounted && typeof res?.count === 'number') {
+              setUnreadMessageCount(res.count)
+            }
+          })
+          .catch(() => {})
+      }
+      const handleNotificationNew = () => {
+        setUnreadCount((prev) => prev + 1)
+      }
+
+      socket.on('message:notify', handleMessageNotify)
+      socket.on('message:unread_updated', handleUnreadUpdated)
+      socket.on('notification:new', handleNotificationNew)
+
+      return () => {
+        isMounted = false
+        socket.off('message:notify', handleMessageNotify)
+        socket.off('message:unread_updated', handleUnreadUpdated)
+        socket.off('notification:new', handleNotificationNew)
+      }
+    }
 
     return () => {
       isMounted = false
@@ -207,7 +250,7 @@ export default function AppNavbar({
           </div>
         )}
 
-        <div className="hidden items-center gap-6 text-sm font-medium md:flex">
+        <div className="hidden items-center gap-6 text-sm font-medium lg:flex">
           <a
             href="#"
             onClick={(e) => {
@@ -268,47 +311,53 @@ export default function AppNavbar({
           )}
         </div>
 
-        <div className="flex items-center gap-3">
-          {/* Felat AI Study Workspace button */}
-          <button
-            type="button"
-            aria-label="AI Assistant"
-            onClick={() => onNavigate?.('assistant')}
-            className={`inline-flex size-9 items-center justify-center rounded-full border border-outline-variant transition-colors cursor-pointer ${
-              activeView === 'assistant'
-                ? 'bg-primary text-on-primary border-primary'
-                : 'text-on-surface-variant hover:text-primary'
-            }`}
-          >
-            <IconSparkles size={18} aria-hidden="true" />
-          </button>
-
-          {/* Messages shortcut button */}
+        <div className="flex items-center gap-2 sm:gap-3">
+          <div className="hidden items-center gap-2 sm:gap-3 lg:flex">
+            {/* Felat AI Study Workspace button */}
+            <button
+              type="button"
+              aria-label="AI Assistant"
+              onClick={() => onNavigate?.('assistant')}
+              className={`inline-flex size-9 items-center justify-center rounded-full border border-outline-variant transition-colors cursor-pointer ${
+                activeView === 'assistant'
+                  ? 'bg-primary text-on-primary border-primary'
+                  : 'text-on-surface-variant hover:text-primary'
+              }`}
+            >
+              <IconSparkles size={18} aria-hidden="true" />
+            </button>
+            
           <button
             type="button"
             aria-label="Messages"
             onClick={() => onNavigate?.('chat')}
-            className={`inline-flex size-9 items-center justify-center rounded-full border border-outline-variant transition-colors cursor-pointer ${
+            className={`relative inline-flex size-9 items-center justify-center rounded-full border border-outline-variant transition-colors cursor-pointer ${
               activeView === 'chat'
                 ? 'bg-primary text-on-primary border-primary'
                 : 'text-on-surface-variant hover:text-primary'
             }`}
           >
             <IconMessageCircle size={18} aria-hidden="true" />
-          </button>
-
-          <button
-            type="button"
-            aria-label={isDark ? 'Switch to light mode' : 'Switch to dark mode'}
-            onClick={toggleTheme}
-            className="inline-flex size-9 items-center justify-center rounded-full border border-outline-variant text-on-surface-variant transition-colors hover:text-primary cursor-pointer"
-          >
-            {isDark ? (
-              <IconSun size={18} aria-hidden="true" />
-            ) : (
-              <IconMoon size={18} aria-hidden="true" />
+            {unreadMessageCount > 0 && (
+              <span className="absolute -top-1 -right-1 flex size-4 items-center justify-center rounded-full bg-error text-[10px] font-bold text-on-error shadow-sm animate-pulse">
+                {unreadMessageCount > 9 ? '9+' : unreadMessageCount}
+              </span>
             )}
           </button>
+
+            <button
+              type="button"
+              aria-label={isDark ? 'Switch to light mode' : 'Switch to dark mode'}
+              onClick={toggleTheme}
+              className="inline-flex size-9 items-center justify-center rounded-full border border-outline-variant text-on-surface-variant transition-colors hover:text-primary cursor-pointer"
+            >
+              {isDark ? (
+                <IconSun size={18} aria-hidden="true" />
+              ) : (
+                <IconMoon size={18} aria-hidden="true" />
+              )}
+            </button>
+          </div>
 
           {/* Notifications Bell */}
           <div className="relative" ref={notifRef}>
@@ -364,40 +413,191 @@ export default function AppNavbar({
             )}
           </div>
 
-          {/* Post Listing CTA Button */}
-          <button
-            type="button"
-            onClick={() =>
-              onPostListing
-                ? onPostListing()
-                : onNavigate?.('post-listing')
-            }
-            className="inline-flex items-center gap-1.5 rounded-lg bg-secondary-container px-3.5 py-1.5 text-xs font-bold text-on-secondary-container shadow-sm transition-all hover:brightness-105 active:scale-95 sm:text-sm cursor-pointer"
-          >
-            <IconPlus size={16} stroke={2.5} aria-hidden="true" />
-            <span>Post Listing</span>
-          </button>
-
-          <button
-            type="button"
-            aria-label="View my profile"
-            onClick={() => onNavigate?.('profile')}
-            className="flex items-center rounded-full transition-opacity hover:opacity-80 focus:outline-none focus:ring-2 focus:ring-primary/20 cursor-pointer"
-          >
-            <Avatar user={user} className="size-9" />
-          </button>
-          {onLogout && (
+          <div className="hidden items-center gap-2 sm:gap-3 lg:flex">
+            {/* Post Listing CTA Button */}
             <button
               type="button"
-              onClick={onLogout}
-              aria-label="Log out"
-              className="inline-flex size-9 items-center justify-center rounded-full border border-outline-variant text-on-surface-variant transition-colors hover:text-primary cursor-pointer"
+              onClick={() =>
+                onPostListing
+                  ? onPostListing()
+                  : onNavigate?.('post-listing')
+              }
+              className="inline-flex items-center gap-1.5 rounded-lg bg-secondary-container px-3.5 py-1.5 text-xs font-bold text-on-secondary-container shadow-sm transition-all hover:brightness-105 active:scale-95 sm:text-sm cursor-pointer"
             >
-              <IconLogout size={18} aria-hidden="true" />
+              <IconPlus size={16} stroke={2.5} aria-hidden="true" />
+              <span>Post Listing</span>
             </button>
-          )}
+
+            <button
+              type="button"
+              aria-label="View my profile"
+              onClick={() => onNavigate?.('profile')}
+              className="flex items-center rounded-full transition-opacity hover:opacity-80 focus:outline-none focus:ring-2 focus:ring-primary/20 cursor-pointer"
+            >
+              <Avatar user={user} className="size-9" />
+            </button>
+            {onLogout && (
+              <button
+                type="button"
+                onClick={onLogout}
+                aria-label="Log out"
+                className="inline-flex size-9 items-center justify-center rounded-full border border-outline-variant text-on-surface-variant transition-colors hover:text-primary cursor-pointer"
+              >
+                <IconLogout size={18} aria-hidden="true" />
+              </button>
+            )}
+          </div>
+
+          {/* Mobile Menu Toggle */}
+          <button
+            type="button"
+            aria-label="Toggle mobile menu"
+            onClick={() => setIsMobileMenuOpen(!isMobileMenuOpen)}
+            className="inline-flex size-9 items-center justify-center rounded-full border border-outline-variant text-on-surface-variant transition-colors hover:text-primary cursor-pointer lg:hidden"
+          >
+            {isMobileMenuOpen ? <X size={20} aria-hidden="true" /> : <Menu size={20} aria-hidden="true" />}
+          </button>
         </div>
       </div>
+
+      {/* Mobile Dropdown Menu */}
+      {isMobileMenuOpen && (
+        <div className="border-t border-surface-variant bg-surface-lowest shadow-lg lg:hidden animate-in slide-in-from-top-2">
+          <div className="flex flex-col p-4 space-y-4">
+            {/* Navigation Links */}
+            <div className="flex flex-col space-y-2">
+              <a
+                href="#"
+                onClick={(e) => {
+                  e.preventDefault()
+                  setIsMobileMenuOpen(false)
+                  onNavigate?.('marketplace')
+                }}
+                className={`p-2 text-sm font-medium rounded-lg transition-colors ${
+                  activeView === 'marketplace'
+                    ? 'bg-secondary-container text-on-secondary-container font-bold'
+                    : 'text-on-surface-variant hover:bg-surface-low hover:text-primary'
+                }`}
+              >
+                Marketplace
+              </a>
+              <a
+                href="#"
+                onClick={(e) => {
+                  e.preventDefault()
+                  setIsMobileMenuOpen(false)
+                  onNavigate?.('tutor')
+                }}
+                className={`p-2 text-sm font-medium rounded-lg transition-colors ${
+                  activeView === 'tutor'
+                    ? 'bg-secondary-container text-on-secondary-container font-bold'
+                    : 'text-on-surface-variant hover:bg-surface-low hover:text-primary'
+                }`}
+              >
+                Tutors
+              </a>
+            </div>
+
+            <div className="h-px w-full bg-surface-variant/50" />
+
+            {/* Actions */}
+            <div className="flex flex-col space-y-2">
+              <button
+                type="button"
+                onClick={() => {
+                  setIsMobileMenuOpen(false)
+                  onNavigate?.('assistant')
+                }}
+                className={`flex w-full items-center gap-3 rounded-lg p-2 text-sm font-medium transition-colors ${
+                  activeView === 'assistant'
+                    ? 'bg-primary text-on-primary'
+                    : 'text-on-surface-variant hover:bg-surface-low hover:text-primary'
+                }`}
+              >
+                <IconSparkles size={20} aria-hidden="true" />
+                AI Assistant
+              </button>
+
+              <button
+                type="button"
+                onClick={() => {
+                  setIsMobileMenuOpen(false)
+                  onNavigate?.('chat')
+                }}
+                className={`flex w-full items-center gap-3 rounded-lg p-2 text-sm font-medium transition-colors ${
+                  activeView === 'chat'
+                    ? 'bg-primary text-on-primary'
+                    : 'text-on-surface-variant hover:bg-surface-low hover:text-primary'
+                }`}
+              >
+                <IconMessageCircle size={20} aria-hidden="true" />
+                Messages
+              </button>
+
+              <button
+                type="button"
+                onClick={() => {
+                  setIsMobileMenuOpen(false)
+                  toggleTheme()
+                }}
+                className="flex w-full items-center gap-3 rounded-lg p-2 text-sm font-medium text-on-surface-variant transition-colors hover:bg-surface-low hover:text-primary"
+              >
+                {isDark ? (
+                  <IconSun size={20} aria-hidden="true" />
+                ) : (
+                  <IconMoon size={20} aria-hidden="true" />
+                )}
+                {isDark ? 'Switch to Light Mode' : 'Switch to Dark Mode'}
+              </button>
+
+              <button
+                type="button"
+                onClick={() => {
+                  setIsMobileMenuOpen(false)
+                  onPostListing ? onPostListing() : onNavigate?.('post-listing')
+                }}
+                className="flex w-full items-center gap-3 rounded-lg p-2 text-sm font-bold text-primary transition-colors hover:bg-surface-low"
+              >
+                <IconPlus size={20} stroke={2.5} aria-hidden="true" />
+                Post Listing
+              </button>
+            </div>
+
+            <div className="h-px w-full bg-surface-variant/50" />
+
+            {/* User & Logout */}
+            <div className="flex items-center justify-between p-2">
+              <button
+                type="button"
+                onClick={() => {
+                  setIsMobileMenuOpen(false)
+                  onNavigate?.('profile')
+                }}
+                className="flex items-center gap-3 text-left transition-opacity hover:opacity-80"
+              >
+                <Avatar user={user} className="size-9" />
+                <span className="text-sm font-medium text-on-surface">
+                  {user?.name || 'My Profile'}
+                </span>
+              </button>
+
+              {onLogout && (
+                <button
+                  type="button"
+                  onClick={() => {
+                    setIsMobileMenuOpen(false)
+                    onLogout()
+                  }}
+                  aria-label="Log out"
+                  className="flex size-9 items-center justify-center rounded-full text-error transition-colors hover:bg-error/10"
+                >
+                  <IconLogout size={20} aria-hidden="true" />
+                </button>
+              )}
+            </div>
+          </div>
+        </div>
+      )}
     </nav>
   )
 }

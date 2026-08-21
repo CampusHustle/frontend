@@ -1,30 +1,34 @@
 /* eslint-disable react-refresh/only-export-components */
 import { createContext, useContext, useState, useEffect } from 'react'
 
+import { getStoredTheme, applyTheme } from '../../utils/theme.js'
+
 const AdminThemeContext = createContext({
-  isDark: true,
-  theme: 'dark',
+  isDark: false,
+  theme: 'light',
   toggleTheme: () => {},
 })
 
 export function AdminThemeProvider({ children }) {
-  const [theme, setTheme] = useState(() => {
-    return localStorage.getItem('campushustle_admin_theme') || 'dark'
-  })
+  const [theme, setTheme] = useState(() => getStoredTheme())
 
   const isDark = theme === 'dark'
 
   useEffect(() => {
-    localStorage.setItem('campushustle_admin_theme', theme)
+    applyTheme(theme)
   }, [theme])
 
   const toggleTheme = () => {
-    setTheme((prev) => (prev === 'dark' ? 'light' : 'dark'))
+    setTheme((prev) => {
+      const next = prev === 'dark' ? 'light' : 'dark'
+      applyTheme(next)
+      return next
+    })
   }
 
   return (
     <AdminThemeContext.Provider value={{ isDark, theme, toggleTheme }}>
-      <div className={isDark ? 'admin-dark' : 'admin-light'}>
+      <div className={isDark ? 'admin-dark dark' : 'admin-light'}>
         {children}
       </div>
     </AdminThemeContext.Provider>

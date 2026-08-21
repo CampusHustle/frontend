@@ -23,14 +23,14 @@ function parseInlineMarkdown(text) {
     if (!token) return null
     if (token.startsWith('**') && token.endsWith('**') && token.length >= 4) {
       return (
-        <strong key={i} className="font-bold text-primary dark:text-ink-950">
+        <strong key={i} className="font-bold text-primary font-display">
           {token.slice(2, -2)}
         </strong>
       )
     }
     if (token.startsWith('*') && token.endsWith('*') && token.length >= 2) {
       return (
-        <em key={i} className="italic text-on-surface dark:text-ink-900">
+        <em key={i} className="italic text-on-surface">
           {token.slice(1, -1)}
         </em>
       )
@@ -39,7 +39,7 @@ function parseInlineMarkdown(text) {
       return (
         <code
           key={i}
-          className="rounded-md bg-surface-container/70 dark:bg-ink-200/80 px-1.5 py-0.5 font-mono text-[11px] font-medium text-primary dark:text-ink-950 border border-surface-variant/40 dark:border-ink-300/40"
+          className="rounded-md bg-surface-container px-1.5 py-0.5 font-mono text-[11px] font-medium text-amber-500 dark:text-amber-400 border border-surface-variant/60"
         >
           {token.slice(1, -1)}
         </code>
@@ -49,7 +49,7 @@ function parseInlineMarkdown(text) {
       return (
         <span
           key={i}
-          className="inline-block font-mono text-[11px] px-1.5 py-0.5 bg-secondary-container/20 text-secondary dark:text-secondary-fixed rounded font-medium"
+          className="inline-block font-mono text-[11px] px-1.5 py-0.5 bg-secondary-container/15 text-amber-600 dark:text-amber-300 rounded font-medium border border-secondary-container/20"
         >
           {token.slice(1, -1)}
         </span>
@@ -69,13 +69,13 @@ function CodeBlock({ lang, code }) {
   }
 
   return (
-    <div className="my-2.5 overflow-hidden rounded-xl border border-surface-variant/80 bg-surface-lowest dark:border-ink-300 dark:bg-ink-900 text-on-surface dark:text-white shadow-xs">
-      <div className="flex items-center justify-between border-b border-surface-variant/50 bg-surface-low dark:border-ink-700/60 dark:bg-ink-800 px-3 py-1.5 text-[10px] font-medium text-outline dark:text-ink-400">
+    <div className="my-2.5 overflow-hidden rounded-xl border border-surface-variant bg-surface-lowest shadow-xs">
+      <div className="flex items-center justify-between border-b border-surface-variant bg-surface-low px-3 py-1.5 text-[10px] font-medium text-outline">
         <span className="font-mono uppercase tracking-wider">{lang || 'code'}</span>
         <button
           type="button"
           onClick={handleCopyCode}
-          className="inline-flex items-center gap-1 hover:text-primary dark:hover:text-white transition-colors cursor-pointer"
+          className="inline-flex items-center gap-1 hover:text-primary transition-colors cursor-pointer"
         >
           {copied ? (
             <>
@@ -90,7 +90,7 @@ function CodeBlock({ lang, code }) {
           )}
         </button>
       </div>
-      <pre className="overflow-x-auto p-3 font-mono text-[11px] leading-relaxed scrollbar-thin">
+      <pre className="overflow-x-auto p-3 font-mono text-[11px] leading-relaxed text-on-surface scrollbar-thin">
         <code>{code}</code>
       </pre>
     </div>
@@ -228,28 +228,28 @@ function FormattedAiResponse({ content, isStreaming }) {
         }
         if (block.type === 'h1') {
           return (
-            <h4 key={idx} className="font-display text-sm font-bold text-primary dark:text-ink-950 mt-2 mb-1 border-b border-surface-variant/40 pb-1">
+            <h4 key={idx} className="font-display text-sm font-bold text-primary mt-2 mb-1 border-b border-surface-variant pb-1">
               {parseInlineMarkdown(block.text)}
             </h4>
           )
         }
         if (block.type === 'h2') {
           return (
-            <h5 key={idx} className="font-display text-xs font-bold text-primary dark:text-ink-950 mt-2 mb-1">
+            <h5 key={idx} className="font-display text-xs font-bold text-primary mt-2 mb-1">
               {parseInlineMarkdown(block.text)}
             </h5>
           )
         }
         if (block.type === 'h3') {
           return (
-            <h6 key={idx} className="font-display text-xs font-semibold text-primary dark:text-ink-900 mt-1.5 mb-0.5">
+            <h6 key={idx} className="font-display text-xs font-semibold text-primary mt-1.5 mb-0.5">
               {parseInlineMarkdown(block.text)}
             </h6>
           )
         }
         if (block.type === 'quote') {
           return (
-            <div key={idx} className="border-l-3 border-secondary-container bg-secondary-container/10 px-2.5 py-1.5 rounded-r-lg my-1 text-[11px] text-on-surface-variant dark:text-ink-700 italic">
+            <div key={idx} className="border-l-3 border-secondary-container bg-secondary-container/10 px-2.5 py-1.5 rounded-r-lg my-1 text-[11px] text-on-surface-variant italic">
               {parseInlineMarkdown(block.text)}
             </div>
           )
@@ -258,8 +258,8 @@ function FormattedAiResponse({ content, isStreaming }) {
           return (
             <ul key={idx} className="space-y-1 my-1.5 pl-1 list-none">
               {block.items.map((item, i) => (
-                <li key={i} className="flex items-start gap-2 text-on-surface dark:text-ink-950">
-                  <span className="inline-block size-1.5 rounded-full bg-primary/70 dark:bg-ink-700 shrink-0 mt-1.5" />
+                <li key={i} className="flex items-start gap-2 text-on-surface">
+                  <span className="inline-block size-1.5 rounded-full bg-secondary-container shrink-0 mt-1.5" />
                   <span className="flex-1">{parseInlineMarkdown(item)}</span>
                 </li>
               ))}
@@ -270,8 +270,8 @@ function FormattedAiResponse({ content, isStreaming }) {
           return (
             <ol key={idx} className="space-y-1 my-1.5 pl-1 list-none">
               {block.items.map((item, i) => (
-                <li key={i} className="flex items-start gap-1.5 text-on-surface dark:text-ink-950">
-                  <span className="font-bold text-primary dark:text-ink-900 shrink-0 text-[11px] min-w-[16px]">
+                <li key={i} className="flex items-start gap-1.5 text-on-surface">
+                  <span className="font-bold text-primary shrink-0 text-[11px] min-w-[16px]">
                     {i + 1}.
                   </span>
                   <span className="flex-1">{parseInlineMarkdown(item)}</span>
@@ -284,10 +284,10 @@ function FormattedAiResponse({ content, isStreaming }) {
           return <div key={idx} className="h-0.5" />
         }
         return (
-          <p key={idx} className="text-on-surface dark:text-ink-950">
+          <p key={idx} className="text-on-surface leading-relaxed">
             {parseInlineMarkdown(block.text)}
             {idx === blocks.length - 1 && isStreaming && (
-              <span className="inline-block w-1.5 h-3 bg-secondary-container dark:bg-secondary-fixed ml-1 animate-pulse align-middle rounded-xs" />
+              <span className="inline-block w-1.5 h-3 bg-secondary-container ml-1 animate-pulse align-middle rounded-xs" />
             )}
           </p>
         )
@@ -490,16 +490,16 @@ export default function FloatingAiAssistant({ user }) {
         <div
           role="dialog"
           aria-label="Felat (ፈላጥ) AI Assistant chat"
-          className="fixed bottom-24 right-4 sm:right-6 z-50 flex h-[530px] max-h-[calc(100vh-7.5rem)] w-[380px] max-w-[calc(100vw-2rem)] flex-col overflow-hidden rounded-2xl border border-surface-variant/80 bg-surface-lowest shadow-level-3 backdrop-blur-xl transition-all dark:border-white/10 dark:bg-surface dark:text-ink-950"
+          className="fixed bottom-24 right-4 sm:right-6 z-50 flex h-[530px] max-h-[calc(100vh-7.5rem)] w-[380px] max-w-[calc(100vw-2rem)] flex-col overflow-hidden rounded-2xl border border-surface-variant bg-surface shadow-level-3 backdrop-blur-xl transition-all"
         >
           {/* Header */}
-          <div className="flex items-center justify-between border-b border-surface-variant/70 bg-surface-low px-4 py-3 dark:border-ink-200/60 dark:bg-ink-100">
+          <div className="flex items-center justify-between border-b border-surface-variant bg-surface-low px-4 py-3">
             <div className="flex items-center gap-2.5">
-              <div className="flex size-8 items-center justify-center rounded-xl bg-[#114161] text-white shadow-sm">
+              <div className="flex size-8 items-center justify-center rounded-xl bg-primary text-on-primary shadow-sm">
                 <IconSparkles size={16} stroke={2.2} />
               </div>
               <div className="flex items-center gap-2">
-                <h3 className="font-display text-sm font-bold text-primary dark:text-ink-950">
+                <h3 className="font-display text-sm font-bold text-primary">
                   Felat (ፈላጥ)
                 </h3>
                 <span className="inline-block size-2 rounded-full bg-emerald-500" title="Online" />
@@ -512,7 +512,7 @@ export default function FloatingAiAssistant({ user }) {
                 onClick={handleResetChat}
                 title="Reset conversation"
                 aria-label="Reset conversation"
-                className="inline-flex size-7 items-center justify-center rounded-lg text-outline transition-colors hover:bg-surface-high hover:text-on-surface dark:hover:bg-ink-200 dark:hover:text-ink-900 cursor-pointer"
+                className="inline-flex size-7 items-center justify-center rounded-lg text-outline transition-colors hover:bg-surface-high hover:text-on-surface cursor-pointer"
               >
                 <IconRefresh size={15} />
               </button>
@@ -521,7 +521,7 @@ export default function FloatingAiAssistant({ user }) {
                 onClick={() => setIsOpen(false)}
                 title="Close chat panel"
                 aria-label="Close chat panel"
-                className="inline-flex size-7 items-center justify-center rounded-lg text-outline transition-colors hover:bg-surface-high hover:text-on-surface dark:hover:bg-ink-200 dark:hover:text-ink-900 cursor-pointer"
+                className="inline-flex size-7 items-center justify-center rounded-lg text-outline transition-colors hover:bg-surface-high hover:text-on-surface cursor-pointer"
               >
                 <IconX size={17} />
               </button>
@@ -529,9 +529,9 @@ export default function FloatingAiAssistant({ user }) {
           </div>
 
           {/* Chat Messages Body */}
-          <div className="flex-1 overflow-y-auto p-4 space-y-3.5 text-xs">
+          <div className="flex-1 overflow-y-auto p-4 space-y-3.5 text-xs bg-surface-lowest">
             {activeTutorId && (
-              <div className="flex items-center gap-1.5 rounded-lg border border-dashed border-[#114161]/30 bg-[#114161]/5 px-3 py-1.5 text-[10px] text-[#114161] dark:border-[#114161]/20 dark:bg-[#114161]/5">
+              <div className="flex items-center gap-1.5 rounded-lg border border-dashed border-primary/30 bg-primary/5 px-3 py-1.5 text-[10px] text-primary">
                 <IconBook size={12} />
                 <span>Questions scoped to this tutor's notes</span>
               </div>
@@ -545,7 +545,7 @@ export default function FloatingAiAssistant({ user }) {
                   className={`relative max-w-[85%] rounded-2xl p-3 leading-relaxed shadow-sm ${
                     msg.role === 'user'
                       ? 'bg-primary text-on-primary rounded-br-xs'
-                      : 'bg-surface-low border border-surface-variant/70 text-on-surface dark:border-ink-200 dark:bg-ink-100 dark:text-ink-950 rounded-bl-xs'
+                      : 'bg-surface-low border border-surface-variant text-on-surface rounded-bl-xs'
                   }`}
                 >
                   {msg.role === 'user' ? (
@@ -561,17 +561,17 @@ export default function FloatingAiAssistant({ user }) {
                     <>
                       {msg.grounded !== undefined && (
                         <div className="mt-1.5 flex items-center gap-1 text-[10px]">
-                          <span className={`inline-flex items-center gap-1 rounded-full px-1.5 py-0.5 font-medium ${msg.grounded ? 'bg-emerald-50 text-emerald-700 dark:bg-emerald-900/30 dark:text-emerald-400' : 'bg-slate-100 text-slate-500 dark:bg-ink-200 dark:text-ink-400'}`}>
+                          <span className={`inline-flex items-center gap-1 rounded-full px-1.5 py-0.5 font-medium ${msg.grounded ? 'bg-emerald-500/15 text-emerald-600 dark:text-emerald-400' : 'bg-surface-container text-on-surface-variant'}`}>
                             {msg.grounded ? '📚 From notes' : '💬 General'}
                           </span>
                         </div>
                       )}
 
                       {msg.sources && msg.sources.length > 0 && (
-                        <div className="mt-2 space-y-1 border-t border-surface-variant/40 pt-2 dark:border-ink-200/40">
-                          <p className="text-[10px] font-semibold text-outline dark:text-ink-500">Sources:</p>
+                        <div className="mt-2 space-y-1 border-t border-surface-variant/50 pt-2">
+                          <p className="text-[10px] font-semibold text-outline">Sources:</p>
                           {msg.sources.map((src, i) => (
-                            <div key={i} className="flex items-center gap-1 text-[10px] text-outline dark:text-ink-400">
+                            <div key={i} className="flex items-center gap-1 text-[10px] text-outline">
                               <IconBook size={10} />
                               <span>Page {src.pageNumber}{src.similarityScore ? ` · ${Math.round(src.similarityScore * 100)}% match` : ''}</span>
                             </div>
@@ -579,13 +579,13 @@ export default function FloatingAiAssistant({ user }) {
                         </div>
                       )}
 
-                      <div className="mt-2 flex items-center justify-between pt-1 border-t border-surface-variant/40 dark:border-ink-200/40 text-[10px] text-outline dark:text-ink-400">
+                      <div className="mt-2 flex items-center justify-between pt-1 border-t border-surface-variant/50 text-[10px] text-outline">
                         <span>{msg.timestamp}</span>
                         <button
                           type="button"
                           onClick={() => handleCopy(msg.id, msg.content)}
                           title="Copy message"
-                          className="inline-flex items-center gap-1 text-[10px] font-medium text-outline hover:text-primary dark:hover:text-ink-950 transition-colors cursor-pointer"
+                          className="inline-flex items-center gap-1 text-[10px] font-medium text-outline hover:text-primary transition-colors cursor-pointer"
                         >
                           {copiedId === msg.id ? (
                             <>
@@ -607,10 +607,10 @@ export default function FloatingAiAssistant({ user }) {
             ))}
 
             {isTyping && (
-              <div className="flex items-center gap-1.5 rounded-2xl bg-surface-low border border-surface-variant/70 px-3.5 py-2.5 w-fit dark:border-ink-200 dark:bg-ink-100">
-                <span className="size-1.5 rounded-full bg-primary/70 dark:bg-ink-950 animate-bounce" />
-                <span className="size-1.5 rounded-full bg-primary/70 dark:bg-ink-950 animate-bounce [animation-delay:0.2s]" />
-                <span className="size-1.5 rounded-full bg-primary/70 dark:bg-ink-950 animate-bounce [animation-delay:0.4s]" />
+              <div className="flex items-center gap-1.5 rounded-2xl bg-surface-low border border-surface-variant px-3.5 py-2.5 w-fit">
+                <span className="size-1.5 rounded-full bg-secondary-container animate-bounce" />
+                <span className="size-1.5 rounded-full bg-secondary-container animate-bounce [animation-delay:0.2s]" />
+                <span className="size-1.5 rounded-full bg-secondary-container animate-bounce [animation-delay:0.4s]" />
               </div>
             )}
 
@@ -619,8 +619,8 @@ export default function FloatingAiAssistant({ user }) {
 
           {/* Attachment Preview if any */}
           {attachment && (
-            <div className="flex items-center justify-between border-t border-surface-variant/60 bg-surface-low px-3 py-1.5 text-xs dark:border-ink-200/60 dark:bg-ink-100">
-              <span className="truncate text-on-surface-variant font-medium dark:text-ink-600">
+            <div className="flex items-center justify-between border-t border-surface-variant bg-surface-low px-3 py-1.5 text-xs">
+              <span className="truncate text-on-surface-variant font-medium">
                 📎 {attachment.name}
               </span>
               <button
@@ -639,9 +639,9 @@ export default function FloatingAiAssistant({ user }) {
               e.preventDefault()
               handleSendMessage()
             }}
-            className="border-t border-surface-variant/70 bg-surface-lowest p-2.5 dark:border-ink-200/60 dark:bg-surface"
+            className="border-t border-surface-variant bg-surface-low p-2.5"
           >
-            <div className="flex items-center gap-2 rounded-xl border border-surface-variant bg-surface-low px-3 py-1.5 focus-within:border-primary focus-within:ring-1 focus-within:ring-primary dark:border-ink-200 dark:bg-ink-100">
+            <div className="flex items-center gap-2 rounded-xl border border-surface-variant bg-surface-lowest px-3 py-1.5 focus-within:border-primary focus-within:ring-1 focus-within:ring-primary">
               <input
                 ref={fileInputRef}
                 type="file"
@@ -653,7 +653,7 @@ export default function FloatingAiAssistant({ user }) {
                 onClick={() => fileInputRef.current?.click()}
                 title="Add attachment"
                 aria-label="Add attachment"
-                className="text-outline hover:text-primary transition-colors dark:hover:text-ink-950 cursor-pointer"
+                className="text-outline hover:text-primary transition-colors cursor-pointer"
               >
                 <IconPaperclip size={18} />
               </button>
@@ -663,13 +663,13 @@ export default function FloatingAiAssistant({ user }) {
                 value={draft}
                 onChange={(e) => setDraft(e.target.value)}
                 placeholder="Ask Felat (ፈላጥ)... (Enter to send)"
-                className="flex-1 bg-transparent py-1 text-xs text-on-surface outline-none placeholder:text-outline dark:text-ink-950 dark:placeholder:text-ink-400"
+                className="flex-1 bg-transparent py-1 text-xs text-on-surface outline-none placeholder:text-outline"
               />
               <button
                 type="submit"
                 disabled={!draft.trim() && !attachment}
                 aria-label="Send message"
-                className="inline-flex size-7 items-center justify-center rounded-lg bg-[#114161] text-white transition-all hover:bg-[#0d344e] disabled:opacity-40 cursor-pointer shadow-sm"
+                className="inline-flex size-7 items-center justify-center rounded-lg bg-primary text-on-primary transition-all hover:bg-primary-container disabled:opacity-40 cursor-pointer shadow-sm"
               >
                 <IconSend size={14} />
               </button>

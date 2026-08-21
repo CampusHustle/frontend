@@ -84,7 +84,7 @@ function TutorCard({ tutor, onView }) {
           </p>
 
           <div className="flex items-center gap-1.5">
-            <IconStarFilled size={14} className="text-primary" aria-hidden="true" />
+            <IconStarFilled size={14} className="text-amber-500 dark:text-amber-400" aria-hidden="true" />
             <span className="font-bold text-xs text-on-surface">
               {ratingValue.toFixed(1)}
             </span>
@@ -125,7 +125,7 @@ function TutorCard({ tutor, onView }) {
 export default function FindTutorScreen({ user, onLogout, onNavigate }) {
   const [query, setQuery] = useState('')
   const [selectedDepts, setSelectedDepts] = useState([])
-  const [maxRate, setMaxRate] = useState(60)
+  const [maxRate, setMaxRate] = useState(500)
   const [minRating, setMinRating] = useState(0)
   const [sortBy, setSortBy] = useState('rating')
   const [visibleCount, setVisibleCount] = useState(VISIBLE_STEP)
@@ -162,9 +162,10 @@ export default function FindTutorScreen({ user, onLogout, onNavigate }) {
         const res = await searchTutors({
           q: query.trim() || undefined,
           department: selectedDepts.length === 1 ? selectedDepts[0] : undefined,
-          maxPrice: maxRate < 100 ? maxRate : undefined,
+          maxPrice: maxRate < 500 ? maxRate : undefined,
           minRating: minRating > 0 ? minRating : undefined,
           sortBy: sortBy === 'Price: Low to High' ? 'price_asc' : sortBy === 'Highest Rated' ? 'rating' : 'rating',
+          excludeUserId: user?._id || user?.id || undefined,
         })
 
         if (isMounted && res?.tutors && Array.isArray(res.tutors) && res.tutors.length > 0) {
@@ -193,7 +194,7 @@ export default function FindTutorScreen({ user, onLogout, onNavigate }) {
       isMounted = false
       clearTimeout(timer)
     }
-  }, [query, selectedDepts, maxRate, minRating, sortBy])
+  }, [query, selectedDepts, maxRate, minRating, sortBy, user])
 
   const handleDeptToggle = (dept) => {
     setSelectedDepts((prev) =>
@@ -202,12 +203,16 @@ export default function FindTutorScreen({ user, onLogout, onNavigate }) {
     setVisibleCount(VISIBLE_STEP)
   }
 
+  const currentUserId = user?._id || user?.id ? String(user._id || user.id) : null
+
   const filtered = useMemo(() => {
     const q = query.trim().toLowerCase()
     return tutorList.filter((t) => {
+      const tutorId = String(t._id || t.id || '')
+      if (currentUserId && tutorId === currentUserId) return false
       const matchDept = selectedDepts.length === 0 || selectedDepts.includes(t.department)
       const hourly = typeof t.hourlyRate === 'number' ? t.hourlyRate : 0
-      const matchRate = hourly <= maxRate
+      const matchRate = maxRate >= 500 ? true : hourly <= maxRate
       const rating =
         typeof t.rating?.knowledge === 'number'
           ? t.rating.knowledge
@@ -223,7 +228,7 @@ export default function FindTutorScreen({ user, onLogout, onNavigate }) {
         (Array.isArray(t.skillsTeaching) && t.skillsTeaching.some((s) => s.toLowerCase().includes(q)))
       return matchDept && matchRate && matchRating && matchQuery
     })
-  }, [tutorList, query, selectedDepts, maxRate, minRating])
+  }, [tutorList, query, selectedDepts, maxRate, minRating, currentUserId])
 
   const visibleTutors = useMemo(
     () => filtered.slice(0, visibleCount),
@@ -288,8 +293,9 @@ export default function FindTutorScreen({ user, onLogout, onNavigate }) {
                 <h3 className="text-xs font-bold uppercase tracking-wider text-outline mb-2">Hourly Rate</h3>
                 <input
                   type="range"
-                  min="10"
-                  max="100"
+                  min="20"
+                  max="500"
+                  step="10"
                   value={maxRate}
                   onChange={(e) => {
                     setMaxRate(Number(e.target.value))
@@ -298,31 +304,37 @@ export default function FindTutorScreen({ user, onLogout, onNavigate }) {
                   className="w-full accent-primary cursor-pointer"
                 />
                 <div className="flex justify-between text-xs text-outline mt-1 font-medium">
-                  <span>ETB 10</span>
-                  <span>ETB {maxRate === 100 ? '100+' : maxRate}</span>
+                  <span>ETB 20</span>
+                  <span>{maxRate >= 500 ? 'ETB 500+' : `ETB ${maxRate}`}</span>
                 </div>
               </div>
 
               {/* Minimum Rating Filter */}
               <div>
-                <h3 className="text-xs font-bold uppercase tracking-wider text-outline mb-2">Minimum Rating</h3>
-                <div className="flex gap-1.5 cursor-pointer">
+                <div className="flex items-center justify-between mb-2">
+                  <h3 className="text-xs font-bold uppercase tracking-wider text-outline">Minimum Rating</h3>
+                  {minRating > 0 && (
+                    <span className="text-xs font-bold text-amber-500 dark:text-amber-400">{minRating}★ &amp; up</span>
+                  )}
+                </div>
+                <div className="flex gap-1.5 items-center">
                   {[1, 2, 3, 4, 5].map((star) => (
                     <button
                       key={star}
                       type="button"
+                      aria-label={`Filter by ${star} stars and above`}
                       onClick={() => {
                         setMinRating(minRating === star ? 0 : star)
                         setVisibleCount(VISIBLE_STEP)
                       }}
-                      className="focus:outline-none transition-transform active:scale-95"
+                      className="focus:outline-none transition-transform active:scale-95 hover:scale-110 cursor-pointer"
                     >
                       <IconStarFilled
-                        size={20}
+                        size={22}
                         className={
                           star <= minRating
-                            ? 'text-secondary-container'
-                            : 'text-surface-variant'
+                            ? 'text-amber-400 drop-shadow-[0_0_6px_rgba(251,191,36,0.6)] transition-all'
+                            : 'text-surface-variant hover:text-amber-300/60 transition-colors'
                         }
                       />
                     </button>

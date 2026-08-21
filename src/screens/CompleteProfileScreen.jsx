@@ -74,6 +74,7 @@ export default function CompleteProfileScreen({ user, onFinish }) {
     return {
       firstName: parts[0] || '',
       lastName: parts.slice(1).join(' ') || '',
+      gender: effectiveUser?.gender || '',
       profilePicUrl: effectiveUser?.profilePicUrl || '',
       bio: effectiveUser?.bio || '',
       university: effectiveUser?.university || 'Mekelle University',
@@ -221,6 +222,47 @@ export default function CompleteProfileScreen({ user, onFinish }) {
                 </div>
               </div>
               <div className="flex flex-col gap-1">
+                <label className={labelClass}>
+                  Gender
+                </label>
+                <div className="grid grid-cols-2 gap-3">
+                  <label
+                    className={`flex items-center gap-2.5 rounded-xl border p-3 cursor-pointer transition-all ${
+                      form.gender === 'male'
+                        ? 'border-primary bg-primary/5 text-primary font-semibold ring-1 ring-primary'
+                        : 'border-outline-variant bg-surface-lowest text-on-surface hover:bg-surface-low'
+                    }`}
+                  >
+                    <input
+                      type="radio"
+                      name="gender"
+                      value="male"
+                      checked={form.gender === 'male'}
+                      onChange={set('gender')}
+                      className="accent-primary size-4 cursor-pointer"
+                    />
+                    <span className="text-sm">Male</span>
+                  </label>
+                  <label
+                    className={`flex items-center gap-2.5 rounded-xl border p-3 cursor-pointer transition-all ${
+                      form.gender === 'female'
+                        ? 'border-primary bg-primary/5 text-primary font-semibold ring-1 ring-primary'
+                        : 'border-outline-variant bg-surface-lowest text-on-surface hover:bg-surface-low'
+                    }`}
+                  >
+                    <input
+                      type="radio"
+                      name="gender"
+                      value="female"
+                      checked={form.gender === 'female'}
+                      onChange={set('gender')}
+                      className="accent-primary size-4 cursor-pointer"
+                    />
+                    <span className="text-sm">Female</span>
+                  </label>
+                </div>
+              </div>
+              <div className="flex flex-col gap-1">
                 <label className={labelClass} htmlFor="bio">
                   Bio
                 </label>
@@ -335,19 +377,19 @@ export default function CompleteProfileScreen({ user, onFinish }) {
               </div>
               <div className="flex max-w-[200px] flex-col gap-1">
                 <label className={labelClass} htmlFor="rate">
-                  Hourly Rate ($)
+                  Hourly Rate (ETB/hr)
                 </label>
                 <div className="relative">
-                  <span className="absolute left-3 top-1/2 -translate-y-1/2 text-base text-outline">
-                    $
+                  <span className="pointer-events-none absolute left-3 top-1/2 -translate-y-1/2 text-xs font-bold text-outline">
+                    ETB
                   </span>
                   <input
                     id="rate"
                     type="number"
                     min="0"
-                    step="5"
-                    className={`${fieldClass} pl-8`}
-                    placeholder="25"
+                    step="any"
+                    className={`${fieldClass} pl-12`}
+                    placeholder="150"
                     value={form.hourlyRate}
                     onChange={set('hourlyRate')}
                   />

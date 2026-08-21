@@ -1,5 +1,5 @@
 import { useState } from 'react'
-import { useNavigate } from 'react-router-dom'
+import { useNavigate, useLocation } from 'react-router-dom'
 import {
   IconArrowRight,
   IconBold,
@@ -10,11 +10,12 @@ import {
   IconList,
   IconPhoto,
   IconSchool,
+  IconCheck,
 } from '@tabler/icons-react'
 import AppNavbar from '../components/AppNavbar.jsx'
 import Footer from '../components/Footer.jsx'
 import UploadEntryPoint from '../components/UploadEntryPoint.jsx'
-import { uploadNote } from '../api/noteApi.js'
+import { uploadNote, updateNote } from '../api/noteApi.js'
 
 const SUBJECTS = ['Economics', 'Computer Science', 'Mathematics', 'Physics']
 
@@ -22,14 +23,47 @@ function sectionClass() {
   return 'glass-card rounded-2xl p-6 sm:p-10'
 }
 
-export default function PostListingScreen({ user, onLogout, onNavigate, onAddNote }) {
+export default function PostListingScreen({
+  user,
+  onLogout,
+  onNavigate,
+  onAddNote,
+  onUpdateNote,
+  initialNote,
+}) {
   const navigate = useNavigate()
-  const [title, setTitle] = useState('')
-  const [subject, setSubject] = useState('')
-  const [contentType, setContentType] = useState('')
-  const [description, setDescription] = useState('')
-  const [isPremium, setIsPremium] = useState(false)
-  const [price, setPrice] = useState('')
+  const location = useLocation()
+
+  const editingNote =
+    initialNote ||
+    location?.state?.note ||
+    location?.state?.tutorial ||
+    location?.state?.material ||
+    null
+  const isEditing = Boolean(editingNote)
+
+  const [title, setTitle] = useState(() => editingNote?.title || '')
+  const [subject, setSubject] = useState(() => editingNote?.course || editingNote?.department || '')
+  const [contentType, setContentType] = useState(() => editingNote?.contentType || '')
+  const [description, setDescription] = useState(() => editingNote?.description || '')
+  const [isPremium, setIsPremium] = useState(() => {
+    if (!editingNote) return false
+    return (
+      (typeof editingNote.numericPrice === 'number' && editingNote.numericPrice > 0) ||
+      (typeof editingNote.price === 'string' &&
+        editingNote.price !== 'Free' &&
+        !editingNote.price.startsWith('0'))
+    )
+  })
+  const [price, setPrice] = useState(() => {
+    if (!editingNote) return ''
+    if (editingNote.numericPrice) return String(editingNote.numericPrice)
+    if (typeof editingNote.price === 'string' && editingNote.price !== 'Free') {
+      const match = editingNote.price.replace(/[^\d.]/g, '')
+      return match || ''
+    }
+    return ''
+  })
   const [documentFile, setDocumentFile] = useState(null)
   const [feedback, setFeedback] = useState('')
 
@@ -43,12 +77,55 @@ export default function PostListingScreen({ user, onLogout, onNavigate, onAddNot
   }
 
   const handlePublish = async () => {
+    const numericPriceValue = isPremium ? parseFloat(price) || 0 : 0
+    const formattedPrice = numericPriceValue > 0 ? `${numericPriceValue} ETB` : 'Free'
+
+    if (isEditing) {
+      const updated = {
+        ...editingNote,
+        title: title.trim() || editingNote.title,
+        course: subject || editingNote.course,
+        department: subject || editingNote.department,
+        contentType: contentType || editingNote.contentType || 'PDF Notes',
+        price: formattedPrice,
+        numericPrice: numericPriceValue,
+        description: description.trim() || editingNote.description,
+      }
+
+      if (onUpdateNote) {
+        onUpdateNote(updated)
+      }
+
+      try {
+        const id = editingNote.id || editingNote._id
+        if (id) {
+          await updateNote(id, {
+            title: title.trim(),
+            course: subject,
+            contentType,
+            description: description.trim(),
+            price: String(numericPriceValue),
+          }).catch(() => {})
+        }
+      } catch {
+        // Optimistic UI fallback
+      }
+
+      handleAction('Tutorial updated successfully!')
+
+      setTimeout(() => {
+        if (onNavigate) {
+          onNavigate('profile')
+        } else {
+          navigate('/profile')
+        }
+      }, 1000)
+      return
+    }
+
     const successMsg = !isPremium ? 'Tutorial published!' : 'Premium tutorial published!'
 
     // Construct Mock API payload (Lifting State Up)
-    const numericPriceValue = isPremium ? parseFloat(price) || 0 : 0
-    const formattedPrice = numericPriceValue > 0 ? `$${numericPriceValue.toFixed(2)}` : 'Free'
-    
     const newNote = {
       id: Date.now(),
       contentType: contentType || 'PDF Notes',
@@ -58,10 +135,11 @@ export default function PostListingScreen({ user, onLogout, onNavigate, onAddNot
       course: subject || 'Unspecified',
       department: subject || 'Unspecified',
       authorName: user?.name || 'Current User',
-      authorAvatar: user?.avatar || 'https://i.pravatar.cc/150?u=current',
+      authorAvatar: user?.avatar || user?.profilePicUrl || 'https://i.pravatar.cc/150?u=current',
       coverImage: 'https://images.unsplash.com/photo-1516116216624-53e697fedbea?w=400&q=80',
+      description: description.trim(),
     }
-    
+
     if (onAddNote) {
       onAddNote(newNote)
     }
@@ -73,7 +151,7 @@ export default function PostListingScreen({ user, onLogout, onNavigate, onAddNot
         formData.append('course', subject)
         formData.append('contentType', contentType)
         formData.append('description', description.trim() || title.trim())
-        formData.append('price', isPremium ? (price || '0') : '0')
+        formData.append('price', isPremium ? price || '0' : '0')
         formData.append('file', documentFile)
         await uploadNote(formData).catch(() => {})
       }
@@ -82,10 +160,14 @@ export default function PostListingScreen({ user, onLogout, onNavigate, onAddNot
     }
 
     handleAction(successMsg)
-    
+
     // Redirect to marketplace
     setTimeout(() => {
-      navigate('/market')
+      if (onNavigate) {
+        onNavigate('market')
+      } else {
+        navigate('/market')
+      }
     }, 1200)
   }
 
@@ -103,16 +185,22 @@ export default function PostListingScreen({ user, onLogout, onNavigate, onAddNot
       <main className="mx-auto w-full max-w-7xl flex-1 px-4 py-10 sm:px-6 lg:px-8">
         <div className="mb-8 text-center sm:text-left">
           <h1 className="font-display text-3xl font-bold tracking-tight text-primary sm:text-4xl">
-            Create Tutorial
+            {isEditing ? 'Edit Tutorial' : 'Create Tutorial'}
           </h1>
           <p className="mt-1 text-base text-on-surface-variant">
-            Share your knowledge and help peers excel.
+            {isEditing
+              ? 'Update your published study materials, topics, and pricing details.'
+              : 'Share your knowledge and help peers excel.'}
           </p>
         </div>
 
         {feedback && (
-          <div className="mb-6 rounded-lg border border-surface-variant bg-surface-low px-4 py-3 text-sm font-medium text-primary shadow-level-1">
-            {feedback}
+          <div
+            role="status"
+            className="mb-6 rounded-lg border border-emerald-500/30 bg-emerald-500/10 px-4 py-3 text-sm font-medium text-emerald-700 dark:text-emerald-400 shadow-level-1 flex items-center gap-2"
+          >
+            <IconCheck size={18} />
+            <span>{feedback}</span>
           </div>
         )}
 
@@ -211,21 +299,21 @@ export default function PostListingScreen({ user, onLogout, onNavigate, onAddNot
                         <button
                           type="button"
                           aria-label="Bold"
-                          className="text-outline transition-colors hover:text-primary"
+                          className="text-outline transition-colors hover:text-primary cursor-pointer"
                         >
                           <IconBold size={15} aria-hidden="true" />
                         </button>
                         <button
                           type="button"
                           aria-label="Italic"
-                          className="text-outline transition-colors hover:text-primary"
+                          className="text-outline transition-colors hover:text-primary cursor-pointer"
                         >
                           <IconItalic size={15} aria-hidden="true" />
                         </button>
                         <button
                           type="button"
                           aria-label="Bulleted list"
-                          className="text-outline transition-colors hover:text-primary"
+                          className="text-outline transition-colors hover:text-primary cursor-pointer"
                         >
                           <IconList size={16} aria-hidden="true" />
                         </button>
@@ -233,7 +321,7 @@ export default function PostListingScreen({ user, onLogout, onNavigate, onAddNot
                         <button
                           type="button"
                           aria-label="Insert link"
-                          className="text-outline transition-colors hover:text-primary"
+                          className="text-outline transition-colors hover:text-primary cursor-pointer"
                         >
                           <IconLink size={15} aria-hidden="true" />
                         </button>
@@ -259,6 +347,11 @@ export default function PostListingScreen({ user, onLogout, onNavigate, onAddNot
                 <div className="flex w-full justify-center">
                   <UploadEntryPoint onFileSelect={handleDocumentSelect} />
                 </div>
+                {isEditing && (
+                  <p className="mt-3 text-center text-xs text-outline">
+                    Leave unchanged to keep your current uploaded document file.
+                  </p>
+                )}
               </section>
 
               {/* Pricing */}
@@ -272,8 +365,7 @@ export default function PostListingScreen({ user, onLogout, onNavigate, onAddNot
                       Tutorial Type
                     </h3>
                     <p className="mb-3 text-sm text-on-surface-variant">
-                      Offer for free to build reputation or charge for premium
-                      content.
+                      Offer for free to build reputation or charge for premium content.
                     </p>
                     <div className="flex space-x-1 rounded-lg border border-surface-variant bg-surface p-1">
                       <button
@@ -283,10 +375,11 @@ export default function PostListingScreen({ user, onLogout, onNavigate, onAddNot
                           setPrice('')
                         }}
                         aria-pressed={!isPremium}
-                        className={`flex-1 rounded-md px-4 py-2 text-sm font-semibold transition-colors ${!isPremium
+                        className={`flex-1 rounded-md px-4 py-2 text-sm font-semibold transition-colors cursor-pointer ${
+                          !isPremium
                             ? 'bg-surface-lowest text-primary shadow-level-1'
                             : 'text-on-surface-variant hover:text-primary'
-                          }`}
+                        }`}
                       >
                         Free
                       </button>
@@ -294,10 +387,11 @@ export default function PostListingScreen({ user, onLogout, onNavigate, onAddNot
                         type="button"
                         onClick={() => setIsPremium(true)}
                         aria-pressed={isPremium}
-                        className={`flex-1 rounded-md px-4 py-2 text-sm font-semibold transition-colors ${isPremium
+                        className={`flex-1 rounded-md px-4 py-2 text-sm font-semibold transition-colors cursor-pointer ${
+                          isPremium
                             ? 'bg-surface-lowest text-primary shadow-level-1'
                             : 'text-on-surface-variant hover:text-primary'
-                          }`}
+                        }`}
                       >
                         Premium
                       </button>
@@ -351,7 +445,7 @@ export default function PostListingScreen({ user, onLogout, onNavigate, onAddNot
                 <div className="mb-4 flex items-center justify-between border-t border-surface-variant py-4">
                   <span className="text-sm text-on-surface-variant">Status</span>
                   <span className="inline-flex items-center rounded-full bg-surface-container px-2.5 py-0.5 text-xs font-medium text-on-surface">
-                    Draft
+                    {isEditing ? 'Published' : 'Draft'}
                   </span>
                 </div>
                 <div className="space-y-3">
@@ -361,13 +455,13 @@ export default function PostListingScreen({ user, onLogout, onNavigate, onAddNot
                     onClick={handlePublish}
                     className="flex w-full items-center justify-center rounded-lg bg-primary px-4 py-3 text-sm font-bold text-on-primary shadow-level-1 transition-colors hover:bg-primary-container disabled:cursor-not-allowed disabled:opacity-50 cursor-pointer"
                   >
-                    Publish Tutorial
+                    <span>{isEditing ? 'Save Changes' : 'Publish Tutorial'}</span>
                     <IconArrowRight size={15} className="ml-2" aria-hidden="true" />
                   </button>
                   <button
                     type="button"
                     onClick={() => handleAction('Saved as draft.')}
-                    className="flex w-full items-center justify-center rounded-lg border border-outline-variant bg-surface px-4 py-3 text-sm font-bold text-primary transition-colors hover:bg-surface-low"
+                    className="flex w-full items-center justify-center rounded-lg border border-outline-variant bg-surface px-4 py-3 text-sm font-bold text-primary transition-colors hover:bg-surface-low cursor-pointer"
                   >
                     <IconDeviceFloppy size={15} className="mr-2" aria-hidden="true" />
                     Save as Draft

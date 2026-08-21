@@ -1,4 +1,5 @@
 import apiClient from './client.js'
+import { API_ENDPOINTS } from '../config/env.js'
 
 /**
  * Searches and browses notes across the platform
@@ -6,7 +7,7 @@ import apiClient from './client.js'
  * @returns {Promise<{ success: boolean, count: number, notes?: Array, data?: Array, total?: number }>}
  */
 export async function searchNotes(params = {}) {
-  return apiClient.get('/api/notes/search', { params })
+  return apiClient.get(API_ENDPOINTS.NOTES.SEARCH, { params })
 }
 
 /**
@@ -15,7 +16,7 @@ export async function searchNotes(params = {}) {
  * @returns {Promise<{ success: boolean, note?: Object, data?: Object }>}
  */
 export async function getNoteById(noteId) {
-  return apiClient.get(`/api/notes/${noteId}`)
+  return apiClient.get(API_ENDPOINTS.NOTES.GET_BY_ID(noteId))
 }
 
 /**
@@ -24,7 +25,7 @@ export async function getNoteById(noteId) {
  * @returns {Promise<{ success: boolean, count: number, notes?: Array, data?: Array }>}
  */
 export async function getNotesByTutor(tutorId) {
-  return apiClient.get(`/api/notes/tutor/${tutorId}`)
+  return apiClient.get(API_ENDPOINTS.NOTES.BY_TUTOR(tutorId))
 }
 
 /**
@@ -33,7 +34,7 @@ export async function getNotesByTutor(tutorId) {
  * @returns {Promise<{ success: boolean, message: string, note?: Object }>}
  */
 export async function uploadNote(formData) {
-  return apiClient.post('/api/notes', formData)
+  return apiClient.post(API_ENDPOINTS.NOTES.CREATE, formData)
 }
 
 /**
@@ -42,7 +43,7 @@ export async function uploadNote(formData) {
  * @returns {Promise<{ success: boolean, message: string, purchase?: Object }>}
  */
 export async function purchaseNote(noteId) {
-  return apiClient.post(`/api/notes/${noteId}/purchase`, {})
+  return apiClient.post(API_ENDPOINTS.NOTES.PURCHASE(noteId), {})
 }
 
 /**
@@ -51,5 +52,37 @@ export async function purchaseNote(noteId) {
  * @returns {Promise<{ success: boolean, count: number, purchases?: Array }>}
  */
 export async function getMyPurchases(params = {}) {
-  return apiClient.get('/api/notes/purchases/me', { params })
+  return apiClient.get(API_ENDPOINTS.NOTES.MY_PURCHASES, { params })
 }
+
+/**
+ * Updates a note by ID
+ * @param {string} noteId
+ * @param {FormData|Object} data
+ * @returns {Promise<{ success: boolean, message: string, note?: Object }>}
+ */
+export async function updateNote(noteId, data) {
+  return apiClient.put(API_ENDPOINTS.NOTES.UPDATE(noteId), data)
+}
+
+/**
+ * Deletes a note by ID
+ * @param {string} noteId
+ * @returns {Promise<{ success: boolean, message: string }>}
+ */
+export async function deleteNote(noteId) {
+  return apiClient.delete(API_ENDPOINTS.NOTES.DELETE(noteId))
+}
+
+/**
+ * Retrieves notes uploaded by the authenticated user
+ * @param {string} [userId]
+ * @returns {Promise<{ success: boolean, notes?: Array, data?: Array }>}
+ */
+export async function getMyUploadedNotes(userId) {
+  if (userId) {
+    return apiClient.get(API_ENDPOINTS.NOTES.BY_TUTOR(userId))
+  }
+  return apiClient.get(API_ENDPOINTS.NOTES.MY_NOTES)
+}
+

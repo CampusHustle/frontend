@@ -1,5 +1,11 @@
 import { describe, it, expect, vi, beforeEach, afterEach } from 'vitest'
-import { getConversationMessages, getMessagesWithUser } from '../api/chatApi.js'
+import {
+  getConversationMessages,
+  getMessagesWithUser,
+  getUnreadMessageCount,
+  markConversationAsRead,
+  sendMessage
+} from '../api/chatApi.js'
 import { askFelatAi } from '../api/aiApi.js'
 import { encodeContactCard, decodeContactCard } from '../utils/contactCard.js'
 
@@ -10,6 +16,47 @@ describe('chatApi and aiApi', () => {
 
   afterEach(() => {
     vi.restoreAllMocks()
+  })
+
+  it('retrieves unread message count and marks messages as read', async () => {
+    let capturedUrl = ''
+    let capturedMethod = ''
+    globalThis.fetch = vi.fn().mockImplementation((url, options) => {
+      capturedUrl = url
+      capturedMethod = options?.method || 'GET'
+      return Promise.resolve({
+        ok: true,
+        status: 200,
+        headers: new Headers({ 'content-type': 'application/json' }),
+        json: async () => ({ success: true, count: 3, modifiedCount: 2 }),
+      })
+    })
+
+    const countRes = await getUnreadMessageCount()
+    expect(capturedUrl).toContain('/api/messages/unread-count')
+    expect(countRes.count).toBe(3)
+
+    const readRes = await markConversationAsRead('conv_123')
+    expect(capturedUrl).toContain('/api/messages/conv_123/read')
+    expect(capturedMethod).toBe('PATCH')
+    expect(readRes.modifiedCount).toBe(2)
+  })
+
+  it('sends message via REST with sendMessage', async () => {
+    let capturedBody = null
+    globalThis.fetch = vi.fn().mockImplementation((_url, options) => {
+      capturedBody = JSON.parse(options.body)
+      return Promise.resolve({
+        ok: true,
+        status: 201,
+        headers: new Headers({ 'content-type': 'application/json' }),
+        json: async () => ({ success: true, message: { _id: 'm-new', content: capturedBody.content } }),
+      })
+    })
+
+    const res = await sendMessage({ conversationId: 'conv_123', content: 'Testing REST send' })
+    expect(capturedBody.content).toBe('Testing REST send')
+    expect(res.message.content).toBe('Testing REST send')
   })
 
   it('retrieves conversation messages by conversationId', async () => {
