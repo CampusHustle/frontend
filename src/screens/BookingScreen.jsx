@@ -220,6 +220,14 @@ export default function BookingScreen({ user, onLogout, onNavigate }) {
   const [activeChat, setActiveChat] = useState(null)
   const [toastMsg, setToastMsg] = useState(null)
   const [consentBookingId, setConsentBookingId] = useState(null)
+  const chatPanelRef = useRef(null)
+
+  // Scroll the chat panel into view whenever a booking chat is opened
+  useEffect(() => {
+    if (activeChat && chatPanelRef.current) {
+      chatPanelRef.current.scrollIntoView({ behavior: 'smooth', block: 'start' })
+    }
+  }, [activeChat])
 
   /* ── load bookings from backend with mock fallback ── */
   const loadBookings = useCallback(async () => {
@@ -273,7 +281,7 @@ export default function BookingScreen({ user, onLogout, onNavigate }) {
       prev.map((b) => (b.id === id ? { ...b, status: newStatus } : b)),
     )
     try {
-      updateLiveBookingStatus(id, newStatus).catch(() => {})
+      updateLiveBookingStatus(id, newStatus).catch(() => { })
       const updated = await updateMockBookingStatus(id, newStatus)
       // apply confirmed data from server
       setBookings((prev) =>
@@ -423,47 +431,12 @@ export default function BookingScreen({ user, onLogout, onNavigate }) {
         </div>
 
 
-        <section
-          aria-label="Demo: simulate backend status updates"
-          className="w-full max-w-3xl glass-card rounded-2xl p-5"
-        >
-          <h2 className="font-semibold text-sm text-primary mb-1">
-            Simulate backend status changes
-          </h2>
-          <p className="text-xs text-on-surface-variant mb-4">
-            These buttons mirror what a backend webhook or admin action would do.
-          </p>
-          <div className="flex flex-wrap gap-3">
-            <button
-              type="button"
-              onClick={() => handleStatusChange('bk-2', 'confirmed')}
-              className="rounded-lg bg-[#e8f5e9] border border-[#c8e6c9] text-[#1b5e20] text-xs font-semibold px-3.5 py-2 hover:brightness-95 transition"
-            >
-              Confirm "Python for Beginners"
-            </button>
-            <button
-              type="button"
-              onClick={() => handleStatusChange('bk-1', 'completed')}
-              className="rounded-lg bg-[#e3f2fd] border border-[#bbdefb] text-[#0d47a1] text-xs font-semibold px-3.5 py-2 hover:brightness-95 transition"
-            >
-              Complete "Calculus 101"
-            </button>
-            <button
-              type="button"
-              onClick={() => handleStatusChange('bk-2', 'cancelled')}
-              className="rounded-lg bg-[#fce4ec] border border-[#f8bbd0] text-[#880e4f] text-xs font-semibold px-3.5 py-2 hover:brightness-95 transition"
-            >
-              Cancel "Python for Beginners"
-            </button>
-          </div>
-        </section>
-
         {/* chat panel (shown when a booking is selected) */}
         {chatBooking && (
-          <div className="w-full max-w-3xl flex flex-col gap-3">
+          <div ref={chatPanelRef} className="w-full max-w-3xl flex flex-col gap-3">
             <div className="flex items-center justify-between">
               <h2 className="font-semibold text-sm text-primary">
-                Messages — {chatBooking.title}
+                Messages — {chatBooking.subject ?? chatBooking.title ?? 'Session'}
               </h2>
               <div className="flex items-center gap-3">
                 <button

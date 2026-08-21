@@ -1,13 +1,13 @@
-import { useState } from 'react'
+﻿import { useState } from 'react'
 import { Link, useNavigate } from 'react-router-dom'
 import {
-  Flag,
-  Search,
-  AlertTriangle,
-  CheckCircle2,
-  Layers,
-  ChevronRight,
-} from 'lucide-react'
+  IconFlag,
+  IconSearch,
+  IconAlertTriangle,
+  IconCircleCheck,
+  IconStack2,
+  IconChevronRight,
+} from '@tabler/icons-react'
 import { INITIAL_REPORTS } from '../mockData'
 import { useAdminTheme } from '../context/AdminThemeContext'
 
@@ -76,7 +76,7 @@ export default function ReportsModerationScreen() {
         <div>
           <div className="flex items-center gap-2">
             <div className="p-2 bg-rose-50 border border-rose-200 text-rose-600 rounded-lg">
-              <Flag className="w-5 h-5" />
+              <IconFlag className="w-5 h-5" />
             </div>
             <h1 className={`text-xl font-black ${isDark ? 'text-white' : 'text-slate-900'}`}>
               Reports & Marketplace Moderation Queue
@@ -90,7 +90,7 @@ export default function ReportsModerationScreen() {
         {/* Severity Badges */}
         <div className="flex items-center gap-2 text-xs font-bold">
           <span className="px-3 py-1.5 bg-rose-50 border border-rose-200 text-rose-700 rounded-xl flex items-center gap-1.5">
-            <AlertTriangle className="w-3.5 h-3.5" /> High Severity (4)
+            <IconAlertTriangle className="w-3.5 h-3.5" /> High Severity (4)
           </span>
           <span className="px-3 py-1.5 bg-amber-50 border border-amber-200 text-amber-800 rounded-xl">
             Medium (8)
@@ -101,17 +101,17 @@ export default function ReportsModerationScreen() {
       {/* Filter & Toolbar */}
       <div className="space-y-3">
         <div
-          className={`grid grid-cols-1 sm:grid-cols-5 gap-3 border p-4 rounded-2xl ${
+          className={`IconLayoutGrid IconLayoutGrid-cols-1 sm:IconLayoutGrid-cols-5 gap-3 border p-4 rounded-2xl ${
             isDark ? 'bg-slate-900/60 border-slate-800' : 'bg-white border-slate-200 shadow-xs'
           }`}
         >
           <div className="relative sm:col-span-2">
-            <Search className={`w-4 h-4 absolute left-3.5 top-1/2 -translate-y-1/2 ${isDark ? 'text-slate-500' : 'text-slate-400'}`} />
+            <IconSearch className={`w-4 h-4 absolute left-3.5 top-1/2 -translate-y-1/2 ${isDark ? 'text-slate-500' : 'text-slate-400'}`} />
             <input
               type="text"
               value={searchQuery}
               onChange={(e) => setSearchQuery(e.target.value)}
-              placeholder="Search by ticket #, user name, or title..."
+              placeholder="IconSearch by ticket #, IconUser name, or title..."
               className={`w-full pl-10 pr-4 py-2 rounded-xl text-xs outline-none border transition-all ${
                 isDark
                   ? 'bg-slate-950 border-slate-800 text-slate-200 placeholder-slate-500 focus:border-indigo-500'
@@ -169,7 +169,7 @@ export default function ReportsModerationScreen() {
             }`}
           >
             <span className="font-bold flex items-center gap-2">
-              <Layers className="w-4 h-4 text-indigo-600" /> {selectedIds.length} tickets selected for bulk update:
+              <IconStack2 className="w-4 h-4 text-indigo-600" /> {selectedIds.length} tickets selected for bulk update:
             </span>
 
             <div className="flex items-center gap-2">
@@ -177,7 +177,7 @@ export default function ReportsModerationScreen() {
                 onClick={() => handleBulkStatusChange('Resolved')}
                 className="px-3 py-1.5 bg-emerald-600 hover:bg-emerald-500 text-white rounded-lg font-bold flex items-center gap-1 shadow-xs transition-all"
               >
-                <CheckCircle2 className="w-3.5 h-3.5" /> Mark Resolved
+                <IconCircleCheck className="w-3.5 h-3.5" /> Mark Resolved
               </button>
               <button
                 onClick={() => handleBulkStatusChange('In Review')}
@@ -213,7 +213,7 @@ export default function ReportsModerationScreen() {
                   />
                 </th>
                 <th className="py-3.5 px-4">Ticket & Category</th>
-                <th className="py-3.5 px-4">Reported Listing / User</th>
+                <th className="py-3.5 px-4">Reported Listing / IconUser</th>
                 <th className="py-3.5 px-4">Reporter</th>
                 <th className="py-3.5 px-4">Severity</th>
                 <th className="py-3.5 px-4">Status</th>
@@ -282,7 +282,7 @@ export default function ReportsModerationScreen() {
                         isDark ? 'bg-slate-800 hover:bg-slate-700 text-slate-200 border-slate-700' : 'bg-slate-100 hover:bg-slate-200 text-slate-700 border-slate-200'
                       }`}
                     >
-                      Investigate <ChevronRight className="w-3.5 h-3.5" />
+                      Investigate <IconChevronRight className="w-3.5 h-3.5" />
                     </Link>
                   </td>
                 </tr>

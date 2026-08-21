@@ -51,8 +51,8 @@ function TutorCard({ tutor, onView }) {
     typeof tutor.rating?.knowledge === 'number'
       ? tutor.rating.knowledge
       : typeof tutor.rating === 'number'
-      ? tutor.rating
-      : 5.0
+        ? tutor.rating
+        : 5.0
 
   return (
     <div
@@ -100,28 +100,11 @@ function TutorCard({ tutor, onView }) {
         {tutor.bio || 'Verified peer tutor on CampusHustle.'}
       </p>
 
-      {/* Skills / Badges */}
-      <div className="flex flex-wrap gap-1 mb-4 relative z-10 min-h-[48px]">
-        {(tutor.skillsTeaching || tutor.skills || []).slice(0, 3).map((skill) => (
-          <span
-            key={skill}
-            className="text-[11px] font-medium bg-surface-container-highest text-on-surface-variant px-2.5 py-1 rounded-full border border-outline-variant/30"
-          >
-            {skill}
-          </span>
-        ))}
-      </div>
-
-      {/* Footer / Pricing & Action */}
-      <div className="mt-auto pt-3 border-t border-surface-variant flex items-center justify-between relative z-10">
-        <div>
-          <span className="text-[10px] uppercase font-bold text-outline block">Rate</span>
-          <span className="font-display font-bold text-base text-primary">
-            ${tutor.hourlyRate || 0}
-            <span className="text-xs font-normal text-outline">/hr</span>
-          </span>
+      {/* Price & Book Action */}
+      <div className="mt-auto flex justify-between items-center pt-4 border-t border-surface-variant z-10">
+        <div className="text-base font-bold text-primary">
+          ETB {tutor.hourlyRate || 25} <span className="text-xs text-on-surface-variant font-normal">/hr</span>
         </div>
-
         <button
           type="button"
           onClick={(e) => {
@@ -229,8 +212,8 @@ export default function FindTutorScreen({ user, onLogout, onNavigate }) {
         typeof t.rating?.knowledge === 'number'
           ? t.rating.knowledge
           : typeof t.rating === 'number'
-          ? t.rating
-          : 5.0
+            ? t.rating
+            : 5.0
       const matchRating = rating >= minRating
       const matchQuery =
         !q ||
@@ -315,8 +298,8 @@ export default function FindTutorScreen({ user, onLogout, onNavigate }) {
                   className="w-full accent-primary cursor-pointer"
                 />
                 <div className="flex justify-between text-xs text-outline mt-1 font-medium">
-                  <span>$10</span>
-                  <span>${maxRate === 100 ? '100+' : maxRate}</span>
+                  <span>ETB 10</span>
+                  <span>ETB {maxRate === 100 ? '100+' : maxRate}</span>
                 </div>
               </div>
 

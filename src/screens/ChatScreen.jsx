@@ -384,6 +384,38 @@ function MessageInput({ onSend, onShareContact, disabled }) {
 }
 
 export default function ChatScreen({ user, onLogout, onNavigate }) {
+  const { id: peerIdParam } = useParams()
+  const { socket, status } = useSocket()
+  const [conversations, setConversations] = useState([])
+  const [activePeer, setActivePeer] = useState(() => ({
+    _id: peerIdParam || MOCK_PEER?.id || 'u-sarah',
+    name: MOCK_PEER?.name || 'Sarah Johnson',
+    department: MOCK_PEER?.department || 'Computer Science',
+  }))
+  const [messages, setMessages] = useState(() => (Array.isArray(INITIAL_MESSAGES) ? INITIAL_MESSAGES : []))
+  const [searchQuery, setSearchQuery] = useState('')
+  const [consentOpen, setConsentOpen] = useState(false)
+  const [isLoadingMessages, setIsLoadingMessages] = useState(false)
+
+  const currentUserId = user?._id || user?.id || 'me'
+
+  // Load conversation inbox on mount
+  useEffect(() => {
+    let isMounted = true
+    getConversations()
+      .then((res) => {
+        if (isMounted && Array.isArray(res?.conversations)) {
+          setConversations(res.conversations)
+          if (!peerIdParam && res.conversations.length > 0 && res.conversations[0].peer) {
+            setActivePeer(res.conversations[0].peer)
+          }
+        }
+      })
+      .catch(() => { })
+    return () => {
+      isMounted = false
+    }
+  }, [peerIdParam])
   const { id } = useParams();
   const { status, getSocket } = useSocket();
   const [messages, setMessages] = useState([]);
@@ -406,6 +438,17 @@ export default function ChatScreen({ user, onLogout, onNavigate }) {
           .map((m) => mapMessage(m, userId));
         setMessages(mapped);
       })
+      .catch(() => {
+        if (isMounted) {
+          setActivePeer({
+            _id: peerIdParam,
+            name: 'Peer Student',
+            department: 'Academic Contact',
+          })
+        }
+      })
+      .catch(() => { })
+
       .catch(() => setMessages([]));
     return () => {
       isMounted = false;
@@ -472,6 +515,160 @@ export default function ChatScreen({ user, onLogout, onNavigate }) {
       />
 
       <main className="flex flex-1 overflow-hidden h-[calc(100vh-64px)]">
+        <aside
+          className={`w-full md:w-80 lg:w-96 flex flex-col border-r border-surface-variant bg-surface-lowest ${activePeer ? 'hidden md:flex' : 'flex'
+            }`}
+        >
+          <div className="p-4 border-b border-surface-variant">
+            <div className="flex items-center justify-between mb-3">
+              <h1 className="font-display text-xl font-bold text-primary flex items-center gap-2">
+                <IconMessages size={22} />
+                <span>Messages</span>
+              </h1>
+              <ConnectionStatusBadge status={status} />
+            </div>
+
+            <div className="relative">
+              <IconSearch
+                size={16}
+                className="absolute left-3 top-1/2 -translate-y-1/2 text-outline"
+                aria-hidden="true"
+              />
+              <input
+                type="text"
+                placeholder="Search conversations…"
+                value={searchQuery}
+                onChange={(e) => setSearchQuery(e.target.value)}
+                className="w-full rounded-xl border border-surface-variant bg-surface-low pl-9 pr-3 py-2 text-xs text-on-surface placeholder:text-outline focus:border-primary focus:outline-none focus:ring-1 focus:ring-primary"
+              />
+            </div>
+          </div>
+
+          <div className="flex-1 overflow-y-auto divide-y divide-surface-variant/40">
+            {filteredConversations.length === 0 ? (
+              <div className="flex flex-col items-center justify-center p-8 text-center text-outline gap-3">
+                <IconMessages size={36} className="opacity-40" />
+                <p className="text-xs">No conversations yet.</p>
+                <button
+                  type="button"
+                  onClick={() => onNavigate?.('tutor')}
+                  className="rounded-lg bg-primary px-3 py-1.5 text-xs font-semibold text-on-primary hover:bg-primary-container transition-colors cursor-pointer"
+                >
+                  Browse Tutors
+                </button>
+              </div>
+            ) : (
+              filteredConversations.map((conv) => {
+                const isSelected = activePeer?._id === conv.peer?._id
+                return (
+                  <button
+                    key={conv.conversationId}
+                    type="button"
+                    onClick={() => {
+                      setActivePeer(conv.peer)
+                      onNavigate?.(`/chat/${conv.peer?._id}`)
+                    }}
+                    className={`w-full p-4 text-left flex items-start gap-3 transition-colors hover:bg-surface-low cursor-pointer ${isSelected ? 'bg-surface-container-low border-l-4 border-primary' : ''
+                      }`}
+                  >
+                    <PeerAvatar peer={conv.peer} size="md" />
+                    <div className="flex-1 min-w-0">
+                      <div className="flex items-center justify-between">
+                        <span className="font-semibold text-sm text-on-surface truncate">
+                          {conv.peer?.name}
+                        </span>
+                        {conv.lastMessage?.createdAt && (
+                          <span className="text-[10px] text-outline shrink-0 ml-1">
+                            {new Date(conv.lastMessage.createdAt).toLocaleTimeString([], {
+                              hour: '2-digit',
+                              minute: '2-digit',
+                            })}
+                          </span>
+                        )}
+                      </div>
+                      <p className="text-xs text-outline truncate mt-0.5">
+                        {conv.lastMessage?.content || 'Started a conversation'}
+                      </p>
+                    </div>
+                    <IconChevronRight size={16} className="text-outline/50 shrink-0 self-center" />
+                  </button>
+                )
+              })
+            )}
+          </div>
+        </aside>
+
+        <section
+          className={`flex-1 flex flex-col bg-surface-low ${!activePeer ? 'hidden md:flex' : 'flex'
+            }`}
+        >
+          {activePeer ? (
+            <>
+              <header className="h-16 shrink-0 border-b border-surface-variant bg-surface-lowest px-4 flex items-center justify-between shadow-xs">
+                <div className="flex items-center gap-3">
+                  <button
+                    type="button"
+                    aria-label="Back to conversations"
+                    onClick={() => setActivePeer(null)}
+                    className="md:hidden inline-flex size-8 items-center justify-center rounded-lg border border-surface-variant text-on-surface-variant hover:text-primary cursor-pointer"
+                  >
+                    <IconArrowLeft size={18} />
+                  </button>
+
+                  <PeerAvatar peer={activePeer} size="md" />
+
+                  <div>
+                    <h2 className="font-display text-sm sm:text-base font-bold text-on-surface flex items-center gap-1.5">
+                      <span>{activePeer.name}</span>
+                      <IconUserCheck size={16} className="text-primary" />
+                    </h2>
+                    <p className="text-[11px] text-outline">
+                      {activePeer.department || activePeer.university || 'Verified Peer'}
+                    </p>
+                  </div>
+                </div>
+
+                <div className="flex items-center gap-2">
+                  <ConnectionStatusBadge status={status} />
+                </div>
+              </header>
+
+              {isLoadingMessages ? (
+                <div className="flex flex-1 items-center justify-center">
+                  <IconLoader2 size={32} className="animate-spin text-primary" />
+                </div>
+              ) : (
+                <ChatThread
+                  messages={messages}
+                  peer={activePeer}
+                  currentUserId={currentUserId}
+                />
+              )}
+
+              <MessageInput
+                onSend={handleSendMessage}
+                onShareContact={() => setConsentOpen(true)}
+              />
+            </>
+          ) : (
+            <div className="flex flex-1 flex-col items-center justify-center gap-4 p-8 text-center">
+              <div className="flex size-16 items-center justify-center rounded-3xl bg-primary-container/30 text-primary shadow-sm">
+                <IconMessages size={32} />
+              </div>
+              <h2 className="font-display text-xl font-bold text-primary">Your Direct Messages</h2>
+              <p className="max-w-sm text-xs text-on-surface-variant">
+                Select a conversation from the left or search for tutors to start messaging.
+              </p>
+              <button
+                type="button"
+                onClick={() => onNavigate?.('tutor')}
+                className="rounded-xl bg-primary px-5 py-2.5 text-xs font-semibold text-on-primary hover:bg-primary-container transition-all shadow-level-1 cursor-pointer"
+              >
+                Find & Message Tutors
+              </button>
+            </div>
+          )}
+        </section>
         <div className="flex flex-1 flex-col overflow-hidden bg-white/20 backdrop-blur-sm">
           <ChatThread
             messages={messages}
