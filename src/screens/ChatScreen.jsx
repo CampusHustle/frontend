@@ -1,4 +1,4 @@
-import { useState, useEffect, useRef, useCallback } from "react";
+import { useState, useEffect, useRef, useCallback, useMemo } from "react";
 import { useParams } from "react-router-dom";
 import {
   IconSend,
@@ -19,9 +19,13 @@ import {
 import AppNavbar from "../components/AppNavbar.jsx";
 import ConsentModal from "../components/ConsentModal.jsx";
 import { useSocket } from "../hooks/useSocket.js";
-import { MOCK_PEER } from "../api/mockChatApi.js";
-import { getMessagesWithUser, getConversations } from "../api/chatApi.js";
-import { INITIAL_MESSAGES } from "../api/mockChatApi.js";
+import {
+  getMessagesWithUser,
+  getConversations,
+  markConversationAsRead,
+  sendMessage as sendRestMessage
+} from "../api/chatApi.js";
+import { getTutorById } from "../api/tutorApi.js";
 import {
   sanitizeMessage,
   sanitizeDisplayText,
@@ -33,7 +37,11 @@ function mapMessage(m, myId) {
   const card = decodeContactCard(m.content);
   const base = {
     id: m._id || m.id,
+    _id: m._id || m.id,
     sender: m.senderId === myId ? "me" : "peer",
+    senderId: m.senderId,
+    content: m.content,
+    createdAt: m.createdAt,
     time: new Date(m.createdAt || Date.now()).toLocaleTimeString([], {
       hour: "2-digit",
       minute: "2-digit",
@@ -383,20 +391,25 @@ function MessageInput({ onSend, onShareContact, disabled }) {
 export default function ChatScreen({ user, onLogout, onNavigate }) {
   const { id: peerIdParam, id: routeId } = useParams()
   const activeId = peerIdParam || routeId
-  const { socket, status, getSocket } = useSocket()
+  const { status, getSocket } = useSocket()
   const [conversations, setConversations] = useState([])
-  const [activePeer, setActivePeer] = useState(() => ({
-    _id: activeId || MOCK_PEER?.id || 'u-sarah',
-    name: MOCK_PEER?.name || 'Sarah Johnson',
-    department: MOCK_PEER?.department || 'Computer Science',
-  }))
-  const [messages, setMessages] = useState(() => (Array.isArray(INITIAL_MESSAGES) ? INITIAL_MESSAGES : []))
+  const [fetchedPeer, setFetchedPeer] = useState(null)
+  const [messages, setMessages] = useState([])
   const [searchQuery, setSearchQuery] = useState('')
   const [consentOpen, setConsentOpen] = useState(false)
   const [isLoadingMessages, setIsLoadingMessages] = useState(false)
 
   const currentUserId = user?._id || user?.id || 'me'
   const userId = user?._id || user?.id
+
+  // Derive active peer cleanly
+  const activePeer = useMemo(() => {
+    if (!activeId) return conversations[0]?.peer || null
+    const matched = conversations.find((c) => c?.peer?._id === activeId)
+    if (matched?.peer) return matched.peer
+    if (fetchedPeer && fetchedPeer._id === activeId) return fetchedPeer
+    return { _id: activeId, name: 'Campus Peer', department: 'Peer' }
+  }, [activeId, conversations, fetchedPeer])
 
   // Load conversation inbox on mount
   useEffect(() => {
@@ -405,9 +418,6 @@ export default function ChatScreen({ user, onLogout, onNavigate }) {
       .then((res) => {
         if (isMounted && Array.isArray(res?.conversations)) {
           setConversations(res.conversations)
-          if (!activeId && res.conversations.length > 0 && res.conversations[0].peer) {
-            setActivePeer(res.conversations[0].peer)
-          }
         }
       })
       .catch(() => { })
@@ -416,17 +426,39 @@ export default function ChatScreen({ user, onLogout, onNavigate }) {
     }
   }, [activeId])
 
+  // Resolve peer profile if not already in conversation summaries
+  useEffect(() => {
+    if (!activeId) return
+
+    const matched = conversations.find((c) => c?.peer?._id === activeId)
+    if (!matched?.peer) {
+      let isMounted = true
+      getTutorById(activeId)
+        .then((res) => {
+          if (isMounted && res?.user) {
+            setFetchedPeer(res.user)
+          }
+        })
+        .catch(() => {})
+      return () => {
+        isMounted = false
+      }
+    }
+  }, [activeId, conversations])
+
+  // Fetch real conversation messages
   useEffect(() => {
     if (!activeId || !userId) return
     let isMounted = true
+
     getMessagesWithUser(activeId)
       .then((res) => {
         if (!isMounted) return
-        const mapped = (res?.messages ?? [])
-          .slice()
-          .reverse()
-          .map((m) => mapMessage(m, userId))
+        const mapped = (res?.messages ?? []).map((m) => mapMessage(m, userId))
         setMessages(mapped)
+
+        const conversationId = [userId, activeId].sort().join('_')
+        markConversationAsRead(conversationId).catch(() => {})
       })
       .catch(() => {
         if (isMounted) {
@@ -436,20 +468,51 @@ export default function ChatScreen({ user, onLogout, onNavigate }) {
       .finally(() => {
         if (isMounted) setIsLoadingMessages(false)
       })
+
     return () => {
       isMounted = false
     }
   }, [activeId, userId])
 
+  // Real-time socket message handler
   useEffect(() => {
     if (!activeId || !userId) return
-    const activeSocket = socket || (typeof getSocket === 'function' ? getSocket() : null)
+    const activeSocket = typeof getSocket === 'function' ? getSocket() : null
     if (!activeSocket) return
 
     const conversationId = [userId, activeId].sort().join('_')
 
     function onReceive(msg) {
-      setMessages((prev) => [...prev, mapMessage(msg, userId)])
+      const msgConvId =
+        msg.conversationId ||
+        (msg.senderId === userId ? conversationId : [msg.senderId, userId].sort().join('_'))
+      if (msgConvId === conversationId) {
+        setMessages((prev) => {
+          const alreadyExists = prev.some((m) => (m._id || m.id) === (msg._id || msg.id))
+          if (alreadyExists) return prev
+          return [...prev, mapMessage(msg, userId)]
+        })
+
+        // If received message from peer, mark read
+        if (msg.senderId !== userId) {
+          markConversationAsRead(conversationId).catch(() => {})
+        }
+      }
+
+      // Update conversations list latest message
+      setConversations((prev) => {
+        const idx = prev.findIndex((c) => c.conversationId === msgConvId)
+        if (idx >= 0) {
+          const updated = [...prev]
+          updated[idx] = {
+            ...updated[idx],
+            lastMessage: msg,
+            unreadCount: msg.senderId === userId ? 0 : (msgConvId === conversationId ? 0 : (updated[idx].unreadCount || 0) + 1)
+          }
+          return updated
+        }
+        return prev
+      })
     }
 
     function onError(err) {
@@ -461,26 +524,41 @@ export default function ChatScreen({ user, onLogout, onNavigate }) {
     activeSocket.on('error', onError)
 
     return () => {
+      activeSocket.emit('leave_conversation', { conversationId })
       activeSocket.off('message:receive', onReceive)
       activeSocket.off('error', onError)
     }
-  }, [activeId, userId, status, socket, getSocket])
+  }, [activeId, userId, getSocket])
 
   const handleSend = useCallback(
-    (text) => {
-      const activeSocket = socket || (typeof getSocket === 'function' ? getSocket() : null)
-      if (!activeSocket || !activeId || !userId) return
+    async (text) => {
+      if (!activeId || !userId) return
       const conversationId = [userId, activeId].sort().join('_')
-      activeSocket.emit('message:send', { conversationId, content: text })
+      const activeSocket = typeof getSocket === 'function' ? getSocket() : null
+
+      if (activeSocket && (activeSocket.connected || typeof activeSocket.emit === 'function')) {
+        activeSocket.emit('message:send', { conversationId, content: text })
+      } else {
+        try {
+          const res = await sendRestMessage({ conversationId, otherUserId: activeId, content: text })
+          if (res?.message) {
+            setMessages((prev) => {
+              const alreadyExists = prev.some((m) => (m._id || m.id) === (res.message._id || res.message.id))
+              if (alreadyExists) return prev
+              return [...prev, mapMessage(res.message, userId)]
+            })
+          }
+        } catch (err) {
+          console.error('[REST send failed]', err)
+        }
+      }
     },
-    [socket, getSocket, activeId, userId]
+    [getSocket, activeId, userId]
   )
 
-  const handleConsentConfirm = useCallback(() => {
+  const handleConsentConfirm = useCallback(async () => {
     setConsentOpen(false)
-    const activeSocket = socket || (typeof getSocket === 'function' ? getSocket() : null)
-    if (!activeSocket || !activeId || !userId) return
-
+    if (!activeId || !userId) return
     const conversationId = [userId, activeId].sort().join('_')
     const content = encodeContactCard({
       name: sanitizeDisplayText(user?.name ?? ''),
@@ -488,8 +566,17 @@ export default function ChatScreen({ user, onLogout, onNavigate }) {
       phone: user?.phone ? sanitizeDisplayText(user.phone) : null,
     })
 
-    activeSocket.emit('message:send', { conversationId, content })
-  }, [socket, getSocket, activeId, userId, user])
+    const activeSocket = typeof getSocket === 'function' ? getSocket() : null
+    if (activeSocket && (activeSocket.connected || typeof activeSocket.emit === 'function')) {
+      activeSocket.emit('message:send', { conversationId, content })
+    } else {
+      try {
+        await sendRestMessage({ conversationId, otherUserId: activeId, content })
+      } catch (err) {
+        console.error('[REST send contact failed]', err)
+      }
+    }
+  }, [getSocket, activeId, userId, user])
 
   const filteredConversations = conversations.filter((c) =>
     (c?.peer?.name || '').toLowerCase().includes(searchQuery.toLowerCase())
@@ -555,7 +642,6 @@ export default function ChatScreen({ user, onLogout, onNavigate }) {
                     key={conv.conversationId}
                     type="button"
                     onClick={() => {
-                      setActivePeer(conv.peer)
                       onNavigate?.(`/chat/${conv.peer?._id}`)
                     }}
                     className={`w-full p-4 text-left flex items-start gap-3 transition-colors hover:bg-surface-low cursor-pointer ${isSelected ? 'bg-surface-container-low border-l-4 border-primary' : ''
@@ -580,7 +666,14 @@ export default function ChatScreen({ user, onLogout, onNavigate }) {
                         {conv.lastMessage?.content || 'Started a conversation'}
                       </p>
                     </div>
-                    <IconChevronRight size={16} className="text-outline/50 shrink-0 self-center" />
+                    <div className="flex items-center gap-1.5 self-center shrink-0">
+                      {conv.unreadCount > 0 && (
+                        <span className="flex size-5 items-center justify-center rounded-full bg-primary text-[10px] font-bold text-on-primary shadow-xs">
+                          {conv.unreadCount > 9 ? '9+' : conv.unreadCount}
+                        </span>
+                      )}
+                      <IconChevronRight size={16} className="text-outline/50" />
+                    </div>
                   </button>
                 )
               })
@@ -599,7 +692,7 @@ export default function ChatScreen({ user, onLogout, onNavigate }) {
                   <button
                     type="button"
                     aria-label="Back to conversations"
-                    onClick={() => setActivePeer(null)}
+                    onClick={() => onNavigate?.('/chat')}
                     className="md:hidden inline-flex size-8 items-center justify-center rounded-lg border border-surface-variant text-on-surface-variant hover:text-primary cursor-pointer"
                   >
                     <IconArrowLeft size={18} />

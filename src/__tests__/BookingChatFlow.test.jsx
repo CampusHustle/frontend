@@ -17,6 +17,7 @@ const mockSocket = {
     if (event === 'message:send') {
       mockSocket._listeners['message:receive']?.({
         _id: `msg-${Date.now()}`,
+        conversationId: data.conversationId,
         senderId: 'my-user-id',
         content: data.content,
         createdAt: new Date().toISOString(),
@@ -52,6 +53,9 @@ vi.mock('../api/chatApi.js', () => ({
   ),
   getConversationMessages: vi.fn(() => Promise.resolve({ success: true, messages: [] })),
   getConversations: vi.fn(() => Promise.resolve({ success: true, conversations: [] })),
+  getUnreadMessageCount: vi.fn(() => Promise.resolve({ success: true, count: 0 })),
+  markConversationAsRead: vi.fn(() => Promise.resolve({ success: true, modifiedCount: 0 })),
+  sendMessage: vi.fn((data) => Promise.resolve({ success: true, message: { _id: 'msg-rest-1', ...data } })),
 }))
 
 vi.mock('../api/mockChatApi.js', () => ({

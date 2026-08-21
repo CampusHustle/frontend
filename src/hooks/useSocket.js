@@ -3,10 +3,16 @@ import { createSocket } from '../services/socket.js'
 
 export function useSocket() {
   const socketRef = useRef(null)
-  const [status, setStatus] = useState('connecting')
+  const [status, setStatus] = useState(() => {
+    const s = createSocket()
+    if (!s) return 'disconnected'
+    return s.connected ? 'connected' : 'connecting'
+  })
 
   useEffect(() => {
     const socket = createSocket()
+    if (!socket) return
+
     socketRef.current = socket
 
     function onConnect() { setStatus('connected') }
@@ -18,23 +24,23 @@ export function useSocket() {
     socket.on('connect', onConnect)
     socket.on('disconnect', onDisconnect)
     socket.on('connect_error', onConnectError)
-    socket.io.on('reconnect_attempt', onReconnectAttempt)
-    socket.io.on('reconnect', onReconnect)
+    socket.io?.on('reconnect_attempt', onReconnectAttempt)
+    socket.io?.on('reconnect', onReconnect)
 
-    socket.connect()
+    if (!socket.connected && !socket.connecting) {
+      socket.connect()
+    }
 
     return () => {
       socket.off('connect', onConnect)
       socket.off('disconnect', onDisconnect)
       socket.off('connect_error', onConnectError)
-      socket.io.off('reconnect_attempt', onReconnectAttempt)
-      socket.io.off('reconnect', onReconnect)
-      socket.disconnect()
-      socketRef.current = null
+      socket.io?.off('reconnect_attempt', onReconnectAttempt)
+      socket.io?.off('reconnect', onReconnect)
     }
   }, [])
 
-  const getSocket = useCallback(() => socketRef.current, [])
+  const getSocket = useCallback(() => socketRef.current || createSocket(), [])
 
   return { getSocket, status }
 }
