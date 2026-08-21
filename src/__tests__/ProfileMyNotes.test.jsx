@@ -163,4 +163,28 @@ describe('ProfileScreen My Notes Section (View, Edit, Delete)', () => {
     // Success toast shown
     expect(screen.getByText('Note material deleted successfully!')).toBeInTheDocument()
   })
+
+  it('filters uploaded notes in real-time when typing in search bar', async () => {
+    const user = userEvent.setup()
+
+    render(
+      <MemoryRouter>
+        <ProfilePage user={initialUser} userNotes={sampleNotes} />
+      </MemoryRouter>
+    )
+
+    const searchInput = screen.getByLabelText(/Search my notes/i)
+    expect(screen.getByText('Operating Systems System Calls Guide')).toBeInTheDocument()
+    expect(screen.getByText('Calculus III Quick Formula Cheat Sheet')).toBeInTheDocument()
+
+    // Filter for "Calculus"
+    await user.type(searchInput, 'Calculus')
+    expect(screen.getByText('Calculus III Quick Formula Cheat Sheet')).toBeInTheDocument()
+    expect(screen.queryByText('Operating Systems System Calls Guide')).not.toBeInTheDocument()
+
+    // Filter with no match
+    await user.clear(searchInput)
+    await user.type(searchInput, 'NonExistentSubject')
+    expect(screen.getByText(/No notes found matching "NonExistentSubject"/i)).toBeInTheDocument()
+  })
 })

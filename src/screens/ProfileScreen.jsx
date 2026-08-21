@@ -1,14 +1,14 @@
-import { useState, useEffect } from 'react'
+import { useState, useEffect, useMemo } from 'react'
 import { useNavigate } from 'react-router-dom'
 import {
   IconCircleCheckFilled,
   IconStarFilled,
   IconEdit,
-  IconFileText,
   IconTrash,
   IconPlus,
   IconUpload,
   IconBook,
+  IconSearch,
 } from '@tabler/icons-react'
 import AppNavbar from '../components/AppNavbar.jsx'
 import Footer from '../components/Footer.jsx'
@@ -169,93 +169,161 @@ function ProfileCard({ user }) {
   )
 }
 
-function MyNotesSection({ notes = [], onEditNote, onDeleteNote, onUploadNew }) {
+function MyNotesSection({ notes = [], onEditNote, onDeleteNote, onUploadNew, user }) {
+  const [searchQuery, setSearchQuery] = useState('')
+
+  const filteredNotes = useMemo(() => {
+    const q = searchQuery.trim().toLowerCase()
+    if (!q) return notes
+    return notes.filter((n) => {
+      const title = (n.title || '').toLowerCase()
+      const course = (n.course || n.department || '').toLowerCase()
+      const type = (n.contentType || '').toLowerCase()
+      const desc = (n.description || '').toLowerCase()
+      return title.includes(q) || course.includes(q) || type.includes(q) || desc.includes(q)
+    })
+  }, [notes, searchQuery])
+
   return (
     <section aria-labelledby="my-notes-heading" className="mt-6 rounded-xl border border-surface-variant bg-surface-lowest p-6 shadow-level-1">
-      <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between mb-5 border-b border-surface-variant pb-4">
-        <div>
-          <div className="flex items-center gap-2">
-            <h3 id="my-notes-heading" className="font-display text-lg font-bold text-primary sm:text-xl flex items-center gap-2">
-              <IconFileText size={22} className="text-secondary" aria-hidden="true" />
-              <span>My Notes</span>
-            </h3>
-            <span className="rounded-full bg-surface-container px-2.5 py-0.5 text-xs font-bold text-on-surface-variant border border-surface-variant">
-              {notes.length}
-            </span>
-          </div>
-          <p className="mt-1 text-xs text-on-surface-variant">
-            Manage, edit, or remove your uploaded tutorial guides and study materials.
-          </p>
+      {/* Clean Header: Title + Search Bar */}
+      <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between mb-6">
+        <div className="flex items-center gap-2">
+          <h3 id="my-notes-heading" className="font-display text-xl font-bold text-primary sm:text-2xl">
+            My Notes
+          </h3>
+          <span className="rounded-full bg-surface-container px-2.5 py-0.5 text-xs font-bold text-on-surface-variant border border-surface-variant">
+            {notes.length}
+          </span>
         </div>
 
-        <button
-          type="button"
-          onClick={onUploadNew}
-          className="inline-flex items-center gap-1.5 self-start rounded-lg bg-primary px-3.5 py-1.5 text-xs font-semibold text-on-primary shadow-sm hover:bg-primary-container transition-all active:scale-95 sm:self-auto cursor-pointer"
-        >
-          <IconPlus size={15} />
-          <span>Upload Material</span>
-        </button>
+        <div className="flex items-center gap-3 w-full sm:w-auto">
+          {/* Real-time search bar */}
+          <div className="relative flex-1 sm:w-64">
+            <IconSearch
+              size={16}
+              className="absolute left-3 top-1/2 -translate-y-1/2 text-outline"
+              aria-hidden="true"
+            />
+            <input
+              type="text"
+              value={searchQuery}
+              onChange={(e) => setSearchQuery(e.target.value)}
+              placeholder="Search my notes..."
+              aria-label="Search my notes"
+              className="w-full rounded-xl border border-surface-variant bg-surface-low pl-9 pr-3 py-2 text-xs text-on-surface placeholder:text-outline focus:border-primary focus:bg-surface focus:outline-none focus:ring-1 focus:ring-primary shadow-xs transition-colors"
+            />
+          </div>
+
+          <button
+            type="button"
+            onClick={onUploadNew}
+            className="inline-flex items-center gap-1.5 shrink-0 rounded-xl bg-primary px-3.5 py-2 text-xs font-semibold text-on-primary shadow-sm hover:bg-primary-container transition-all active:scale-95 cursor-pointer"
+          >
+            <IconPlus size={15} />
+            <span>Upload</span>
+          </button>
+        </div>
       </div>
 
       {notes.length === 0 ? (
-        <div className="flex flex-col items-center justify-center rounded-xl border border-dashed border-surface-variant bg-surface-low p-8 text-center">
-          <div className="flex size-12 items-center justify-center rounded-2xl bg-surface-container text-on-surface-variant mb-3">
-            <IconBook size={24} />
+        <div className="flex flex-col items-center justify-center rounded-xl border border-dashed border-surface-variant bg-surface-low p-10 text-center">
+          <div className="flex size-14 items-center justify-center rounded-2xl bg-surface-container text-on-surface-variant mb-3 shadow-xs">
+            <IconBook size={28} />
           </div>
-          <h4 className="font-display text-sm font-bold text-on-surface">No notes uploaded yet</h4>
-          <p className="mt-1 max-w-xs text-xs text-on-surface-variant">
-            Share your lecture notes, formula sheets, or exam prep guides with students on campus.
+          <h4 className="font-display text-base font-bold text-on-surface">No notes uploaded yet</h4>
+          <p className="mt-1 max-w-xs text-xs text-on-surface-variant leading-relaxed">
+            Share your lecture notes, formula sheets, or study guides with campus students.
           </p>
           <button
             type="button"
             onClick={onUploadNew}
-            className="mt-4 inline-flex items-center gap-1.5 rounded-lg bg-secondary-container px-4 py-2 text-xs font-bold text-on-secondary-container shadow-xs hover:brightness-105 transition-all cursor-pointer font-display"
+            className="mt-5 inline-flex items-center gap-1.5 rounded-xl bg-secondary-container px-4 py-2.5 text-xs font-bold text-on-secondary-container shadow-xs hover:brightness-105 transition-all cursor-pointer font-display"
           >
-            <IconUpload size={15} />
+            <IconUpload size={16} />
             <span>Upload Your First Note</span>
           </button>
         </div>
+      ) : filteredNotes.length === 0 ? (
+        <div className="rounded-xl border border-dashed border-surface-variant bg-surface-low p-8 text-center">
+          <p className="text-sm font-medium text-on-surface-variant">
+            No notes found matching "{searchQuery}".
+          </p>
+        </div>
       ) : (
-        <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
-          {notes.map((note) => {
-            const displayPrice = note.price || (note.numericPrice ? `${note.numericPrice} ETB` : 'Free')
+        /* Reusing the exact Marketplace card layout with Edit & Delete action buttons at bottom */
+        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
+          {filteredNotes.map((note) => {
+            const displayPrice =
+              note.price || (note.numericPrice ? `${note.numericPrice} ETB` : 'Free')
+            const authorDisplayName = note.authorName || user?.name || 'Current User'
+            const authorDisplayAvatar =
+              note.authorAvatar || user?.avatar || user?.profilePicUrl || 'https://i.pravatar.cc/150'
+
             return (
               <article
                 key={note.id || note._id}
                 aria-label={`Note: ${note.title}`}
-                className="flex flex-col justify-between rounded-xl border border-surface-variant bg-surface p-4 shadow-xs hover:shadow-level-1 transition-all group"
+                className="group relative flex w-full flex-col overflow-hidden rounded-xl border border-surface-variant bg-surface shadow-level-1 transition-all duration-300 hover:-translate-y-1 hover:border-primary/40 hover:shadow-level-2"
               >
-                <div>
-                  <div className="flex items-center justify-between gap-2 mb-2">
-                    <span className="rounded-md bg-surface-container px-2 py-0.5 text-[10px] font-bold text-on-surface-variant border border-surface-variant uppercase tracking-wider">
-                      {note.course || note.department || 'Academic'}
+                {/* Top Image Area */}
+                <div className="relative h-44 w-full overflow-hidden bg-surface-low">
+                  <img
+                    src={note.coverImage || 'https://images.unsplash.com/photo-1516116216624-53e697fedbea?w=400&q=80'}
+                    alt={note.title || 'Note Cover'}
+                    className="h-full w-full object-cover transition-transform duration-500 group-hover:scale-105"
+                  />
+                  <div className="absolute top-3 left-3">
+                    <span className="rounded-full bg-surface-lowest/90 px-3 py-1 text-[11px] font-bold uppercase tracking-wider text-primary shadow-sm backdrop-blur-md">
+                      {note.contentType || 'NOTE'}
                     </span>
-                    <span className="rounded-full bg-secondary-container/20 px-2.5 py-0.5 text-xs font-bold text-amber-500 dark:text-amber-300 border border-secondary-container/40">
+                  </div>
+                  <div className="absolute top-3 right-3">
+                    <span className="rounded-xl bg-secondary-container px-3 py-1 text-sm font-black text-on-secondary-container shadow-sm font-display">
                       {displayPrice}
                     </span>
                   </div>
-
-                  <h4 className="font-display text-sm font-bold text-primary line-clamp-1 group-hover:text-primary transition-colors">
-                    {note.title}
-                  </h4>
-
-                  <p className="mt-1 text-xs text-on-surface-variant line-clamp-2 leading-relaxed">
-                    {note.description || `${note.contentType || 'PDF Notes'} for ${note.course || 'students'}.`}
-                  </p>
                 </div>
 
-                <div className="mt-4 flex items-center justify-between border-t border-surface-variant/60 pt-3 gap-2">
-                  <span className="text-[11px] font-medium text-outline">
-                    {note.contentType || 'PDF Notes'}
-                  </span>
+                {/* Content Area */}
+                <div className="flex flex-1 flex-col justify-between p-5">
+                  <div>
+                    <div className="mb-2 inline-flex items-center gap-1 rounded-md bg-surface-high px-2.5 py-1 text-xs font-semibold text-on-surface-variant">
+                      {note.course || note.department || 'General Academic'}
+                    </div>
 
-                  <div className="flex items-center gap-2">
+                    <h4 className="line-clamp-2 font-display text-base font-bold leading-snug text-primary transition-colors group-hover:text-primary-container">
+                      {note.title || 'Untitled Note'}
+                    </h4>
+                  </div>
+
+                  {/* Author Meta Row */}
+                  <div className="mt-4 flex items-center justify-between border-t border-surface-variant/60 pt-3">
+                    <div className="flex items-center gap-2">
+                      <img
+                        src={authorDisplayAvatar}
+                        alt={authorDisplayName}
+                        className="size-6 rounded-full border border-surface object-cover shadow-sm"
+                      />
+                      <span className="truncate text-xs font-medium text-on-surface-variant">
+                        {authorDisplayName}
+                      </span>
+                    </div>
+
+                    <IconCircleCheckFilled
+                      size={16}
+                      className="text-tertiary-container shrink-0"
+                      title="Verified Contributor"
+                    />
+                  </div>
+
+                  {/* Bottom Edit & Delete Actions */}
+                  <div className="mt-3 flex items-center justify-end gap-2 border-t border-surface-variant/40 pt-3">
                     <button
                       type="button"
                       onClick={() => onEditNote(note)}
                       aria-label={`Edit ${note.title}`}
-                      className="inline-flex items-center gap-1 rounded-lg border border-surface-variant bg-surface-lowest px-2.5 py-1 text-xs font-semibold text-on-surface hover:border-primary hover:text-primary transition-colors cursor-pointer"
+                      className="inline-flex items-center gap-1.5 rounded-lg border border-surface-variant bg-surface-lowest px-3 py-1.5 text-xs font-semibold text-on-surface hover:border-primary hover:text-primary transition-colors shadow-xs cursor-pointer"
                     >
                       <IconEdit size={14} />
                       <span>Edit</span>
@@ -265,7 +333,7 @@ function MyNotesSection({ notes = [], onEditNote, onDeleteNote, onUploadNew }) {
                       type="button"
                       onClick={() => onDeleteNote(note)}
                       aria-label={`Delete ${note.title}`}
-                      className="inline-flex items-center gap-1 rounded-lg border border-error/30 bg-error/10 px-2.5 py-1 text-xs font-semibold text-error hover:bg-error hover:text-white transition-colors cursor-pointer"
+                      className="inline-flex items-center gap-1.5 rounded-lg border border-error/30 bg-error/10 px-3 py-1.5 text-xs font-semibold text-error hover:bg-error hover:text-white transition-colors shadow-xs cursor-pointer"
                     >
                       <IconTrash size={14} />
                       <span>Delete</span>
@@ -416,6 +484,7 @@ export default function ProfileScreen({
           onEditNote={handleEditNote}
           onDeleteNote={handleDeleteClick}
           onUploadNew={handleUploadNew}
+          user={activeUser}
         />
 
         <div className="mt-6 flex justify-center">
