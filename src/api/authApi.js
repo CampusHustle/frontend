@@ -105,3 +105,14 @@ export async function updateCurrentUserProfile(profileData) {
   }
   return data
 }
+
+/**
+ * Switches authenticated user's role (student <-> tutor).
+ */
+export async function switchUserRole(newRole) {
+  const data = await apiClient.patch('/api/users/me/role', { role: newRole })
+  if (data?.user) {
+    saveSessionUser(data.user)
+  }
+  return data
+}

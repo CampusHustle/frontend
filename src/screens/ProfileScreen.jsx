@@ -1,9 +1,10 @@
 import { useState } from 'react'
-import { IconCircleCheckFilled, IconStarFilled, IconEdit } from '@tabler/icons-react'
+import { IconCircleCheckFilled, IconStarFilled, IconEdit, IconRefresh } from '@tabler/icons-react'
 import AppNavbar from '../components/AppNavbar.jsx'
 import Footer from '../components/Footer.jsx'
 import EditProfileModal from '../components/EditProfileModal.jsx'
 import AvailabilityManager from '../components/AvailabilityManager.jsx'
+import { switchUserRole } from '../api/authApi.js'
 
 function initialsOf(name) {
   return (name || '')
@@ -161,15 +162,41 @@ function ProfileCard({ user }) {
 export default function ProfileScreen({ user, onNavigate, onLogout, onUpdateProfile }) {
   const [localUser, setLocalUser] = useState(null)
   const [isEditing, setIsEditing] = useState(false)
-  const [savedToast, setSavedToast] = useState(false)
+  const [savedToast, setSavedToast] = useState(null)
+  const [switchingRole, setSwitchingRole] = useState(false)
+  const [blockingBookingsModal, setBlockingBookingsModal] = useState(null)
 
   const activeUser = localUser || user || null
+  const isTutor = activeUser?.role === 'tutor' || activeUser?.isTutor === true
 
   const handleSaveProfile = (updatedUser) => {
     setLocalUser(updatedUser)
     onUpdateProfile?.(updatedUser)
-    setSavedToast(true)
-    setTimeout(() => setSavedToast(false), 3000)
+    setSavedToast('Profile updated successfully!')
+    setTimeout(() => setSavedToast(null), 3000)
+  }
+
+  const handleToggleRole = async () => {
+    const targetRole = isTutor ? 'student' : 'tutor'
+    setSwitchingRole(true)
+    try {
+      const res = await switchUserRole(targetRole)
+      if (res?.user) {
+        setLocalUser(res.user)
+        onUpdateProfile?.(res.user)
+        setSavedToast(`Mode updated to ${targetRole === 'tutor' ? 'Tutor Mode' : 'Student Mode'}!`)
+        setTimeout(() => setSavedToast(null), 3000)
+      }
+    } catch (err) {
+      if (err?.code === 'ACTIVE_BOOKINGS_EXIST' || err?.data?.code === 'ACTIVE_BOOKINGS_EXIST') {
+        const list = err?.blockingBookings || err?.data?.blockingBookings || []
+        setBlockingBookingsModal(list)
+      } else {
+        alert(err?.message || 'Failed to switch role.')
+      }
+    } finally {
+      setSwitchingRole(false)
+    }
   }
 
   return (
@@ -189,7 +216,7 @@ export default function ProfileScreen({ user, onNavigate, onLogout, onUpdateProf
             className="mb-4 flex items-center gap-2 rounded-xl border border-emerald-500/30 bg-emerald-500/10 px-4 py-2.5 text-xs font-semibold text-emerald-700 dark:text-emerald-400 animate-in fade-in duration-200"
           >
             <IconCircleCheckFilled size={18} />
-            <span>Profile updated successfully!</span>
+            <span>{savedToast}</span>
           </div>
         )}
 
@@ -214,10 +241,43 @@ export default function ProfileScreen({ user, onNavigate, onLogout, onUpdateProf
           </button>
         </header>
 
+        {/* Role Switch Banner */}
+        <section className="mb-6 rounded-xl border border-primary/20 bg-primary-container/10 p-5 flex flex-col sm:flex-row sm:items-center justify-between gap-4">
+          <div>
+            <span className="text-xs font-bold uppercase tracking-wider text-primary">Current Mode</span>
+            <h3 className="font-display text-lg font-bold text-primary">
+              {isTutor ? 'Tutor Mode' : 'Student Mode'}
+            </h3>
+            <p className="text-xs text-on-surface-variant mt-0.5">
+              {isTutor
+                ? 'You are listed as an active tutor. Students can discover your profile and book your availability.'
+                : 'You are in student mode. Explore tutors, request sessions, and access study materials.'}
+            </p>
+          </div>
+          <button
+            type="button"
+            disabled={switchingRole}
+            onClick={handleToggleRole}
+            className="shrink-0 rounded-lg bg-secondary-container px-4 py-2 text-xs font-bold text-on-secondary-container shadow-sm hover:brightness-105 active:scale-95 disabled:opacity-50 cursor-pointer"
+          >
+            {switchingRole ? (
+              <span className="inline-flex items-center gap-1">
+                <IconRefresh size={14} className="animate-spin" /> Switching…
+              </span>
+            ) : isTutor ? (
+              'Switch to Student Mode'
+            ) : (
+              'Activate Tutor Profile'
+            )}
+          </button>
+        </section>
+
         <ProfileCard user={activeUser} />
 
-        {(activeUser?.role === 'tutor' || activeUser?.isTutor) && (
-          <AvailabilityManager />
+        {isTutor && (
+          <div className="mt-6">
+            <AvailabilityManager />
+          </div>
         )}
 
         <div className="mt-6 flex justify-center">
@@ -240,6 +300,35 @@ export default function ProfileScreen({ user, onNavigate, onLogout, onUpdateProf
         onClose={() => setIsEditing(false)}
         onSave={handleSaveProfile}
       />
+
+      {/* Active Bookings Conflict Modal */}
+      {blockingBookingsModal && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50 p-4 backdrop-blur-xs">
+          <div className="w-full max-w-md rounded-2xl bg-surface-lowest p-6 shadow-level-3 border border-surface-variant">
+            <h3 className="font-display text-lg font-bold text-error">Cannot Switch Role</h3>
+            <p className="mt-2 text-xs text-on-surface-variant">
+              You have active confirmed tutoring sessions. Please complete or cancel these sessions before switching to Student Mode:
+            </p>
+            <ul className="mt-3 max-h-40 overflow-y-auto space-y-2 text-xs">
+              {blockingBookingsModal.map((b) => (
+                <li key={b._id || b.id} className="rounded-lg bg-surface-low p-2.5 border border-surface-variant flex justify-between items-center">
+                  <span className="font-semibold text-primary">{b.studentId?.name || 'Student'}</span>
+                  <span className="rounded-full bg-emerald-100 dark:bg-emerald-950 px-2 py-0.5 text-[10px] font-bold text-emerald-700 dark:text-emerald-300">
+                    Confirmed
+                  </span>
+                </li>
+              ))}
+            </ul>
+            <button
+              type="button"
+              onClick={() => setBlockingBookingsModal(null)}
+              className="mt-5 w-full rounded-lg bg-primary py-2 text-xs font-semibold text-on-primary shadow-sm cursor-pointer"
+            >
+              Close
+            </button>
+          </div>
+        </div>
+      )}
     </div>
   )
 }

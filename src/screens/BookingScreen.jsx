@@ -25,6 +25,7 @@ export default function BookingScreen({ user, onLogout, onNavigate }) {
   const [bookings, setBookings] = useState([])
   const [loading, setLoading] = useState(true)
   const [error, setError] = useState(null)
+  const [modeTab, setModeTab] = useState('student') // 'student' (My Sessions) or 'tutor' (Incoming Requests)
   const [activeTab, setActiveTab] = useState('all')
   const [toastMsg, setToastMsg] = useState(null)
   const [consentBookingId, setConsentBookingId] = useState(null)
@@ -36,7 +37,8 @@ export default function BookingScreen({ user, onLogout, onNavigate }) {
     setLoading(true)
     setError(null)
     try {
-      const res = await getUserBookings()
+      const queryRole = isTutor ? (modeTab === 'tutor' ? 'tutor' : 'student') : undefined
+      const res = await getUserBookings(queryRole ? { role: queryRole } : undefined)
       if (res?.data && Array.isArray(res.data) && res.data.length > 0) {
         const formatted = res.data.map((b) => ({
           ...b,
@@ -66,7 +68,7 @@ export default function BookingScreen({ user, onLogout, onNavigate }) {
     } finally {
       setLoading(false)
     }
-  }, [])
+  }, [isTutor, modeTab])
 
   useEffect(() => {
     loadBookings()
@@ -166,6 +168,34 @@ export default function BookingScreen({ user, onLogout, onNavigate }) {
           <p className="text-sm text-on-surface-variant mt-1">
             Track and manage your tutoring sessions.
           </p>
+
+          {/* Mode switch tabs for Tutors */}
+          {isTutor && (
+            <div className="mt-4 flex rounded-xl border border-surface-variant bg-surface-low p-1 max-w-md">
+              <button
+                type="button"
+                onClick={() => setModeTab('student')}
+                className={`flex-1 rounded-lg py-2 text-xs font-bold transition-all cursor-pointer ${
+                  modeTab === 'student'
+                    ? 'bg-primary text-on-primary shadow-sm'
+                    : 'text-on-surface-variant hover:text-on-surface'
+                }`}
+              >
+                My Sessions (Student)
+              </button>
+              <button
+                type="button"
+                onClick={() => setModeTab('tutor')}
+                className={`flex-1 rounded-lg py-2 text-xs font-bold transition-all cursor-pointer ${
+                  modeTab === 'tutor'
+                    ? 'bg-primary text-on-primary shadow-sm'
+                    : 'text-on-surface-variant hover:text-on-surface'
+                }`}
+              >
+                Incoming Requests (Tutor)
+              </button>
+            </div>
+          )}
         </div>
 
         {/* status filter tabs */}
@@ -250,8 +280,8 @@ export default function BookingScreen({ user, onLogout, onNavigate }) {
               booking={booking}
               onChat={() => handleOpenChat(booking)}
               onCancel={(id) => handleStatusChange(id, 'cancelled')}
-              onAccept={isTutor ? (id) => handleStatusChange(id, 'confirmed') : undefined}
-              onDecline={isTutor ? (id) => handleStatusChange(id, 'declined') : undefined}
+              onAccept={(isTutor || modeTab === 'tutor') ? (id) => handleStatusChange(id, 'confirmed') : undefined}
+              onDecline={(isTutor || modeTab === 'tutor') ? (id) => handleStatusChange(id, 'declined') : undefined}
               onShareContact={(id) => setConsentBookingId(id)}
             />
           ))}
