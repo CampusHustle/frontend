@@ -1,4 +1,5 @@
 import apiClient from './client.js'
+import { API_ENDPOINTS } from '../config/env.js'
 
 /**
  * Asks the Felat (ፈላጥ) AI Study Assistant a question scoped to course or tutor notes,
@@ -12,10 +13,10 @@ export async function askFelatAi({ question, tutorId, file }) {
     formData.append('question', question || 'Please analyze this attached document.')
     if (tutorId) formData.append('tutorId', tutorId)
     formData.append('file', file)
-    return apiClient.post('/api/ai/ask', formData)
+    return apiClient.post(API_ENDPOINTS.AI.ASK, formData)
   }
 
-  return apiClient.post('/api/ai/ask', {
+  return apiClient.post(API_ENDPOINTS.AI.ASK, {
     question,
     ...(tutorId ? { tutorId } : {}),
   })

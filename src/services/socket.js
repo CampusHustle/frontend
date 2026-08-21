@@ -1,8 +1,9 @@
 import { io } from 'socket.io-client'
 import { loadSessionUser, getAccessToken } from '../utils/session.js'
+import { SOCKET_URL } from '../config/env.js'
 
 function resolveSocketUrl() {
-  return import.meta.env?.VITE_SOCKET_URL ?? window.location.origin
+  return SOCKET_URL
 }
 
 let sharedSocket = null
