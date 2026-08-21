@@ -27,6 +27,20 @@ vi.mock('../api/tutorApi.js', () => ({
   }),
 }))
 
+vi.mock('../api/noteApi.js', () => ({
+  getNotesByTutor: vi.fn().mockResolvedValue({
+    success: true,
+    notes: [
+      {
+        _id: 'n-test-1',
+        title: 'Data Structures & Algorithms Notes',
+        course: 'CS 301',
+        price: 25,
+      },
+    ],
+  }),
+}))
+
 const setup = (id = testTutor.id, onNavigate = vi.fn()) => {
   const user = userEvent.setup()
   const onLogout = vi.fn()
@@ -62,7 +76,7 @@ describe('TutorDetailPage', () => {
       expect(screen.getByText('Subject Knowledge')).toBeInTheDocument()
       expect(screen.getByText('Communication')).toBeInTheDocument()
       expect(screen.getByText('Punctuality')).toBeInTheDocument()
-      expect(screen.getByText(new RegExp(`ETB ${testTutor.hourlyRate}`))).toBeInTheDocument()
+      expect(screen.getAllByText(new RegExp(`ETB ${testTutor.hourlyRate}`)).length).toBeGreaterThan(0)
       testTutor.skillsTeaching.forEach((skill) => {
         expect(screen.getByText(skill)).toBeInTheDocument()
       })

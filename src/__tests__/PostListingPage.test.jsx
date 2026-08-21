@@ -1,8 +1,14 @@
 import { describe, it, expect, vi } from 'vitest'
 import { render, screen } from '@testing-library/react'
 import userEvent from '@testing-library/user-event'
+import { MemoryRouter } from 'react-router-dom'
 import PostListingPage from '../pages/PostListingPage.jsx'
-import { MemoryRouter } from 'react-router-dom';
+
+vi.mock('../api/noteApi.js', () => ({
+  uploadNote: vi.fn(() => Promise.resolve({ success: true })),
+  updateNote: vi.fn(() => Promise.resolve({ success: true })),
+}))
+
 const setup = (onNavigate = vi.fn()) => {
   const user = userEvent.setup()
   const onLogout = vi.fn()
@@ -116,5 +122,50 @@ describe('PostListingPage', () => {
     await user.click(screen.getByRole('button', { name: 'Post Listing' }))
 
     expect(onNavigate).toHaveBeenCalledWith('post-listing')
+  })
+
+  it('pre-fills existing note details when in edit mode and updates tutorial', async () => {
+    const user = userEvent.setup()
+    const onUpdateNote = vi.fn()
+    const initialNote = {
+      id: 99,
+      title: 'Distributed Systems Mastery',
+      course: 'Computer Science',
+      department: 'Computer Science',
+      contentType: 'Study Guide',
+      price: '150 ETB',
+      numericPrice: 150,
+      description: 'Paxos, Raft, and Vector Clocks.',
+    }
+
+    render(
+      <MemoryRouter>
+        <PostListingPage
+          user={null}
+          initialNote={initialNote}
+          onUpdateNote={onUpdateNote}
+        />
+      </MemoryRouter>
+    )
+
+    expect(screen.getByRole('heading', { name: 'Edit Tutorial' })).toBeInTheDocument()
+    expect(screen.getByLabelText('Tutorial Title')).toHaveValue('Distributed Systems Mastery')
+    expect(screen.getByLabelText('Subject Area')).toHaveValue('Computer Science')
+    expect(screen.getByLabelText('Content Type')).toHaveValue('Study Guide')
+    expect(screen.getByRole('button', { name: /Save Changes/i })).toBeInTheDocument()
+
+    // Edit title
+    await user.clear(screen.getByLabelText('Tutorial Title'))
+    await user.type(screen.getByLabelText('Tutorial Title'), 'Distributed Systems 2026 Edition')
+
+    await user.click(screen.getByRole('button', { name: /Save Changes/i }))
+
+    expect(onUpdateNote).toHaveBeenCalledWith(
+      expect.objectContaining({
+        id: 99,
+        title: 'Distributed Systems 2026 Edition',
+      })
+    )
+    expect(screen.getByText('Tutorial updated successfully!')).toBeInTheDocument()
   })
 })

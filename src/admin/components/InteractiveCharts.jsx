@@ -1,4 +1,4 @@
-﻿import { useState } from 'react'
+import { useState } from 'react'
 import { IconTrendingUp, IconCalendar, IconBuilding, IconCurrencyDollar, IconUsers } from '@tabler/icons-react'
 import { REVENUE_TRENDS_DATA, CAMPUS_DISTRIBUTION } from '../mockData'
 import { useAdminTheme } from '../context/AdminThemeContext'
@@ -73,7 +73,7 @@ export function RevenueTrendChart() {
                 <span>
                   Revenue:{' '}
                   <strong className="text-emerald-600">
-                    ${data[hoveredPoint].revenue.toLocaleString()}
+                    ETB {data[hoveredPoint].revenue.toLocaleString()}
                   </strong>
                 </span>
               </p>
