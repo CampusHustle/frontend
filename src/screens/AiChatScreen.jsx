@@ -27,7 +27,7 @@ import { askFelatAi } from '../api/aiApi.js'
 import { getCurrentUserProfile } from '../api/authApi.js'
 import { loadSessionUser } from '../utils/session.js'
 
-const SESSIONS_STORAGE_KEY = 'campus-hustle:ai-chat-sessions'
+const SESSIONS_STORAGE_KEY_PREFIX = 'campus-hustle:ai-chat-sessions:'
 const MESSAGES_STORAGE_KEY_PREFIX = 'campus-hustle:ai-chat-messages:'
 
 function formatFileSize(bytes) {
@@ -38,9 +38,24 @@ function formatFileSize(bytes) {
   return `${parseFloat((bytes / Math.pow(k, i)).toFixed(1))} ${sizes[i]}`
 }
 
-function loadStoredSessions() {
+function resolveUserId(user, profile) {
+  return (
+    user?._id ||
+    user?.id ||
+    user?.email ||
+    profile?._id ||
+    profile?.id ||
+    profile?.email ||
+    loadSessionUser()?._id ||
+    loadSessionUser()?.id ||
+    loadSessionUser()?.email ||
+    'guest'
+  )
+}
+
+function loadStoredSessions(userId) {
   try {
-    const raw = localStorage.getItem(SESSIONS_STORAGE_KEY)
+    const raw = localStorage.getItem(`${SESSIONS_STORAGE_KEY_PREFIX}${userId || 'guest'}`)
     if (!raw) return []
     const parsed = JSON.parse(raw)
     return Array.isArray(parsed) ? parsed : []
@@ -49,18 +64,23 @@ function loadStoredSessions() {
   }
 }
 
-function saveStoredSessions(sessions) {
+function saveStoredSessions(userId, sessions) {
   try {
-    localStorage.setItem(SESSIONS_STORAGE_KEY, JSON.stringify(sessions))
+    localStorage.setItem(
+      `${SESSIONS_STORAGE_KEY_PREFIX}${userId || 'guest'}`,
+      JSON.stringify(sessions)
+    )
   } catch {
     /* ignore quota errors */
   }
 }
 
-function loadStoredMessages(sessionId) {
+function loadStoredMessages(userId, sessionId) {
   if (!sessionId) return []
   try {
-    const raw = localStorage.getItem(`${MESSAGES_STORAGE_KEY_PREFIX}${sessionId}`)
+    const raw = localStorage.getItem(
+      `${MESSAGES_STORAGE_KEY_PREFIX}${userId || 'guest'}:${sessionId}`
+    )
     if (!raw) return []
     const parsed = JSON.parse(raw)
     return Array.isArray(parsed) ? parsed : []
@@ -69,7 +89,7 @@ function loadStoredMessages(sessionId) {
   }
 }
 
-function saveStoredMessages(sessionId, messages) {
+function saveStoredMessages(userId, sessionId, messages) {
   if (!sessionId) return
   try {
     const cleanMessages = messages.map((m) => ({
@@ -77,7 +97,7 @@ function saveStoredMessages(sessionId, messages) {
       isStreaming: false,
     }))
     localStorage.setItem(
-      `${MESSAGES_STORAGE_KEY_PREFIX}${sessionId}`,
+      `${MESSAGES_STORAGE_KEY_PREFIX}${userId || 'guest'}:${sessionId}`,
       JSON.stringify(cleanMessages)
     )
   } catch {
@@ -85,10 +105,12 @@ function saveStoredMessages(sessionId, messages) {
   }
 }
 
-function removeStoredSession(sessionId) {
+function removeStoredSession(userId, sessionId) {
   if (!sessionId) return
   try {
-    localStorage.removeItem(`${MESSAGES_STORAGE_KEY_PREFIX}${sessionId}`)
+    localStorage.removeItem(
+      `${MESSAGES_STORAGE_KEY_PREFIX}${userId || 'guest'}:${sessionId}`
+    )
   } catch {
     /* ignore quota errors */
   }
@@ -382,14 +404,21 @@ function FormattedAiResponse({ content, isStreaming }) {
 
 export default function AiChatScreen({ user, onLogout, onNavigate }) {
   const [profile, setProfile] = useState(() => user || loadSessionUser())
-  const [sessions, setSessions] = useState(() => loadStoredSessions())
+  const currentUserId = resolveUserId(user, profile)
+  const currentUserIdRef = useRef(currentUserId)
+
+  useEffect(() => {
+    currentUserIdRef.current = currentUserId
+  }, [currentUserId])
+
+  const [sessions, setSessions] = useState(() => loadStoredSessions(currentUserId))
   const [activeSessionId, setActiveSessionId] = useState(() => {
-    const stored = loadStoredSessions()
+    const stored = loadStoredSessions(currentUserId)
     return stored.length > 0 ? stored[0].id : null
   })
   const [messages, setMessages] = useState(() => {
-    const stored = loadStoredSessions()
-    return stored.length > 0 ? loadStoredMessages(stored[0].id) : []
+    const stored = loadStoredSessions(currentUserId)
+    return stored.length > 0 ? loadStoredMessages(currentUserId, stored[0].id) : []
   })
 
   const [draft, setDraft] = useState('')
@@ -424,17 +453,31 @@ export default function AiChatScreen({ user, onLogout, onNavigate }) {
     }
   }, [user, profile])
 
-  // Sync sessions to localStorage
-  useEffect(() => {
-    saveStoredSessions(sessions)
-  }, [sessions])
+  const [prevUserId, setPrevUserId] = useState(currentUserId)
+  if (prevUserId !== currentUserId) {
+    setPrevUserId(currentUserId)
+    const userSessions = loadStoredSessions(currentUserId)
+    setSessions(userSessions)
+    const initialSessionId = userSessions.length > 0 ? userSessions[0].id : null
+    setActiveSessionId(initialSessionId)
+    setMessages(initialSessionId ? loadStoredMessages(currentUserId, initialSessionId) : [])
+  }
 
-  // Sync active messages to localStorage
+  useEffect(() => {
+    currentSessionIdRef.current = activeSessionId
+  }, [activeSessionId])
+
+  // Sync sessions to user-scoped localStorage
+  useEffect(() => {
+    saveStoredSessions(currentUserId, sessions)
+  }, [currentUserId, sessions])
+
+  // Sync active messages to user-scoped localStorage
   useEffect(() => {
     if (activeSessionId && messages.length > 0) {
-      saveStoredMessages(activeSessionId, messages)
+      saveStoredMessages(currentUserId, activeSessionId, messages)
     }
-  }, [activeSessionId, messages])
+  }, [currentUserId, activeSessionId, messages])
 
   useEffect(() => {
     if (typeof messagesEndRef.current?.scrollIntoView === 'function') {
@@ -454,7 +497,7 @@ export default function AiChatScreen({ user, onLogout, onNavigate }) {
       streamingTimerRef.current = null
     }
     setActiveSessionId(sessId)
-    setMessages(loadStoredMessages(sessId))
+    setMessages(loadStoredMessages(currentUserIdRef.current, sessId))
     setDraft('')
     setAttachedFile(null)
     setIsTyping(false)
@@ -462,15 +505,15 @@ export default function AiChatScreen({ user, onLogout, onNavigate }) {
 
   const handleDeleteSession = (e, sessId) => {
     e?.stopPropagation?.()
-    removeStoredSession(sessId)
+    removeStoredSession(currentUserIdRef.current, sessId)
     const remaining = sessions.filter((s) => s.id !== sessId)
     setSessions(remaining)
-    saveStoredSessions(remaining)
+    saveStoredSessions(currentUserIdRef.current, remaining)
 
     if (activeSessionId === sessId) {
       if (remaining.length > 0) {
         setActiveSessionId(remaining[0].id)
-        setMessages(loadStoredMessages(remaining[0].id))
+        setMessages(loadStoredMessages(currentUserIdRef.current, remaining[0].id))
       } else {
         setActiveSessionId(null)
         setMessages([])
@@ -483,9 +526,9 @@ export default function AiChatScreen({ user, onLogout, onNavigate }) {
       clearInterval(streamingTimerRef.current)
       streamingTimerRef.current = null
     }
-    sessions.forEach((s) => removeStoredSession(s.id))
+    sessions.forEach((s) => removeStoredSession(currentUserIdRef.current, s.id))
     setSessions([])
-    saveStoredSessions([])
+    saveStoredSessions(currentUserIdRef.current, [])
     setActiveSessionId(null)
     setMessages([])
     setDraft('')
@@ -505,7 +548,7 @@ export default function AiChatScreen({ user, onLogout, onNavigate }) {
         msg.isStreaming ? { ...msg, isStreaming: false } : msg
       )
       if (currentSessionIdRef.current) {
-        saveStoredMessages(currentSessionIdRef.current, updated)
+        saveStoredMessages(currentUserIdRef.current, currentSessionIdRef.current, updated)
       }
       return updated
     })
@@ -579,7 +622,7 @@ export default function AiChatScreen({ user, onLogout, onNavigate }) {
 
       const updatedMessagesWithUser = [...messages, userMessage]
       setMessages(updatedMessagesWithUser)
-      saveStoredMessages(currentSessionId, updatedMessagesWithUser)
+      saveStoredMessages(currentUserIdRef.current, currentSessionId, updatedMessagesWithUser)
       setDraft('')
       setAttachedFile(null)
       setIsTyping(true)
@@ -635,7 +678,7 @@ export default function AiChatScreen({ user, onLogout, onNavigate }) {
             const final = prev.map((msg) =>
               msg.id === aiMsgId ? { ...msg, content: fullReply, isStreaming: false } : msg
             )
-            saveStoredMessages(currentSessionId, final)
+            saveStoredMessages(currentUserIdRef.current, currentSessionId, final)
             return final
           })
         } else {

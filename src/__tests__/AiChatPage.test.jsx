@@ -55,7 +55,7 @@ describe('AiChatScreen Component', () => {
     expect(screen.getByText(/Welcome, Abebe!/i)).toBeInTheDocument()
   })
 
-  it('persists chats in localStorage across sessions', async () => {
+  it('persists chats in localStorage scoped to the specific authenticated user', async () => {
     globalThis.fetch = vi.fn().mockResolvedValue({
       ok: true,
       status: 200,
@@ -73,7 +73,34 @@ describe('AiChatScreen Component', () => {
     await user.type(textarea, 'Integration formula')
     await user.click(screen.getByRole('button', { name: /Send query/i }))
 
-    expect(localStorage.getItem('campus-hustle:ai-chat-sessions')).toContain('Integration formula')
+    expect(localStorage.getItem('campus-hustle:ai-chat-sessions:u1')).toContain('Integration formula')
+  })
+
+  it('isolates chats between different users so User B cannot see User A chats', async () => {
+    localStorage.setItem(
+      'campus-hustle:ai-chat-sessions:userA',
+      JSON.stringify([{ id: 'sess-A', title: "Secret Calculus Notes", date: 'Today' }])
+    )
+    localStorage.setItem(
+      'campus-hustle:ai-chat-messages:userA:sess-A',
+      JSON.stringify([{ id: 'm1', role: 'user', content: 'Secret question from user A' }])
+    )
+
+    const { rerender } = render(
+      <AiChatScreen user={{ _id: 'userB', name: 'User B' }} onNavigate={() => {}} onLogout={() => {}} />
+    )
+
+    // User B should not see User A's private chat title or messages
+    expect(screen.queryByText('Secret Calculus Notes')).not.toBeInTheDocument()
+    expect(screen.queryByText('Secret question from user A')).not.toBeInTheDocument()
+
+    // When switching to User A
+    rerender(
+      <AiChatScreen user={{ _id: 'userA', name: 'User A' }} onNavigate={() => {}} onLogout={() => {}} />
+    )
+
+    expect(screen.getByText('Secret Calculus Notes')).toBeInTheDocument()
+    expect(screen.getByText('Secret question from user A')).toBeInTheDocument()
   })
 
   it('allows attaching notes/files with paperclip button and displays attached badge', async () => {

@@ -19,7 +19,35 @@ import Footer from '../components/Footer.jsx'
 import UploadEntryPoint from '../components/UploadEntryPoint.jsx'
 import { uploadNote, updateNote } from '../api/noteApi.js'
 
-const SUBJECTS = ['Economics', 'Computer Science', 'Mathematics', 'Physics']
+const SUBJECT_AREAS = [
+  'Computer Science',
+  'Software Engineering',
+  'Mathematics',
+  'Statistics',
+  'Electrical Engineering',
+  'Mechanical Engineering',
+  'Civil Engineering',
+  'Economics',
+  'Economics & Business',
+  'Medicine & Health Sciences',
+  'Physics',
+  'Physics & Engineering',
+  'Chemistry',
+  'Law & Social Studies',
+  'Biology & Life Sciences',
+  'Accounting & Finance',
+  'General Academic',
+]
+
+const CONTENT_TYPES = [
+  'PDF Notes',
+  'Study Guide',
+  'Cheat Sheet',
+  'Practice Exam',
+  'Lecture Slides',
+  'Lab Report',
+  'Summary Outline',
+]
 
 function sectionClass() {
   return 'glass-card rounded-2xl p-6 sm:p-10'
@@ -46,7 +74,7 @@ export default function PostListingScreen({
 
   const [title, setTitle] = useState(() => editingNote?.title || '')
   const [subject, setSubject] = useState(() => editingNote?.course || editingNote?.department || '')
-  const [contentType, setContentType] = useState(() => editingNote?.contentType || '')
+  const [contentType, setContentType] = useState(() => editingNote?.contentType || 'PDF Notes')
   const [description, setDescription] = useState(() => editingNote?.description || '')
   const [isPremium, setIsPremium] = useState(() => {
     if (!editingNote) return false
@@ -271,7 +299,7 @@ export default function PostListingScreen({
                         className="w-full appearance-none rounded-lg border border-surface-variant bg-surface px-4 py-3 pr-10 text-sm text-on-surface transition-colors focus:border-primary focus:outline-none focus:ring-1 focus:ring-primary"
                       >
                         <option value="">Select a subject...</option>
-                        {SUBJECTS.map((s) => (
+                        {SUBJECT_AREAS.map((s) => (
                           <option key={s} value={s}>
                             {s}
                           </option>
@@ -300,10 +328,11 @@ export default function PostListingScreen({
                         className="w-full appearance-none rounded-lg border border-surface-variant bg-surface px-4 py-3 pr-10 text-sm text-on-surface transition-colors focus:border-primary focus:outline-none focus:ring-1 focus:ring-primary"
                       >
                         <option value="">Select a content type...</option>
-                        <option value="PDF Notes">PDF Notes</option>
-                        <option value="Study Guide">Study Guide</option>
-                        <option value="Cheat Sheet">Cheat Sheet</option>
-                        <option value="Practice Exam">Practice Exam</option>
+                        {CONTENT_TYPES.map((type) => (
+                          <option key={type} value={type}>
+                            {type}
+                          </option>
+                        ))}
                       </select>
                       <IconChevronDown
                         size={16}
