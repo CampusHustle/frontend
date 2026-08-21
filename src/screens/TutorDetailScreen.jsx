@@ -16,12 +16,11 @@ import {
   IconStarFilled,
 } from '@tabler/icons-react'
 import { getTutorById } from '../api/tutorApi.js'
-import { createBooking } from '../api/bookingApi.js'
-import { getNotesByTutor } from '../api/noteApi.js'
+import { createBooking, getTutorAvailability } from '../api/bookingApi.js'
 import Footer from '../components/Footer.jsx'
 import AppNavbar from '../components/AppNavbar.jsx'
 
-const DAYS = ['Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat', 'Sun']
+const DAYS = ['Mon', 'Tue', 'Wed', 'Thu', 'Fri']
 const SLOT_TIMES = ['9:00 AM', '2:00 PM']
 
 const NOTE_ICONS = [IconFileText, IconCode, IconBinaryTree2, IconBook2]
@@ -67,8 +66,8 @@ function buildSlots(tutorId) {
   const rand = seededRand(
     [...tutorId].reduce((acc, ch) => acc + ch.charCodeAt(0), 7),
   )
-  const slots = SLOT_TIMES.map((time) =>
-    DAYS.map((day) => ({ day, time, booked: rand() < 0.45 })),
+  const slots = DAYS.map((day) =>
+    SLOT_TIMES.map((time) => ({ day, time, booked: rand() < 0.45 })),
   )
   if (slots.every((row) => row.every((s) => s.booked))) {
     slots[0][0].booked = false
@@ -105,9 +104,12 @@ function RatingBreakdown({ rating = {} }) {
   )
 }
 
-function AvailabilityGrid({ slots, selected, onSelect }) {
+function AvailabilityGrid({ slots = [], selected, onSelect, loading }) {
   const [week, setWeek] = useState(0)
   const label = `Oct ${23 + week * 7} - Oct ${29 + week * 7}`
+
+  const flatSlots = Array.isArray(slots) ? slots.flat() : []
+
   return (
     <div className="rounded-xl border border-surface-variant bg-surface p-6 shadow-level-1 lg:col-span-2">
       <div className="mb-5 flex items-center justify-between">
@@ -133,45 +135,71 @@ function AvailabilityGrid({ slots, selected, onSelect }) {
         </div>
       </div>
 
-      <div className="grid grid-cols-7 gap-2">
-        {DAYS.map((day) => (
-          <div
-            key={day}
-            className="mb-2 text-center text-xs font-medium text-outline"
-          >
-            {day}
-          </div>
-        ))}
-        {slots.flat().map((slot) => {
-          const isSelected = selected?.day === slot.day && selected?.time === slot.time
-          if (slot.booked) {
+      {loading ? (
+        <div className="py-12 text-center text-xs text-outline">Loading tutor availability…</div>
+      ) : flatSlots.length === 0 ? (
+        <div className="py-12 text-center text-xs text-outline">
+          No available time slots set by tutor yet.
+        </div>
+      ) : (
+        <div className="grid grid-cols-2 gap-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5">
+          {flatSlots.map((slot, index) => {
+            const dayName = slot.dayOfWeek || slot.day || 'Mon'
+            const timeStr = slot.startTime || slot.time || '9:00 AM'
+            const isBooked = slot.isBooked === true || slot.booked === true
+            const slotId = slot._id || slot.id || `${dayName}-${timeStr}-${index}`
+
+            const isSelected =
+              (selected?._id && selected._id === slot._id) ||
+              (selected?.id && selected.id === slot.id) ||
+              (selected?.day === dayName && selected?.time === timeStr) ||
+              (selected?.dayOfWeek === dayName && selected?.startTime === timeStr)
+
+            const normalizedSlot = {
+              ...slot,
+              _id: slot._id || slot.id,
+              id: slot._id || slot.id,
+              dayOfWeek: dayName,
+              startTime: timeStr,
+              day: dayName,
+              time: timeStr,
+              isBooked,
+              booked: isBooked,
+            }
+
+            if (isBooked) {
+              return (
+                <div
+                  key={slotId}
+                  aria-disabled="true"
+                  title="Booked"
+                  className="cursor-not-allowed rounded-md bg-surface-container-highest p-2 text-center text-xs font-medium text-outline-variant border border-outline-variant"
+                >
+                  <div className="font-semibold">{dayName}</div>
+                  <div>{timeStr}</div>
+                </div>
+              )
+            }
+
             return (
-              <div
-                key={`${slot.day}-${slot.time}`}
-                aria-disabled="true"
-                title="Booked"
-                className="cursor-not-allowed rounded-md bg-surface-container-highest p-2 text-center text-xs font-medium text-outline-variant border border-outline-variant"
-              >
-                {slot.time}
-              </div>
-            )
-          }
-          return (
-            <button
-              key={`${slot.day}-${slot.time}`}
-              type="button"
-              onClick={() => onSelect({ day: slot.day, time: slot.time })}
-              aria-pressed={isSelected}
-              className={`rounded-md p-2 text-center text-xs font-medium transition-colors border ${isSelected
-                ? 'bg-primary text-on-primary border-primary shadow-level-1'
-                : 'bg-primary-container text-on-primary-container border-primary hover:bg-primary hover:text-on-primary'
+              <button
+                key={slotId}
+                type="button"
+                onClick={() => onSelect(normalizedSlot)}
+                aria-pressed={isSelected}
+                className={`rounded-md p-2 text-center text-xs font-medium transition-colors border cursor-pointer ${
+                  isSelected
+                    ? 'bg-primary text-on-primary border-primary shadow-level-1'
+                    : 'bg-primary-container text-on-primary-container border-primary hover:bg-primary hover:text-on-primary'
                 }`}
-            >
-              {slot.time}
-            </button>
-          )
-        })}
-      </div>
+              >
+                <div className="font-semibold">{dayName}</div>
+                <div>{timeStr}</div>
+              </button>
+            )
+          })}
+        </div>
+      )}
 
       <div className="mt-5 flex items-center gap-4">
         <span className="flex items-center gap-1.5 text-xs text-outline">
@@ -217,6 +245,7 @@ export function BookingStatusBadge({ status }) {
           <span>Status: Session Completed</span>
         </div>
       )
+    case 'declined':
     case 'cancelled':
       return (
         <div
@@ -224,7 +253,7 @@ export function BookingStatusBadge({ status }) {
           className="flex items-center gap-2 rounded-lg border border-rose-500/30 bg-rose-500/10 px-3 py-2 text-xs sm:text-sm font-semibold text-rose-700 dark:text-rose-400"
         >
           <IconCircleX size={16} className="shrink-0 text-rose-600" aria-hidden="true" />
-          <span>Status: Booking Cancelled</span>
+          <span>Status: Request Declined / Cancelled</span>
         </div>
       )
     default:
@@ -232,48 +261,37 @@ export function BookingStatusBadge({ status }) {
   }
 }
 
-function BookingPanel({ tutor, selected, onRequestBooking, confirmation, bookingStatus, onSendMessage }) {
-  const isPending = bookingStatus === 'pending'
-  const isConfirmed = bookingStatus === 'confirmed'
+function BookingPanel({
+  tutor,
+  selected,
+  onRequestBooking,
+  confirmation,
+  bookingStatus = 'idle',
+  onSendMessage,
+}) {
+  const selectedDay = selected?.dayOfWeek || selected?.day
+  const selectedTime = selected?.startTime || selected?.time
 
   return (
-    <div className="flex flex-col rounded-xl border border-surface-variant bg-surface p-6 shadow-level-1">
-      <h2 className="mb-2 font-display text-xl font-bold text-primary">Book a Session</h2>
-      <p className="mb-4 text-xs font-semibold uppercase tracking-wider text-outline">
-        ETB {tutor.hourlyRate} / hour · 1-on-1 tutoring
-      </p>
-
-      {/* Real-Time Booking Status Indicator (FR-5, FR-6) */}
-      <div className="mb-4">
-        <BookingStatusBadge status={bookingStatus} />
+    <div className="flex flex-col justify-center rounded-xl border border-surface-variant bg-surface p-6 shadow-level-1">
+      <div className="mb-4 text-center">
+        <span className="font-display text-3xl font-bold text-primary">ETB {tutor.hourlyRate}</span>
+        <span className="text-base text-outline"> / hour</span>
       </div>
 
-      <div className="mb-4 flex flex-col gap-2 rounded-lg bg-surface-container-low p-4 text-sm">
-        <div className="flex justify-between">
-          <span className="text-on-surface-variant">Selected Slot</span>
-          <span className="font-semibold text-on-surface">
-            {selected ? `${selected.day} at ${selected.time}` : 'None chosen'}
-          </span>
+      {bookingStatus !== 'idle' ? (
+        <div className="mb-5 space-y-3">
+          <BookingStatusBadge status={bookingStatus} />
+          {confirmation && (
+            <p className="text-center text-xs text-on-surface-variant">{confirmation}</p>
+          )}
         </div>
-        <div className="flex justify-between">
-          <span className="text-on-surface-variant">Rate</span>
-          <span className="font-semibold text-on-surface">ETB {tutor.hourlyRate}</span>
-        </div>
-        <div className="flex justify-between border-t border-surface-variant pt-2">
-          <span className="font-bold text-on-surface">Estimated Total</span>
-          <span className="font-bold text-primary">
-            {selected ? `ETB ${tutor.hourlyRate}` : '—'}
-          </span>
-        </div>
-      </div>
-
-      {confirmation && (
-        <div
-          role="status"
-          className="mb-4 rounded-lg bg-secondary-container/20 border border-secondary-container p-3 text-xs font-medium text-on-surface"
-        >
-          {confirmation}
-        </div>
+      ) : (
+        <p className="mb-5 text-center text-sm text-on-surface-variant">
+          {selected
+            ? `You selected ${selectedDay} at ${selectedTime}. Request a booking to confirm.`
+            : 'Select a time slot from the grid to request a booking. Sessions are held via campus library or Zoom.'}
+        </p>
       )}
 
       {bookingStatus === 'idle' && (
@@ -281,24 +299,13 @@ function BookingPanel({ tutor, selected, onRequestBooking, confirmation, booking
           type="button"
           disabled={!selected}
           onClick={onRequestBooking}
-          className="w-full rounded-lg bg-primary py-3 text-sm font-semibold text-on-primary shadow-level-1 transition-all hover:bg-primary-container hover:shadow-level-2 hover:-translate-y-px disabled:cursor-not-allowed disabled:opacity-50"
+          className="w-full rounded-lg bg-secondary-container py-3 text-sm font-semibold text-on-secondary-container shadow-level-1 transition-all hover:shadow-level-2 hover:-translate-y-px disabled:cursor-not-allowed disabled:opacity-50 disabled:hover:shadow-level-1 disabled:hover:translate-y-0 cursor-pointer"
         >
           Request Booking
         </button>
       )}
 
-      {isPending && (
-        <button
-          type="button"
-          disabled
-          className="w-full rounded-lg bg-amber-500/20 border border-amber-500/40 py-3 text-sm font-semibold text-amber-800 dark:text-amber-300 cursor-not-allowed flex items-center justify-center gap-2"
-        >
-          <IconClock size={16} className="animate-spin" />
-          <span>Awaiting Tutor Approval...</span>
-        </button>
-      )}
-
-      {isConfirmed && (
+      {bookingStatus === 'confirmed' && (
         <button
           type="button"
           onClick={onSendMessage}
@@ -309,12 +316,12 @@ function BookingPanel({ tutor, selected, onRequestBooking, confirmation, booking
         </button>
       )}
 
-      {bookingStatus === 'cancelled' && (
+      {(bookingStatus === 'cancelled' || bookingStatus === 'declined') && (
         <button
           type="button"
           disabled={!selected}
           onClick={onRequestBooking}
-          className="w-full rounded-lg bg-secondary-container py-3 text-sm font-semibold text-on-secondary-container shadow-level-1 transition-all hover:shadow-level-2 hover:-translate-y-px disabled:cursor-not-allowed disabled:opacity-50"
+          className="w-full rounded-lg bg-secondary-container py-3 text-sm font-semibold text-on-secondary-container shadow-level-1 transition-all hover:shadow-level-2 hover:-translate-y-px disabled:cursor-not-allowed disabled:opacity-50 cursor-pointer"
         >
           Request New Slot
         </button>
@@ -331,76 +338,63 @@ function BookingPanel({ tutor, selected, onRequestBooking, confirmation, booking
   )
 }
 
-function NotesSection({ tutor, onNavigate }) {
-  const [tutorNotes, setTutorNotes] = useState([])
-
-  useEffect(() => {
-    const tutorId = tutor?._id || tutor?.id
-    if (!tutorId) return
-    let isMounted = true
-    getNotesByTutor(tutorId)
-      .then((res) => {
-        if (isMounted) {
-          const arr = Array.isArray(res?.notes) ? res.notes : Array.isArray(res?.data) ? res.data : []
-          setTutorNotes(arr)
-        }
-      })
-      .catch(() => {})
-    return () => {
-      isMounted = false
-    }
-  }, [tutor])
-
-  if (tutorNotes.length === 0) {
-    return null
-  }
+function NotesSection({ tutor, onNavigate, availableTutorials = [] }) {
+  const notes = useMemo(() => {
+    const byDept = availableTutorials.filter((n) => n.department === tutor.department)
+    return (byDept.length > 0 ? byDept : availableTutorials).slice(0, 3).map((note, index) => ({
+      ...note,
+      price: `ETB ${[10, 5, 8][index] ?? 5}`,
+      Icon: NOTE_ICONS[index % NOTE_ICONS.length],
+    }))
+  }, [tutor.department, availableTutorials])
 
   return (
     <section className="flex flex-col gap-4">
       <div className="flex items-end justify-between">
         <h2 className="font-display text-2xl font-bold text-primary">
-          Study Notes by {tutor.name?.split(' ')[0] || 'Tutor'}
+          Study Notes by {tutor.name.split(' ')[0]}
         </h2>
         <button
           type="button"
-          onClick={() => onNavigate?.('marketplace')}
+          onClick={() => onNavigate('marketplace')}
           className="text-sm font-medium text-primary transition-colors hover:text-secondary-container cursor-pointer"
         >
           View All
         </button>
       </div>
       <div className="hide-scrollbar flex snap-x gap-4 overflow-x-auto pb-2">
-        {tutorNotes.map((note, index) => {
-          const Icon = NOTE_ICONS[index % NOTE_ICONS.length]
-          const priceStr = typeof note.price === 'number' ? (note.price === 0 ? 'Free' : `${note.price} ETB`) : 'Free'
-          return (
-            <button
-              key={note._id || note.id}
-              type="button"
-              onClick={() => onNavigate?.(`/notes/${note._id || note.id}`)}
-              className="group flex w-[280px] min-w-[280px] snap-start flex-col rounded-xl border border-surface-variant bg-surface p-4 shadow-level-1 transition-shadow hover:shadow-level-2 cursor-pointer"
-            >
-              <div className="relative mb-3 flex h-32 items-center justify-center overflow-hidden rounded-lg bg-surface-container">
-                <Icon
-                  size={40}
-                  className="relative z-10 text-primary"
-                  aria-hidden="true"
-                />
-              </div>
-              <div className="mb-2 flex items-start justify-between gap-2">
-                <h3 className="line-clamp-2 text-left text-sm font-semibold text-on-surface transition-colors group-hover:text-primary">
-                  {note.title}
-                </h3>
-                <span className="shrink-0 rounded-md bg-primary-container px-2 py-0.5 text-sm font-semibold text-on-primary-container">
-                  {priceStr}
-                </span>
-              </div>
-              <p className="mt-auto line-clamp-2 text-left text-sm text-outline">
-                {note.course}
-              </p>
-            </button>
-          )
-        })}
+        {notes.map((note) => (
+          <button
+            key={note.id}
+            type="button"
+            onClick={() => onNavigate('marketplace')}
+            className="group flex w-[280px] min-w-[280px] snap-start flex-col rounded-xl border border-surface-variant bg-surface p-4 shadow-level-1 transition-shadow hover:shadow-level-2 cursor-pointer"
+          >
+            <div className="relative mb-3 flex h-32 items-center justify-center overflow-hidden rounded-lg bg-surface-container">
+              <img
+                src={note.coverImage}
+                alt=""
+                className="absolute inset-0 h-full w-full object-cover opacity-80 mix-blend-multiply"
+              />
+              <note.Icon
+                size={40}
+                className="relative z-10 text-primary"
+                aria-hidden="true"
+              />
+            </div>
+            <div className="mb-2 flex items-start justify-between gap-2">
+              <h3 className="line-clamp-2 text-left text-sm font-semibold text-on-surface transition-colors group-hover:text-primary">
+                {note.title}
+              </h3>
+              <span className="shrink-0 rounded-md bg-primary-container px-2 py-0.5 text-sm font-semibold text-on-primary-container">
+                {note.price}
+              </span>
+            </div>
+            <p className="mt-auto line-clamp-2 text-left text-sm text-outline">
+              {note.course} · {note.contentType}
+            </p>
+          </button>
+        ))}
       </div>
     </section>
   )
@@ -412,10 +406,23 @@ export default function TutorDetailScreen({ user, onLogout, onNavigate, availabl
   const [confirmation, setConfirmation] = useState('')
   const [bookingStatus, setBookingStatus] = useState(initialBookingStatus)
   const [tutor, setTutor] = useState(null)
+  const [slots, setSlots] = useState(() => buildSlots(id ?? 'unknown'))
+  const loadingSlots = false
 
   useEffect(() => {
     if (!id) return
     let isMounted = true
+
+    getTutorAvailability(id)
+      .then((res) => {
+        if (!isMounted) return
+        if (res?.data && Array.isArray(res.data) && res.data.length > 0) {
+          setSlots(res.data)
+        } else if (res?.slots && Array.isArray(res.slots) && res.slots.length > 0) {
+          setSlots(res.slots)
+        }
+      })
+      .catch(() => {})
 
     async function fetchTutorProfile() {
       try {
@@ -440,12 +447,11 @@ export default function TutorDetailScreen({ user, onLogout, onNavigate, availabl
     }
 
     fetchTutorProfile()
+
     return () => {
       isMounted = false
     }
   }, [id])
-
-  const slots = useMemo(() => buildSlots(id ?? 'unknown'), [id])
 
   if (!tutor) {
     return (
@@ -469,19 +475,33 @@ export default function TutorDetailScreen({ user, onLogout, onNavigate, availabl
     )
   }
 
-  const handleRequestBooking = () => {
+  const handleRequestBooking = async () => {
     if (!selected) return
-    setBookingStatus('pending')
-    setConfirmation(`Booking request sent for ${selected.day} at ${selected.time}.`)
+    const dayLabel = selected.dayOfWeek || selected.day || 'Monday'
+    const timeLabel = selected.startTime || selected.time || '09:00'
+    const slotId = selected._id || selected.id
+    const targetTutorId = tutor?._id || tutor?.id || id
+    const isMongoId = typeof slotId === 'string' && /^[0-9a-fA-F]{24}$/.test(slotId)
 
-    createBooking({
-      tutorId: tutor?._id || tutor?.id || id,
-      day: selected.day,
-      time: selected.time,
-      startTime: selected.time,
-    }).catch(() => {
-      // Optimistic fallback for test/offline
-    })
+    try {
+      const res = await createBooking({
+        availabilityId: isMongoId ? slotId : undefined,
+        tutorId: targetTutorId,
+        dayOfWeek: dayLabel,
+        startTime: timeLabel,
+        day: dayLabel,
+        time: timeLabel,
+      })
+
+      if (res?.success !== false) {
+        setBookingStatus('pending')
+        setConfirmation(`Booking request sent for ${dayLabel} at ${timeLabel}.`)
+      }
+    } catch (err) {
+      console.error('Booking request error:', err)
+      setBookingStatus('idle')
+      setConfirmation(err?.response?.data?.message || err?.message || 'Failed to request booking.')
+    }
   }
 
   const handleSendMessage = () => {
@@ -529,9 +549,9 @@ export default function TutorDetailScreen({ user, onLogout, onNavigate, availabl
                   </p>
                 </div>
                 <div className="flex shrink-0 flex-col items-end">
-                  <div className="flex items-center gap-1 rounded-full bg-surface-container px-2.5 py-1">
-                    <IconStarFilled size={14} className="text-amber-500 dark:text-amber-400" aria-hidden="true" />
-                    <span className="text-sm font-semibold text-on-surface">
+                  <div className="flex items-center gap-1 rounded-full bg-primary-container px-2.5 py-1">
+                    <IconStarFilled size={14} className="text-on-primary-container" aria-hidden="true" />
+                    <span className="text-sm font-semibold text-on-primary-container">
                       {tutor.rating.knowledge.toFixed(1)}
                     </span>
                   </div>
@@ -561,7 +581,18 @@ export default function TutorDetailScreen({ user, onLogout, onNavigate, availabl
 
         {/* Availability + Booking */}
         <section className="grid grid-cols-1 gap-4 lg:grid-cols-3">
-          <AvailabilityGrid slots={slots} selected={selected} onSelect={setSelected} />
+          <AvailabilityGrid
+            slots={slots}
+            selected={selected}
+            onSelect={(slot) => {
+              setSelected(slot)
+              if (bookingStatus === 'declined' || bookingStatus === 'cancelled') {
+                setBookingStatus('idle')
+                setConfirmation('')
+              }
+            }}
+            loading={loadingSlots}
+          />
           <BookingPanel
             tutor={tutor}
             selected={selected}

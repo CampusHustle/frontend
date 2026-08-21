@@ -27,18 +27,11 @@ vi.mock('../api/tutorApi.js', () => ({
   }),
 }))
 
-vi.mock('../api/noteApi.js', () => ({
-  getNotesByTutor: vi.fn().mockResolvedValue({
-    success: true,
-    notes: [
-      {
-        _id: 'n-test-1',
-        title: 'Data Structures & Algorithms Notes',
-        course: 'CS 301',
-        price: 25,
-      },
-    ],
-  }),
+vi.mock('../api/bookingApi.js', () => ({
+  createBooking: vi.fn().mockResolvedValue({ success: true }),
+  getUserBookings: vi.fn().mockResolvedValue({ success: true, data: [] }),
+  updateBookingStatus: vi.fn().mockResolvedValue({ success: true }),
+  getTutorAvailability: vi.fn().mockResolvedValue({ success: true, data: [] }),
 }))
 
 const setup = (id = testTutor.id, onNavigate = vi.fn()) => {
@@ -76,7 +69,7 @@ describe('TutorDetailPage', () => {
       expect(screen.getByText('Subject Knowledge')).toBeInTheDocument()
       expect(screen.getByText('Communication')).toBeInTheDocument()
       expect(screen.getByText('Punctuality')).toBeInTheDocument()
-      expect(screen.getAllByText(new RegExp(`ETB ${testTutor.hourlyRate}`)).length).toBeGreaterThan(0)
+      expect(screen.getByText(new RegExp(`ETB ${testTutor.hourlyRate}`))).toBeInTheDocument()
       testTutor.skillsTeaching.forEach((skill) => {
         expect(screen.getByText(skill)).toBeInTheDocument()
       })
@@ -216,8 +209,8 @@ describe('TutorDetailPage', () => {
     })
     unmountCompleted()
 
-    // 4. Cancelled Status
-    render(
+    // 4. Cancelled / Declined Status with Re-booking
+    const { unmount: unmountCancelled } = render(
       <MemoryRouter initialEntries={[`/tutor/${testTutor.id}`]}>
         <Routes>
           <Route
@@ -227,7 +220,7 @@ describe('TutorDetailPage', () => {
                 user={testTutor}
                 onLogout={onLogout}
                 onNavigate={onNavigate}
-                initialBookingStatus="cancelled"
+                initialBookingStatus="declined"
               />
             }
           />
@@ -236,7 +229,17 @@ describe('TutorDetailPage', () => {
     )
     await waitFor(() => {
       expect(screen.getByTestId('booking-status-cancelled')).toBeInTheDocument()
-      expect(screen.getByText(/Status: Booking Cancelled/i)).toBeInTheDocument()
+      expect(screen.getByRole('button', { name: 'Request New Slot' })).toBeInTheDocument()
     })
+
+    // Click a new slot -> status resets to idle -> can click Request Booking
+    const newSlotBtn = screen
+      .getAllByRole('button', { name: /9:00 AM|2:00 PM/i })
+      .find((el) => el.getAttribute('aria-pressed') !== null && !el.closest('[aria-disabled="true"]'))
+    if (newSlotBtn) {
+      await userEvent.click(newSlotBtn)
+      expect(screen.getByRole('button', { name: 'Request Booking' })).toBeEnabled()
+    }
+    unmountCancelled()
   })
 })

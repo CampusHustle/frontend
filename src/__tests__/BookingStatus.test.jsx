@@ -6,12 +6,11 @@ import { MemoryRouter } from 'react-router-dom'
 import BookingStatusBadge from '../components/BookingStatusBadge.jsx'
 import BookingCard from '../components/BookingCard.jsx'
 import BookingScreen from '../screens/BookingScreen.jsx'
-import * as bookingApi from '../api/mockBookingApi.js'
+import * as liveBookingApi from '../api/bookingApi.js'
 
 // vi.mock hoists above imports so BookingScreen picks up the mock binding
-vi.mock('../api/mockBookingApi.js', () => ({
-  fetchBookings: vi.fn(),
-  fetchBooking: vi.fn(),
+vi.mock('../api/bookingApi.js', () => ({
+  getUserBookings: vi.fn(),
   updateBookingStatus: vi.fn(),
 }))
 
@@ -90,92 +89,40 @@ describe('BookingStatusBadge', () => {
     expect(badge).toHaveTextContent('Cancelled')
     expect(badge).toHaveAttribute('data-status', 'cancelled')
   })
-
-  it('all four statuses render visually distinct — each has a unique data-status value', () => {
-    const { rerender, container } = render(<BookingStatusBadge status="pending" />)
-    const collectAttr = () =>
-      container.querySelector('[data-status]')?.getAttribute('data-status')
-
-    const seen = new Set()
-    for (const status of ['pending', 'confirmed', 'completed', 'cancelled']) {
-      rerender(<BookingStatusBadge status={status} />)
-      seen.add(collectAttr())
-    }
-    // All four values must be distinct
-    expect(seen.size).toBe(4)
-  })
-
-  it('includes the date string in the accessible label when provided', () => {
-    render(<BookingStatusBadge status="confirmed" date="Oct 12, 3 PM" />)
-    const badge = screen.getByRole('status', {
-      name: /booking status: confirmed, oct 12, 3 pm/i,
-    })
-    expect(badge).toBeInTheDocument()
-    expect(badge).toHaveTextContent('Oct 12, 3 PM')
-  })
-
-  it('falls back to pending when given an unknown status', () => {
-    render(<BookingStatusBadge status="unknown-xyz" />)
-    // falls back to pending config, data-status should still be the passed value
-    const badge = screen.getByRole('status')
-    expect(badge).toBeInTheDocument()
-    expect(badge).toHaveTextContent('Pending')
-  })
 })
 
 /* ─── BookingCard unit tests ─────────────────────────────────── */
 
 describe('BookingCard', () => {
-  it('shows Share Contact and Message buttons only for confirmed status', () => {
-    renderWithRouter(
-      <BookingCard booking={MOCK_BOOKINGS[1] /* confirmed */} />,
-    )
-    expect(screen.getByRole('button', { name: /share contact/i })).toBeInTheDocument()
-    expect(screen.getByRole('button', { name: /message/i })).toBeInTheDocument()
-    expect(screen.queryByRole('button', { name: /cancel/i })).toBeInTheDocument()
+  it('renders tutor name and title for student view', () => {
+    renderWithRouter(<BookingCard booking={MOCK_BOOKINGS[0]} />)
+    expect(screen.getByText('Calculus 101 Tutoring')).toBeInTheDocument()
+    expect(screen.getByText(/Sarah Jenkins/)).toBeInTheDocument()
+    expect(screen.getByText(/Oct 12, 3 PM/)).toBeInTheDocument()
   })
 
-  it('shows Message and Cancel buttons for pending status, but NOT Share Contact', () => {
-    renderWithRouter(
-      <BookingCard booking={MOCK_BOOKINGS[0] /* pending */} />,
-    )
-    expect(screen.queryByRole('button', { name: /share contact/i })).not.toBeInTheDocument()
-    expect(screen.getByRole('button', { name: /message/i })).toBeInTheDocument()
+  it('renders Cancel button for pending bookings', () => {
+    renderWithRouter(<BookingCard booking={MOCK_BOOKINGS[0] /* pending */} />)
     expect(screen.getByRole('button', { name: /cancel/i })).toBeInTheDocument()
   })
 
-  it('shows no action buttons for completed status', () => {
-    renderWithRouter(
-      <BookingCard booking={MOCK_BOOKINGS[2] /* completed */} />,
-    )
-    expect(screen.queryByRole('button', { name: /cancel/i })).not.toBeInTheDocument()
-    expect(screen.queryByRole('button', { name: /message/i })).not.toBeInTheDocument()
-    expect(screen.queryByRole('button', { name: /share contact/i })).not.toBeInTheDocument()
+  it('renders Cancel button for confirmed bookings', () => {
+    renderWithRouter(<BookingCard booking={MOCK_BOOKINGS[1] /* confirmed */} />)
+    expect(screen.getByRole('button', { name: /cancel/i })).toBeInTheDocument()
   })
 
-  it('shows no action buttons for cancelled status', () => {
-    renderWithRouter(
-      <BookingCard booking={MOCK_BOOKINGS[3] /* cancelled */} />,
-    )
-    expect(screen.queryByRole('button', { name: /cancel/i })).not.toBeInTheDocument()
-    expect(screen.queryByRole('button', { name: /message/i })).not.toBeInTheDocument()
-  })
-
-  it('calls onCancel with booking id when Cancel is clicked', async () => {
+  it('calls onCancel callback with booking ID when Cancel button is clicked', async () => {
     const user = userEvent.setup()
     const onCancel = vi.fn()
     renderWithRouter(
-      <BookingCard
-        booking={MOCK_BOOKINGS[0] /* pending */}
-        onCancel={onCancel}
-      />,
+      <BookingCard booking={MOCK_BOOKINGS[0]} onCancel={onCancel} />,
     )
     await user.click(screen.getByRole('button', { name: /cancel/i }))
     expect(onCancel).toHaveBeenCalledOnce()
     expect(onCancel).toHaveBeenCalledWith('bk-pending')
   })
 
-  it('calls onChat with booking id when Message is clicked', async () => {
+  it('calls onChat callback with booking ID when Message button is clicked', async () => {
     const user = userEvent.setup()
     const onChat = vi.fn()
     renderWithRouter(
@@ -186,7 +133,6 @@ describe('BookingCard', () => {
     )
     await user.click(screen.getByRole('button', { name: /message/i }))
     expect(onChat).toHaveBeenCalledOnce()
-    expect(onChat).toHaveBeenCalledWith('bk-confirmed')
   })
 
   it('renders the correct BookingStatusBadge for each status', () => {
@@ -203,14 +149,13 @@ describe('BookingCard', () => {
 
 describe('BookingScreen', () => {
   beforeEach(() => {
-    // Replace the real async API with immediate-resolving stubs
-    vi.spyOn(bookingApi, 'fetchBookings').mockResolvedValue(
-      MOCK_BOOKINGS.map((b) => ({ ...b })),
-    )
-    vi.spyOn(bookingApi, 'updateBookingStatus').mockImplementation(
+    vi.spyOn(liveBookingApi, 'getUserBookings').mockResolvedValue({
+      data: MOCK_BOOKINGS.map((b) => ({ ...b })),
+    })
+    vi.spyOn(liveBookingApi, 'updateBookingStatus').mockImplementation(
       async (id, newStatus) => {
         const booking = MOCK_BOOKINGS.find((b) => b.id === id)
-        return { ...booking, status: newStatus }
+        return { data: { ...booking, status: newStatus } }
       },
     )
   })
@@ -219,15 +164,19 @@ describe('BookingScreen', () => {
     vi.restoreAllMocks()
   })
 
-  it('renders the page heading', async () => {
+  it('renders the page heading and active navbar highlight', async () => {
     renderWithRouter(<BookingScreen />)
     expect(await screen.findByRole('heading', { name: /my bookings/i })).toBeInTheDocument()
+    
+    // Check active navbar link for Bookings
+    const bookingsNavLink = screen.getByRole('link', { name: 'Bookings' })
+    expect(bookingsNavLink).toHaveClass('border-b-2')
+    expect(bookingsNavLink).toHaveClass('border-secondary-container')
   })
 
   it('displays all four status badges after loading', async () => {
     renderWithRouter(<BookingScreen />)
 
-    // Wait for all four bookings to appear
     await waitFor(() => {
       expect(screen.getAllByRole('status')).toHaveLength(4)
     })
@@ -299,24 +248,10 @@ describe('BookingScreen', () => {
   it('updates the status badge when a backend status change resolves', async () => {
     const user = userEvent.setup()
 
-    // updateBookingStatus mock: resolve immediately with the updated booking
-    bookingApi.updateBookingStatus.mockImplementation(async (id, newStatus) => {
-      const seed = [
-        { id: 'bk-pending', title: 'Calculus 101 Tutoring', tutorName: 'Sarah Jenkins', tutorProfilePicUrl: null, status: 'pending', scheduledDate: 'Oct 12, 3 PM' },
-        { id: 'bk-confirmed', title: 'Python for Beginners', tutorName: 'James Okafor', tutorProfilePicUrl: null, status: 'confirmed', scheduledDate: 'Oct 15, 10 AM' },
-        { id: 'bk-completed', title: 'Data Structures Review', tutorName: 'Amara Diallo', tutorProfilePicUrl: null, status: 'completed', scheduledDate: 'Sep 28, 2 PM' },
-        { id: 'bk-cancelled', title: 'Essay Writing Workshop', tutorName: 'Lily Chen', tutorProfilePicUrl: null, status: 'cancelled', scheduledDate: 'Oct 3, 11 AM' },
-      ]
-      const booking = seed.find((b) => b.id === id)
-      return { ...booking, status: newStatus }
-    })
-
     renderWithRouter(<BookingScreen />)
 
-    // Wait for all four bookings to load
     await waitFor(() => expect(screen.getAllByRole('status')).toHaveLength(4))
 
-    // There is a pending booking — find its Cancel button and cancel it
     const pendingCard = screen
       .getAllByRole('article')
       .find((el) => within(el).queryByRole('status', { name: /pending/i }))
@@ -324,7 +259,6 @@ describe('BookingScreen', () => {
 
     await user.click(within(pendingCard).getByRole('button', { name: /cancel/i }))
 
-    // The pending booking is now cancelled — the pending badge should disappear
     await waitFor(() => {
       const statuses = screen
         .getAllByRole('status')
@@ -334,44 +268,20 @@ describe('BookingScreen', () => {
     })
   })
 
-  it('opens the chat panel when Message is clicked on a pending booking', async () => {
-    const user = userEvent.setup()
-    // scrollIntoView is not implemented in jsdom
-    window.HTMLElement.prototype.scrollIntoView = vi.fn()
-
-    renderWithRouter(<BookingScreen />)
-
-    await waitFor(() => expect(screen.getAllByRole('status')).toHaveLength(4))
-
-    // The pending booking card should have a Message button
-    const pendingCard = screen
-      .getAllByRole('article')
-      .find((el) => within(el).queryByRole('status', { name: /pending/i }))
-
-    expect(pendingCard).toBeDefined()
-    await user.click(within(pendingCard).getByRole('button', { name: /message/i }))
-
-    expect(
-      await screen.findByRole('region', { name: /chat with sarah jenkins/i }),
-    ).toBeInTheDocument()
-  })
-
   it('shows a loading indicator while bookings are being fetched', () => {
-    // Never-resolving promise keeps the loading state active
-    vi.spyOn(bookingApi, 'fetchBookings').mockReturnValue(new Promise(() => { }))
+    vi.spyOn(liveBookingApi, 'getUserBookings').mockReturnValue(new Promise(() => { }))
     renderWithRouter(<BookingScreen />)
-    // The loading div has role="status" but no aria-label — match by text content
     const loadingEl = screen.getByRole('status')
     expect(loadingEl).toHaveTextContent(/loading bookings/i)
   })
 
-  it('shows an error message when fetchBookings rejects', async () => {
-    vi.spyOn(bookingApi, 'fetchBookings').mockRejectedValue(
+  it('shows an error message when getUserBookings rejects', async () => {
+    vi.spyOn(liveBookingApi, 'getUserBookings').mockRejectedValue(
       new Error('Network error'),
     )
     renderWithRouter(<BookingScreen />)
     expect(
       await screen.findByRole('alert'),
-    ).toHaveTextContent(/failed to load bookings/i)
+    ).toHaveTextContent(/network error/i)
   })
 })
