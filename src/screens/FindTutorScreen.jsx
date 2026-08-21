@@ -165,6 +165,7 @@ export default function FindTutorScreen({ user, onLogout, onNavigate }) {
           maxPrice: maxRate < 500 ? maxRate : undefined,
           minRating: minRating > 0 ? minRating : undefined,
           sortBy: sortBy === 'Price: Low to High' ? 'price_asc' : sortBy === 'Highest Rated' ? 'rating' : 'rating',
+          excludeUserId: user?._id || user?.id || undefined,
         })
 
         if (isMounted && res?.tutors && Array.isArray(res.tutors) && res.tutors.length > 0) {
@@ -193,7 +194,7 @@ export default function FindTutorScreen({ user, onLogout, onNavigate }) {
       isMounted = false
       clearTimeout(timer)
     }
-  }, [query, selectedDepts, maxRate, minRating, sortBy])
+  }, [query, selectedDepts, maxRate, minRating, sortBy, user])
 
   const handleDeptToggle = (dept) => {
     setSelectedDepts((prev) =>
@@ -202,9 +203,13 @@ export default function FindTutorScreen({ user, onLogout, onNavigate }) {
     setVisibleCount(VISIBLE_STEP)
   }
 
+  const currentUserId = user?._id || user?.id ? String(user._id || user.id) : null
+
   const filtered = useMemo(() => {
     const q = query.trim().toLowerCase()
     return tutorList.filter((t) => {
+      const tutorId = String(t._id || t.id || '')
+      if (currentUserId && tutorId === currentUserId) return false
       const matchDept = selectedDepts.length === 0 || selectedDepts.includes(t.department)
       const hourly = typeof t.hourlyRate === 'number' ? t.hourlyRate : 0
       const matchRate = maxRate >= 500 ? true : hourly <= maxRate
@@ -223,7 +228,7 @@ export default function FindTutorScreen({ user, onLogout, onNavigate }) {
         (Array.isArray(t.skillsTeaching) && t.skillsTeaching.some((s) => s.toLowerCase().includes(q)))
       return matchDept && matchRate && matchRating && matchQuery
     })
-  }, [tutorList, query, selectedDepts, maxRate, minRating])
+  }, [tutorList, query, selectedDepts, maxRate, minRating, currentUserId])
 
   const visibleTutors = useMemo(
     () => filtered.slice(0, visibleCount),
