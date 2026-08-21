@@ -106,10 +106,10 @@ export default function NoteDetailScreen({ user, onNavigate, onLogout }) {
 
   if (isLoading) {
     return (
-      <div className="flex h-screen w-screen items-center justify-center bg-gray-50 font-poppins">
-        <div className="flex flex-col items-center gap-3 text-[#041534]">
-          <div className="h-8 w-8 animate-spin rounded-full border-4 border-amber-500 border-t-transparent" />
-          <p className="text-sm font-medium text-gray-600">Loading note details...</p>
+      <div className="flex h-screen w-screen items-center justify-center bg-surface font-body">
+        <div className="flex flex-col items-center gap-3 text-primary">
+          <div className="h-8 w-8 animate-spin rounded-full border-4 border-secondary-container border-t-transparent" />
+          <p className="text-sm font-medium text-on-surface-variant">Loading note details...</p>
         </div>
       </div>
     )
@@ -117,15 +117,15 @@ export default function NoteDetailScreen({ user, onNavigate, onLogout }) {
 
   if (!note) {
     return (
-      <div className="flex h-screen w-screen flex-col bg-gray-50 font-poppins text-gray-900">
+      <div className="flex h-screen w-screen flex-col bg-surface font-body text-on-surface">
         <AppNavbar user={user} activeView="marketplace" onNavigate={onNavigate} onLogout={onLogout} />
         <main className="flex flex-1 flex-col items-center justify-center p-6 text-center">
-          <h1 className="text-2xl font-bold text-gray-900">Note Not Found</h1>
-          <p className="mt-2 text-sm text-gray-600">The requested study note is no longer available.</p>
+          <h1 className="text-2xl font-bold text-primary font-display">Note Not Found</h1>
+          <p className="mt-2 text-sm text-on-surface-variant">The requested study note is no longer available.</p>
           <button
             type="button"
             onClick={() => (onNavigate ? onNavigate('marketplace') : window.location.assign('/market'))}
-            className="mt-4 rounded-full bg-[#041534] px-6 py-2.5 text-xs font-bold text-white shadow hover:bg-[#1b2a4a]"
+            className="mt-4 rounded-full bg-primary px-6 py-2.5 text-xs font-bold text-on-primary shadow-level-1 hover:bg-primary-container transition-colors cursor-pointer"
           >
             Browse Marketplace
           </button>
@@ -135,15 +135,7 @@ export default function NoteDetailScreen({ user, onNavigate, onLogout }) {
   }
 
   return (
-    <div
-      className="flex min-h-screen w-full overflow-x-hidden flex-col bg-gray-50 font-poppins text-gray-900 antialiased"
-      style={{
-        backgroundImage: `
-          radial-gradient(circle at 15% 50%, rgba(4, 21, 52, 0.03), transparent 25%),
-          radial-gradient(circle at 85% 30%, rgba(254, 174, 44, 0.05), transparent 25%)
-        `,
-      }}
-    >
+    <div className="flex min-h-screen w-full overflow-x-hidden flex-col bg-surface font-body text-on-surface antialiased mesh-bg">
       {/* Top Navbar */}
       <AppNavbar
         user={user}
@@ -156,29 +148,29 @@ export default function NoteDetailScreen({ user, onNavigate, onLogout }) {
       <main className="mx-auto flex flex-1 flex-col w-full max-w-7xl px-4 py-6 sm:px-6 lg:px-8">
         {/* Top Breadcrumb & Header Row */}
         <div className="mb-4 flex shrink-0 flex-col sm:flex-row sm:items-center justify-between gap-3 text-xs sm:text-sm">
-          <nav className="flex flex-wrap items-center gap-1.5 text-gray-500 font-medium">
+          <nav className="flex flex-wrap items-center gap-1.5 text-on-surface-variant font-medium">
             <button
               type="button"
               onClick={() => (onNavigate ? onNavigate('marketplace') : window.location.assign('/market'))}
-              className="hover:text-gray-900 transition-colors"
+              className="hover:text-primary transition-colors cursor-pointer"
             >
               Marketplace
             </button>
-            <IconChevronRight size={14} className="text-gray-400" />
-            <span className="text-gray-600">{note.department}</span>
-            <IconChevronRight size={14} className="text-gray-400" />
-            <span className="font-semibold text-gray-900 truncate max-w-xs">{note.title}</span>
+            <IconChevronRight size={14} className="text-outline" />
+            <span className="text-on-surface-variant">{note.department}</span>
+            <IconChevronRight size={14} className="text-outline" />
+            <span className="font-semibold text-on-surface truncate max-w-xs">{note.title}</span>
           </nav>
 
           <div className="flex flex-wrap items-center gap-2">
-            <span className="inline-flex items-center gap-1 rounded-full border border-gray-200 bg-white px-2.5 py-0.5 text-[11px] font-semibold text-gray-800 shadow-2xs">
-              <IconStarFilled size={12} className="text-amber-500" />
+            <span className="inline-flex items-center gap-1 rounded-full border border-surface-variant bg-surface-lowest px-2.5 py-0.5 text-[11px] font-semibold text-on-surface shadow-2xs">
+              <IconStarFilled size={12} className="text-amber-400" />
               <span>{note.tutorRating} ({note.tutorReviewsCount})</span>
             </span>
-            <span className="rounded-full bg-[#1b2a4a] px-2.5 py-0.5 text-[11px] font-bold text-white">
+            <span className="rounded-full bg-primary-container px-2.5 py-0.5 text-[11px] font-bold text-on-primary-container">
               {note.code}
             </span>
-            <span className="text-[11px] text-gray-400">Updated {note.lastUpdated}</span>
+            <span className="text-[11px] text-outline">Updated {note.lastUpdated}</span>
           </div>
         </div>
 
@@ -193,30 +185,30 @@ export default function NoteDetailScreen({ user, onNavigate, onLogout }) {
             <PurchaseCard note={note} handleMakePayment={handleMakePayment} />
 
             {/* Seller Profile Card (Below Payment Card) */}
-            <div className="flex flex-col items-center rounded-2xl border border-gray-200 bg-white p-4 text-center shadow-sm">
-              <div className="relative mb-2 h-16 w-16 overflow-hidden rounded-full border-2 border-amber-400">
+            <div className="flex flex-col items-center rounded-2xl border border-surface-variant bg-surface-lowest p-4 text-center shadow-level-1">
+              <div className="relative mb-2 h-16 w-16 overflow-hidden rounded-full border-2 border-secondary-container">
                 <img
                   src={note.tutorAvatar}
                   alt={note.tutorName}
                   className="h-full w-full object-cover"
                 />
-                <div className="absolute right-0 bottom-0 flex h-4 w-4 items-center justify-center rounded-full border-2 border-white bg-amber-500">
-                  <IconCircleCheckFilled size={11} className="text-gray-950" />
+                <div className="absolute right-0 bottom-0 flex h-4 w-4 items-center justify-center rounded-full border-2 border-surface bg-secondary-container">
+                  <IconCircleCheckFilled size={11} className="text-on-secondary-container" />
                 </div>
               </div>
-              <h2 className="text-sm font-bold text-[#041534] leading-tight">{note.tutorName}</h2>
-              <p className="text-xs text-gray-500 mt-0.5">
+              <h2 className="text-sm font-bold text-primary font-display leading-tight">{note.tutorName}</h2>
+              <p className="text-xs text-on-surface-variant mt-0.5">
                 {note.tutorRole} · {note.tutorUniversity}
               </p>
-              <div className="my-2 flex items-center justify-center gap-1 text-xs text-gray-600">
-                <IconStarFilled size={13} className="text-amber-500" />
-                <span className="font-semibold text-gray-900">{note.tutorRating}</span>
+              <div className="my-2 flex items-center justify-center gap-1 text-xs text-on-surface-variant">
+                <IconStarFilled size={13} className="text-amber-400" />
+                <span className="font-semibold text-on-surface">{note.tutorRating}</span>
                 <span>({note.tutorReviewsCount} ratings)</span>
               </div>
               <button
                 type="button"
                 onClick={() => (onNavigate ? onNavigate('/chat/sarah-jenkins') : window.location.assign('/chat/sarah-jenkins'))}
-                className="w-full flex items-center justify-center gap-1.5 rounded-xl bg-gray-100 py-2.5 text-xs font-bold text-gray-800 hover:bg-gray-200 transition-colors active:scale-95"
+                className="w-full flex items-center justify-center gap-1.5 rounded-xl bg-surface-low border border-surface-variant py-2.5 text-xs font-bold text-on-surface hover:bg-surface-high hover:text-primary transition-colors active:scale-95 cursor-pointer"
               >
                 <IconMessageCircle size={15} />
                 <span>Message Seller</span>

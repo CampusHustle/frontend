@@ -67,29 +67,29 @@ export default function LogoutWarningModal({ user, onConfirm, onCancel }) {
       />
 
       {/* Warning Overlay Card */}
-      <div className="relative w-full max-w-lg overflow-hidden rounded-2xl border border-surface-variant/80 bg-surface-lowest p-6 sm:p-8 shadow-level-3 transition-all dark:border-white/10 dark:bg-surface dark:text-ink-950">
+      <div className="relative w-full max-w-lg overflow-hidden rounded-2xl border border-surface-variant bg-surface p-6 sm:p-8 shadow-level-3 transition-all text-on-surface">
         {/* Top Close Button */}
         <button
           type="button"
           onClick={onCancel}
           aria-label="Close logout warning"
-          className="absolute right-4 top-4 inline-flex size-8 items-center justify-center rounded-full text-outline transition-colors hover:bg-surface-high hover:text-on-surface dark:hover:bg-ink-200 dark:hover:text-ink-900 cursor-pointer"
+          className="absolute right-4 top-4 inline-flex size-8 items-center justify-center rounded-full text-outline transition-colors hover:bg-surface-high hover:text-on-surface cursor-pointer"
         >
           <IconX size={20} aria-hidden="true" />
         </button>
 
         {/* Warning Icon and Glow */}
         <div className="mb-5 flex items-center gap-4">
-          <div className="flex size-14 shrink-0 items-center justify-center rounded-2xl border border-amber-500/30 bg-amber-500/15 text-amber-600 shadow-sm dark:border-amber-400/30 dark:bg-amber-400/20 dark:text-amber-400">
+          <div className="flex size-14 shrink-0 items-center justify-center rounded-2xl border border-amber-500/30 bg-amber-500/15 text-amber-500 shadow-sm">
             <IconAlertTriangle size={30} stroke={2.2} aria-hidden="true" />
           </div>
           <div>
-            <span className="inline-block rounded-full bg-amber-500/15 px-2.5 py-0.5 text-xs font-bold uppercase tracking-wider text-amber-700 dark:bg-amber-400/20 dark:text-amber-300">
+            <span className="inline-block rounded-full bg-amber-500/15 px-2.5 py-0.5 text-xs font-bold uppercase tracking-wider text-amber-600 dark:text-amber-300">
               Session Warning
             </span>
             <h2
               id="logout-dialog-title"
-              className="font-display mt-0.5 text-xl font-bold tracking-tight text-primary dark:text-ink-950 sm:text-2xl"
+              className="font-display mt-0.5 text-xl font-bold tracking-tight text-primary sm:text-2xl"
             >
               Log Out of CampusHustle?
             </h2>
@@ -99,7 +99,7 @@ export default function LogoutWarningModal({ user, onConfirm, onCancel }) {
         {/* Warning description */}
         <p
           id="logout-dialog-description"
-          className="text-sm leading-relaxed text-on-surface-variant dark:text-ink-600"
+          className="text-sm leading-relaxed text-on-surface-variant"
         >
           You are about to end your current active session. Any unsaved edits, active tutor chats,
           or draft listings you haven't published will be discarded.
@@ -107,17 +107,17 @@ export default function LogoutWarningModal({ user, onConfirm, onCancel }) {
 
         {/* Active User Identity Info */}
         {user && (
-          <div className="mt-5 flex items-center gap-3 rounded-xl border border-surface-variant/70 bg-surface-low p-3.5 dark:border-ink-200/60 dark:bg-ink-100">
+          <div className="mt-5 flex items-center gap-3 rounded-xl border border-surface-variant bg-surface-low p-3.5">
             <UserAvatar user={user} />
             <div className="min-w-0 flex-1">
-              <p className="truncate text-sm font-semibold text-primary dark:text-ink-950">
+              <p className="truncate text-sm font-semibold text-primary">
                 {user.name || 'Campus Student'}
               </p>
-              <p className="truncate text-xs text-on-surface-variant dark:text-ink-600">
+              <p className="truncate text-xs text-on-surface-variant">
                 {user.email || 'student@campus.edu.et'}
               </p>
               {(user.university || user.department) && (
-                <p className="mt-0.5 truncate text-xs text-outline dark:text-ink-400">
+                <p className="mt-0.5 truncate text-xs text-outline">
                   {[user.department, user.university].filter(Boolean).join(' • ')}
                 </p>
               )}
@@ -126,9 +126,9 @@ export default function LogoutWarningModal({ user, onConfirm, onCancel }) {
         )}
 
         {/* Reassurance Checklist */}
-        <div className="mt-4 rounded-xl border border-primary-fixed-dim/40 bg-primary-fixed/20 p-3 text-xs text-primary dark:border-primary/40 dark:bg-primary-container/30 dark:text-primary-fixed">
+        <div className="mt-4 rounded-xl border border-surface-variant bg-surface-low p-3 text-xs text-on-surface-variant">
           <div className="flex items-start gap-2">
-            <IconShieldCheck size={16} className="mt-0.5 shrink-0 text-secondary-container" aria-hidden="true" />
+            <IconShieldCheck size={16} className="mt-0.5 shrink-0 text-amber-500" aria-hidden="true" />
             <p>
               Your published notes, active tutor bookings, and peer reviews will remain safe in your account.
             </p>
@@ -140,14 +140,14 @@ export default function LogoutWarningModal({ user, onConfirm, onCancel }) {
           <button
             type="button"
             onClick={onCancel}
-            className="w-full sm:w-auto rounded-xl border border-outline-variant/80 bg-surface-lowest px-5 py-2.5 text-sm font-semibold text-on-surface transition-all hover:bg-surface-high hover:border-outline focus:outline-none focus:ring-2 focus:ring-primary/20 dark:border-ink-300 dark:bg-ink-100 dark:text-ink-900 dark:hover:bg-ink-200 cursor-pointer"
+            className="w-full sm:w-auto rounded-xl border border-surface-variant bg-surface px-5 py-2.5 text-sm font-semibold text-on-surface transition-all hover:bg-surface-high cursor-pointer"
           >
             Stay Logged In
           </button>
           <button
             type="button"
             onClick={onConfirm}
-            className="w-full sm:w-auto inline-flex items-center justify-center gap-2 rounded-xl bg-error px-5 py-2.5 text-sm font-bold text-white shadow-sm transition-all hover:brightness-110 active:scale-95 focus:outline-none focus:ring-2 focus:ring-error/40 cursor-pointer"
+            className="w-full sm:w-auto inline-flex items-center justify-center gap-2 rounded-xl bg-red-600 dark:bg-red-600 hover:bg-red-700 dark:hover:bg-red-700 px-5 py-2.5 text-sm font-bold text-white shadow-sm transition-all active:scale-95 focus:outline-none focus:ring-2 focus:ring-red-500/40 cursor-pointer"
           >
             <IconLogout size={18} aria-hidden="true" />
             <span>Yes, Log Out</span>

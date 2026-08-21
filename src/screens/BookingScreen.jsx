@@ -112,30 +112,30 @@ function ChatPanel({ booking }) {
   return (
     <section
       aria-label={`Chat with ${tutorName}`}
-      className="w-full max-w-3xl flex flex-col glass-card rounded-2xl overflow-hidden"
+      className="w-full max-w-3xl flex flex-col glass-card rounded-2xl overflow-hidden border border-surface-variant"
       style={{ height: 520 }}
     >
       {/* header */}
-      <div className="px-5 py-4 border-b border-white/30 flex items-center justify-between bg-white/40 backdrop-blur-md shrink-0">
+      <div className="px-5 py-4 border-b border-surface-variant flex items-center justify-between bg-surface-low backdrop-blur-md shrink-0">
         <div className="flex items-center gap-3">
           <IconMessageCircle size={22} className="text-primary" aria-hidden="true" />
-          <h2 className="font-semibold text-base text-primary">
+          <h2 className="font-semibold text-base text-primary font-display">
             Chat with {tutorName}
           </h2>
         </div>
         <button
           type="button"
           aria-label="More options"
-          className="text-on-surface-variant hover:text-primary transition-colors rounded-full p-1 hover:bg-white/50"
+          className="text-on-surface-variant hover:text-primary transition-colors rounded-full p-1 hover:bg-surface-high cursor-pointer"
         >
           <IconDotsVertical size={20} aria-hidden="true" />
         </button>
       </div>
 
       {/* messages */}
-      <div className="flex-grow overflow-y-auto flex flex-col gap-4 px-5 py-4 bg-white/20 backdrop-blur-sm">
+      <div className="flex-grow overflow-y-auto flex flex-col gap-4 px-5 py-4 bg-surface-lowest backdrop-blur-sm">
         <div className="flex justify-center">
-          <span className="bg-surface-container-high/50 backdrop-blur-sm text-on-surface-variant text-xs font-medium py-1 px-4 rounded-full border border-white/40">
+          <span className="bg-surface-container text-on-surface-variant text-xs font-medium py-1 px-4 rounded-full border border-surface-variant">
             Today
           </span>
         </div>
@@ -145,7 +145,7 @@ function ChatPanel({ booking }) {
             <div key={msg.id} className="flex items-start gap-3 max-w-[80%]">
               <TutorAvatar name={tutorName} url={tutorPic} />
               <div>
-                <div className="bg-white/70 backdrop-blur-md text-on-surface p-3.5 rounded-2xl rounded-tl-sm text-sm border border-white/50 shadow-sm leading-relaxed">
+                <div className="bg-surface-low text-on-surface p-3.5 rounded-2xl rounded-tl-sm text-sm border border-surface-variant shadow-sm leading-relaxed">
                   {msg.text}
                 </div>
                 <span className="text-[11px] text-outline mt-1 ml-1 block">{msg.time}</span>
@@ -157,7 +157,7 @@ function ChatPanel({ booking }) {
               className="flex items-start gap-3 max-w-[80%] self-end flex-row-reverse"
             >
               <div>
-                <div className="bg-secondary-container/90 backdrop-blur-md text-on-secondary-container p-3.5 rounded-2xl rounded-tr-sm text-sm shadow-sm leading-relaxed border border-secondary-container/20">
+                <div className="bg-secondary-container text-on-secondary-container p-3.5 rounded-2xl rounded-tr-sm text-sm shadow-sm leading-relaxed border border-secondary-container/20 font-medium">
                   {msg.text}
                 </div>
                 <span className="text-[11px] text-outline mt-1 mr-1 block text-right">{msg.time}</span>
@@ -169,11 +169,11 @@ function ChatPanel({ booking }) {
       </div>
 
       {/* input */}
-      <div className="px-4 py-3 border-t border-white/30 bg-white/50 backdrop-blur-md flex items-center gap-3 shrink-0">
+      <div className="px-4 py-3 border-t border-surface-variant bg-surface-low backdrop-blur-md flex items-center gap-3 shrink-0">
         <button
           type="button"
           aria-label="Attach file"
-          className="text-on-surface-variant hover:text-primary transition-colors p-2 rounded-full hover:bg-white/50"
+          className="text-on-surface-variant hover:text-primary transition-colors p-2 rounded-full hover:bg-surface-high cursor-pointer"
         >
           <IconPaperclip size={20} aria-hidden="true" />
         </button>
@@ -185,13 +185,13 @@ function ChatPanel({ booking }) {
           placeholder="Type a message…"
           maxLength={MAX_MESSAGE_LENGTH}
           aria-label="Message input"
-          className="flex-grow bg-white/60 border border-white/50 rounded-full py-2.5 px-4 text-sm focus:ring-2 focus:ring-primary/50 focus:border-primary/50 focus:outline-none placeholder-on-surface-variant/70 shadow-inner text-on-surface"
+          className="flex-grow bg-surface-lowest border border-surface-variant rounded-full py-2.5 px-4 text-sm focus:ring-2 focus:ring-secondary-container focus:border-secondary-container focus:outline-none placeholder:text-outline shadow-inner text-on-surface"
         />
         <button
           type="button"
           onClick={handleSend}
           aria-label="Send message"
-          className="bg-primary text-on-primary size-10 rounded-full hover:bg-primary-container transition-colors flex items-center justify-center shadow-md hover:shadow-lg shrink-0"
+          className="bg-primary text-on-primary size-10 rounded-full hover:bg-primary-container transition-colors flex items-center justify-center shadow-md hover:shadow-lg shrink-0 cursor-pointer"
         >
           <IconSend size={18} aria-hidden="true" />
         </button>
@@ -352,18 +352,20 @@ export default function BookingScreen({ user, onLogout, onNavigate }) {
                 aria-selected={activeTab === tab.key}
                 type="button"
                 onClick={() => setActiveTab(tab.key)}
-                className={`shrink-0 rounded-full px-4 py-1.5 text-xs font-semibold transition-colors ${activeTab === tab.key
-                  ? 'bg-primary text-on-primary shadow-sm'
-                  : 'bg-white/60 border border-outline-variant text-on-surface-variant hover:bg-surface-container-low'
-                  }`}
+                className={`shrink-0 rounded-full px-4 py-1.5 text-xs font-semibold transition-colors cursor-pointer ${
+                  activeTab === tab.key
+                    ? 'bg-primary text-on-primary shadow-sm'
+                    : 'bg-surface-lowest border border-surface-variant text-on-surface-variant hover:bg-surface-high hover:text-on-surface'
+                }`}
               >
                 {tab.label}
                 {count > 0 && (
                   <span
-                    className={`ml-1.5 rounded-full px-1.5 text-[10px] font-bold ${activeTab === tab.key
-                      ? 'bg-white/20 text-on-primary'
-                      : 'bg-surface-container text-on-surface-variant'
-                      }`}
+                    className={`ml-1.5 rounded-full px-1.5 text-[10px] font-bold ${
+                      activeTab === tab.key
+                        ? 'bg-white/20 text-on-primary'
+                        : 'bg-surface-container text-on-surface-variant'
+                    }`}
                   >
                     {count}
                   </span>

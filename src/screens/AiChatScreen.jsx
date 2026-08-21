@@ -59,14 +59,14 @@ function parseInlineMarkdown(text) {
     if (!token) return null
     if (token.startsWith('**') && token.endsWith('**') && token.length >= 4) {
       return (
-        <strong key={i} className="font-bold text-primary dark:text-ink-950">
+        <strong key={i} className="font-bold text-primary font-display">
           {token.slice(2, -2)}
         </strong>
       )
     }
     if (token.startsWith('*') && token.endsWith('*') && token.length >= 2) {
       return (
-        <em key={i} className="italic text-on-surface dark:text-ink-900">
+        <em key={i} className="italic text-on-surface">
           {token.slice(1, -1)}
         </em>
       )
@@ -75,7 +75,7 @@ function parseInlineMarkdown(text) {
       return (
         <code
           key={i}
-          className="rounded-md bg-surface-container/70 dark:bg-ink-200/80 px-1.5 py-0.5 font-mono text-[11px] font-medium text-primary dark:text-ink-950 border border-surface-variant/40 dark:border-ink-300/40"
+          className="rounded-md bg-surface-container px-1.5 py-0.5 font-mono text-[11px] font-medium text-amber-500 dark:text-amber-400 border border-surface-variant/60"
         >
           {token.slice(1, -1)}
         </code>
@@ -85,7 +85,7 @@ function parseInlineMarkdown(text) {
       return (
         <span
           key={i}
-          className="inline-block font-mono text-[11px] px-1.5 py-0.5 bg-secondary-container/20 text-secondary dark:text-secondary-fixed rounded font-medium"
+          className="inline-block font-mono text-[11px] px-1.5 py-0.5 bg-secondary-container/15 text-amber-600 dark:text-amber-300 rounded font-medium border border-secondary-container/20"
         >
           {token.slice(1, -1)}
         </span>
@@ -105,13 +105,13 @@ function CodeBlock({ lang, code }) {
   }
 
   return (
-    <div className="my-3 overflow-hidden rounded-xl border border-surface-variant/80 bg-surface-lowest dark:border-ink-300 dark:bg-ink-900 text-on-surface dark:text-white shadow-xs">
-      <div className="flex items-center justify-between border-b border-surface-variant/50 bg-surface-low dark:border-ink-700/60 dark:bg-ink-800 px-4 py-2 text-[11px] font-medium text-outline dark:text-ink-400">
+    <div className="my-3 overflow-hidden rounded-xl border border-surface-variant bg-surface-lowest shadow-xs">
+      <div className="flex items-center justify-between border-b border-surface-variant bg-surface-low px-4 py-2 text-[11px] font-medium text-outline">
         <span className="font-mono uppercase tracking-wider">{lang || 'code'}</span>
         <button
           type="button"
           onClick={handleCopyCode}
-          className="inline-flex items-center gap-1.5 hover:text-primary dark:hover:text-white transition-colors cursor-pointer text-xs"
+          className="inline-flex items-center gap-1.5 hover:text-primary transition-colors cursor-pointer text-xs"
         >
           {copied ? (
             <>
@@ -126,7 +126,7 @@ function CodeBlock({ lang, code }) {
           )}
         </button>
       </div>
-      <pre className="overflow-x-auto p-4 font-mono text-xs leading-relaxed scrollbar-thin">
+      <pre className="overflow-x-auto p-4 font-mono text-xs leading-relaxed text-on-surface scrollbar-thin">
         <code>{code}</code>
       </pre>
     </div>
@@ -258,28 +258,28 @@ function FormattedAiResponse({ content, isStreaming }) {
         }
         if (block.type === 'h1') {
           return (
-            <h3 key={idx} className="font-display text-lg font-bold text-primary dark:text-ink-950 mt-3 mb-2 border-b border-surface-variant/50 pb-1.5">
+            <h3 key={idx} className="font-display text-lg font-bold text-primary mt-3 mb-2 border-b border-surface-variant pb-1.5">
               {parseInlineMarkdown(block.text)}
             </h3>
           )
         }
         if (block.type === 'h2') {
           return (
-            <h4 key={idx} className="font-display text-base font-bold text-primary dark:text-ink-950 mt-2.5 mb-1.5">
+            <h4 key={idx} className="font-display text-base font-bold text-primary mt-2.5 mb-1.5">
               {parseInlineMarkdown(block.text)}
             </h4>
           )
         }
         if (block.type === 'h3') {
           return (
-            <h5 key={idx} className="font-display text-sm font-bold text-primary dark:text-ink-900 mt-2 mb-1">
+            <h5 key={idx} className="font-display text-sm font-bold text-primary mt-2 mb-1">
               {parseInlineMarkdown(block.text)}
             </h5>
           )
         }
         if (block.type === 'quote') {
           return (
-            <div key={idx} className="border-l-4 border-secondary-container bg-secondary-container/10 px-3.5 py-2 rounded-r-xl my-2 text-xs text-on-surface-variant dark:text-ink-700 italic">
+            <div key={idx} className="border-l-4 border-secondary-container bg-secondary-container/10 px-3.5 py-2 rounded-r-xl my-2 text-xs text-on-surface-variant italic">
               {parseInlineMarkdown(block.text)}
             </div>
           )
@@ -288,8 +288,8 @@ function FormattedAiResponse({ content, isStreaming }) {
           return (
             <ul key={idx} className="space-y-1.5 my-2 pl-2 list-none">
               {block.items.map((item, i) => (
-                <li key={i} className="flex items-start gap-2.5 text-on-surface dark:text-ink-950">
-                  <span className="inline-block size-2 rounded-full bg-primary dark:bg-ink-700 shrink-0 mt-2" />
+                <li key={i} className="flex items-start gap-2.5 text-on-surface">
+                  <span className="inline-block size-2 rounded-full bg-secondary-container shrink-0 mt-2" />
                   <span className="flex-1">{parseInlineMarkdown(item)}</span>
                 </li>
               ))}
@@ -300,8 +300,8 @@ function FormattedAiResponse({ content, isStreaming }) {
           return (
             <ol key={idx} className="space-y-1.5 my-2 pl-1 list-none">
               {block.items.map((item, i) => (
-                <li key={i} className="flex items-start gap-2 text-on-surface dark:text-ink-950">
-                  <span className="font-bold text-primary dark:text-ink-900 shrink-0 text-xs min-w-[18px]">
+                <li key={i} className="flex items-start gap-2 text-on-surface">
+                  <span className="font-bold text-primary shrink-0 text-xs min-w-[18px]">
                     {i + 1}.
                   </span>
                   <span className="flex-1">{parseInlineMarkdown(item)}</span>
@@ -314,10 +314,10 @@ function FormattedAiResponse({ content, isStreaming }) {
           return <div key={idx} className="h-1" />
         }
         return (
-          <p key={idx} className="text-on-surface dark:text-ink-950">
+          <p key={idx} className="text-on-surface leading-relaxed">
             {parseInlineMarkdown(block.text)}
             {idx === blocks.length - 1 && isStreaming && (
-              <span className="inline-block w-2 h-4 bg-primary dark:bg-secondary-fixed ml-1 animate-pulse align-middle rounded-xs" />
+              <span className="inline-block w-2 h-4 bg-secondary-container ml-1 animate-pulse align-middle rounded-xs" />
             )}
           </p>
         )

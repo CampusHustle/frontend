@@ -304,6 +304,46 @@ export function AppRoutes() {
           />
         }
       />
+      <Route
+        path="/admin"
+        element={
+          <AdminLayout onLogout={handleLogout} user={currentUser}>
+            <DashboardOverviewScreen onNavigate={handleNavigate} />
+          </AdminLayout>
+        }
+      />
+      <Route
+        path="/admin/verifications"
+        element={
+          <AdminLayout onLogout={handleLogout} user={currentUser}>
+            <VerificationQueueScreen onNavigate={handleNavigate} />
+          </AdminLayout>
+        }
+      />
+      <Route
+        path="/admin/reports"
+        element={
+          <AdminLayout onLogout={handleLogout} user={currentUser}>
+            <ReportsModerationScreen onNavigate={handleNavigate} />
+          </AdminLayout>
+        }
+      />
+      <Route
+        path="/admin/reports/:id"
+        element={
+          <AdminLayout onLogout={handleLogout} user={currentUser}>
+            <ReportDetailScreen onNavigate={handleNavigate} />
+          </AdminLayout>
+        }
+      />
+      <Route
+        path="/admin/users"
+        element={
+          <AdminLayout onLogout={handleLogout} user={currentUser}>
+            <UserManagementScreen onNavigate={handleNavigate} />
+          </AdminLayout>
+        }
+      />
       <Route path="*" element={<Navigate to="/" replace />} />
     </Routes>
     {!location.pathname.startsWith('/admin') && (
