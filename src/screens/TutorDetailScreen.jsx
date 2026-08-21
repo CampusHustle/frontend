@@ -142,7 +142,7 @@ function AvailabilityGrid({ slots = [], selected, onSelect, loading }) {
           No available time slots set by tutor yet.
         </div>
       ) : (
-        <div className="grid grid-cols-2 gap-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5">
+        <div className="grid grid-cols-2 gap-2 xs:grid-cols-3 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5">
           {flatSlots.map((slot, index) => {
             const dayName = slot.dayOfWeek || slot.day || 'Mon'
             const timeStr = slot.startTime || slot.time || '9:00 AM'
@@ -173,10 +173,10 @@ function AvailabilityGrid({ slots = [], selected, onSelect, loading }) {
                   key={slotId}
                   aria-disabled="true"
                   title="Booked"
-                  className="cursor-not-allowed rounded-md bg-surface-container-highest p-2 text-center text-xs font-medium text-outline-variant border border-outline-variant"
+                  className="cursor-not-allowed rounded-lg bg-surface-container-highest p-2.5 min-h-[48px] flex flex-col justify-center text-center text-xs font-medium text-outline-variant border border-outline-variant"
                 >
                   <div className="font-semibold">{dayName}</div>
-                  <div>{timeStr}</div>
+                  <div className="text-[11px] opacity-80">{timeStr}</div>
                 </div>
               )
             }
@@ -187,14 +187,14 @@ function AvailabilityGrid({ slots = [], selected, onSelect, loading }) {
                 type="button"
                 onClick={() => onSelect(normalizedSlot)}
                 aria-pressed={isSelected}
-                className={`rounded-md p-2 text-center text-xs font-medium transition-colors border cursor-pointer ${
+                className={`rounded-lg p-2.5 min-h-[48px] flex flex-col justify-center text-center text-xs font-medium transition-colors border cursor-pointer ${
                   isSelected
                     ? 'bg-primary text-on-primary border-primary shadow-level-1'
                     : 'bg-primary-container text-on-primary-container border-primary hover:bg-primary hover:text-on-primary'
                 }`}
               >
                 <div className="font-semibold">{dayName}</div>
-                <div>{timeStr}</div>
+                <div className="text-[11px] opacity-90">{timeStr}</div>
               </button>
             )
           })}
@@ -530,12 +530,12 @@ export default function TutorDetailScreen({ user, onLogout, onNavigate, availabl
 
         {/* Header: Profile + Rating Breakdown */}
         <section className="grid grid-cols-1 gap-4 md:grid-cols-3">
-          <div className="flex flex-col gap-6 rounded-xl border border-surface-variant bg-surface p-6 shadow-level-1 md:col-span-2 md:flex-row">
-            <Avatar user={tutor} />
-            <div className="flex flex-1 flex-col gap-2">
+          <div className="flex flex-col gap-5 rounded-xl border border-surface-variant bg-surface p-5 sm:p-6 shadow-level-1 md:col-span-2 sm:flex-row items-start">
+            <Avatar user={tutor} className="size-20 sm:size-24 md:size-32" />
+            <div className="flex flex-1 flex-col gap-2 w-full">
               <div className="flex items-start justify-between gap-4">
                 <div className="min-w-0">
-                  <h1 className="font-display text-2xl font-bold text-primary sm:text-[32px] sm:leading-[1.25] flex items-center gap-1.5">
+                  <h1 className="font-display text-xl font-bold text-primary sm:text-2xl md:text-[30px] sm:leading-[1.25] flex items-center gap-1.5">
                     <span className="truncate">{tutor.name}</span>
                     <IconCircleCheckFilled
                       size={20}

@@ -199,7 +199,7 @@ export default function AppNavbar({
             <div
               className={`relative flex items-center transition-all duration-300 ease-out ${
                 isSearchExpanded || searchQuery
-                  ? 'w-52 sm:w-72 md:w-80'
+                  ? 'w-36 xs:w-48 sm:w-64 md:w-80 max-w-[calc(100vw-130px)] sm:max-w-none'
                   : 'w-9'
               }`}
             >
@@ -465,7 +465,7 @@ export default function AppNavbar({
         <div className="border-t border-surface-variant bg-surface-lowest shadow-lg lg:hidden animate-in slide-in-from-top-2">
           <div className="flex flex-col p-4 space-y-4">
             {/* Navigation Links */}
-            <div className="flex flex-col space-y-2">
+            <div className="flex flex-col space-y-1">
               <a
                 href="#"
                 onClick={(e) => {
@@ -473,7 +473,7 @@ export default function AppNavbar({
                   setIsMobileMenuOpen(false)
                   onNavigate?.('marketplace')
                 }}
-                className={`p-2 text-sm font-medium rounded-lg transition-colors ${
+                className={`p-2.5 text-sm font-medium rounded-lg transition-colors ${
                   activeView === 'marketplace'
                     ? 'bg-secondary-container text-on-secondary-container font-bold'
                     : 'text-on-surface-variant hover:bg-surface-low hover:text-primary'
@@ -488,7 +488,7 @@ export default function AppNavbar({
                   setIsMobileMenuOpen(false)
                   onNavigate?.('tutor')
                 }}
-                className={`p-2 text-sm font-medium rounded-lg transition-colors ${
+                className={`p-2.5 text-sm font-medium rounded-lg transition-colors ${
                   activeView === 'tutor'
                     ? 'bg-secondary-container text-on-secondary-container font-bold'
                     : 'text-on-surface-variant hover:bg-surface-low hover:text-primary'
@@ -496,26 +496,58 @@ export default function AppNavbar({
               >
                 Tutors
               </a>
+              <a
+                href="#"
+                onClick={(e) => {
+                  e.preventDefault()
+                  setIsMobileMenuOpen(false)
+                  onNavigate?.('bookings')
+                }}
+                className={`p-2.5 text-sm font-medium rounded-lg transition-colors ${
+                  activeView === 'bookings'
+                    ? 'bg-secondary-container text-on-secondary-container font-bold'
+                    : 'text-on-surface-variant hover:bg-surface-low hover:text-primary'
+                }`}
+              >
+                Bookings
+              </a>
+              {(user?.role === 'tutor' || user?.isTutor) && (
+                <a
+                  href="#"
+                  onClick={(e) => {
+                    e.preventDefault()
+                    setIsMobileMenuOpen(false)
+                    onNavigate?.('tutor-requests')
+                  }}
+                  className={`p-2.5 text-sm font-medium rounded-lg transition-colors ${
+                    activeView === 'tutor-requests'
+                      ? 'bg-secondary-container text-on-secondary-container font-bold'
+                      : 'text-on-surface-variant hover:bg-surface-low hover:text-primary'
+                  }`}
+                >
+                  Requests
+                </a>
+              )}
             </div>
 
             <div className="h-px w-full bg-surface-variant/50" />
 
             {/* Actions */}
-            <div className="flex flex-col space-y-2">
+            <div className="flex flex-col space-y-1.5">
               <button
                 type="button"
                 onClick={() => {
                   setIsMobileMenuOpen(false)
                   onNavigate?.('assistant')
                 }}
-                className={`flex w-full items-center gap-3 rounded-lg p-2 text-sm font-medium transition-colors ${
+                className={`flex w-full items-center gap-3 rounded-lg p-2.5 text-sm font-medium transition-colors ${
                   activeView === 'assistant'
                     ? 'bg-primary text-on-primary'
                     : 'text-on-surface-variant hover:bg-surface-low hover:text-primary'
                 }`}
               >
                 <IconSparkles size={20} aria-hidden="true" />
-                AI Assistant
+                <span>AI Assistant</span>
               </button>
 
               <button
@@ -524,14 +556,21 @@ export default function AppNavbar({
                   setIsMobileMenuOpen(false)
                   onNavigate?.('chat')
                 }}
-                className={`flex w-full items-center gap-3 rounded-lg p-2 text-sm font-medium transition-colors ${
+                className={`flex w-full items-center justify-between rounded-lg p-2.5 text-sm font-medium transition-colors ${
                   activeView === 'chat'
                     ? 'bg-primary text-on-primary'
                     : 'text-on-surface-variant hover:bg-surface-low hover:text-primary'
                 }`}
               >
-                <IconMessageCircle size={20} aria-hidden="true" />
-                Messages
+                <div className="flex items-center gap-3">
+                  <IconMessageCircle size={20} aria-hidden="true" />
+                  <span>Messages</span>
+                </div>
+                {unreadMessageCount > 0 && (
+                  <span className="flex size-5 items-center justify-center rounded-full bg-error text-[10px] font-bold text-on-error shadow-sm animate-pulse">
+                    {unreadMessageCount > 9 ? '9+' : unreadMessageCount}
+                  </span>
+                )}
               </button>
 
               <button

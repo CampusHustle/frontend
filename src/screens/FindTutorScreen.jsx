@@ -360,7 +360,7 @@ export default function FindTutorScreen({ user, onLogout, onNavigate }) {
 
         {/* Tutor Grid Section */}
         <section className="md:col-span-9">
-          <div className="flex justify-between items-end mb-6">
+          <div className="flex flex-col sm:flex-row sm:items-end justify-between gap-4 mb-6">
             <div>
               <h1 className="font-display text-2xl sm:text-3xl font-bold text-primary tracking-tight">
                 Find Tutors
@@ -371,7 +371,7 @@ export default function FindTutorScreen({ user, onLogout, onNavigate }) {
               </p>
             </div>
 
-            <div className="hidden md:flex items-center gap-2">
+            <div className="flex items-center justify-between sm:justify-end gap-2 w-full sm:w-auto">
               <span className="text-xs font-medium text-outline">Sort by:</span>
               <select
                 value={sortBy}
@@ -383,6 +383,41 @@ export default function FindTutorScreen({ user, onLogout, onNavigate }) {
                 <option value="Highest Rated">Highest Rated</option>
               </select>
             </div>
+          </div>
+
+          {/* Mobile Horizontal Filter Chips */}
+          <div className="flex md:hidden items-center gap-2 overflow-x-auto pb-3 mb-4 -mx-4 px-4 no-scrollbar">
+            <button
+              type="button"
+              onClick={() => {
+                setSelectedDepts([])
+                setVisibleCount(VISIBLE_STEP)
+              }}
+              className={`shrink-0 rounded-full px-3 py-1 text-xs font-semibold transition-colors cursor-pointer border ${
+                selectedDepts.length === 0
+                  ? 'bg-primary text-on-primary border-primary shadow-sm'
+                  : 'bg-surface-lowest text-on-surface-variant border-surface-variant hover:border-primary'
+              }`}
+            >
+              All Subjects
+            </button>
+            {availableDepts.map((dept) => {
+              const isSelected = selectedDepts.includes(dept)
+              return (
+                <button
+                  key={dept}
+                  type="button"
+                  onClick={() => handleDeptToggle(dept)}
+                  className={`shrink-0 rounded-full px-3 py-1 text-xs font-semibold transition-colors cursor-pointer border ${
+                    isSelected
+                      ? 'bg-primary text-on-primary border-primary shadow-sm'
+                      : 'bg-surface-lowest text-on-surface-variant border-surface-variant hover:border-primary'
+                  }`}
+                >
+                  {dept}
+                </button>
+              )
+            })}
           </div>
 
           {filtered.length === 0 ? (
