@@ -3,9 +3,17 @@ import { render, screen, act } from '@testing-library/react'
 import userEvent from '@testing-library/user-event'
 import FloatingAiAssistant from '../components/FloatingAiAssistant.jsx'
 
+const mockUser = { _id: 'u-1', name: 'Abebe Bikila', email: 'abebe@aau.edu.et' }
+
 describe('FloatingAiAssistant Component', () => {
-  it('renders the floating action button at the bottom right', () => {
-    render(<FloatingAiAssistant user={null} />)
+  it('does not render when user is not logged in (user is null)', () => {
+    const { container } = render(<FloatingAiAssistant user={null} />)
+    expect(container.firstChild).toBeNull()
+    expect(screen.queryByRole('button', { name: /Open Felat/i })).not.toBeInTheDocument()
+  })
+
+  it('renders the floating action button at the bottom right for authenticated users', () => {
+    render(<FloatingAiAssistant user={mockUser} />)
     const fabButton = screen.getByRole('button', { name: /Open Felat/i })
     expect(fabButton).toBeInTheDocument()
     expect(screen.queryByRole('dialog', { name: /Felat/i })).not.toBeInTheDocument()
@@ -13,7 +21,7 @@ describe('FloatingAiAssistant Component', () => {
 
   it('opens and closes the overlay little chat screen when floating button is clicked', async () => {
     const user = userEvent.setup()
-    render(<FloatingAiAssistant user={null} />)
+    render(<FloatingAiAssistant user={mockUser} />)
 
     const fabButton = screen.getByRole('button', { name: /Open Felat/i })
     await user.click(fabButton)
@@ -40,7 +48,7 @@ describe('FloatingAiAssistant Component', () => {
     })
 
     const user = userEvent.setup()
-    render(<FloatingAiAssistant user={null} />)
+    render(<FloatingAiAssistant user={mockUser} />)
 
     await user.click(screen.getByRole('button', { name: /Open Felat/i }))
 
@@ -60,7 +68,7 @@ describe('FloatingAiAssistant Component', () => {
 
   it('closes on Escape key press', async () => {
     const user = userEvent.setup()
-    render(<FloatingAiAssistant user={null} />)
+    render(<FloatingAiAssistant user={mockUser} />)
 
     await user.click(screen.getByRole('button', { name: /Open Felat/i }))
     expect(screen.getByRole('dialog', { name: /Felat/i })).toBeInTheDocument()
@@ -69,8 +77,8 @@ describe('FloatingAiAssistant Component', () => {
     expect(screen.queryByRole('dialog', { name: /Felat/i })).not.toBeInTheDocument()
   })
 
-  it('handles custom event open-ai-assistant', () => {
-    render(<FloatingAiAssistant user={null} />)
+  it('handles custom event open-ai-assistant when authenticated', () => {
+    render(<FloatingAiAssistant user={mockUser} />)
 
     expect(screen.queryByRole('dialog', { name: /Felat/i })).not.toBeInTheDocument()
 

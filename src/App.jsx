@@ -172,6 +172,7 @@ export function AppRoutes() {
   }
 
   const handleLogout = () => setShowLogoutWarning(true)
+  const handleCancelLogout = () => setShowLogoutWarning(false)
 
   const handleConfirmLogout = () => {
     setShowLogoutWarning(false)
@@ -277,6 +278,7 @@ export function AppRoutes() {
             />
           }
         />
+<<<<<<< HEAD
 
         <Route
           path="/tutor/:id"
@@ -427,15 +429,19 @@ export function AppRoutes() {
         <Route path="*" element={<Navigate to="/" replace />} />
       </Routes>
 
-      {!location.pathname.startsWith('/admin') && (
-        <FloatingAiAssistant user={currentUser} />
-      )}
+      {currentUser &&
+        !['/', '/login', '/signup', '/verify-email', '/complete-profile', '/terms', '/privacy', '/assistant', '/ai'].includes(
+          location.pathname
+        ) &&
+        !location.pathname.startsWith('/admin') && (
+          <FloatingAiAssistant user={currentUser} />
+        )}
 
       {showLogoutWarning && (
         <LogoutWarningModal
           user={currentUser}
           onConfirm={handleConfirmLogout}
-          onCancel={() => setShowLogoutWarning(false)}
+          onCancel={handleCancelLogout}
         />
       )}
     </>

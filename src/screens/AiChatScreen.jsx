@@ -1,21 +1,98 @@
 import { useState, useRef, useEffect, useCallback } from 'react'
 import {
   IconSparkles,
-  IconSend,
+  IconArrowUp,
+  IconPlus,
+  IconLayoutSidebar,
+  IconMessage,
   IconCopy,
   IconCheck,
   IconRefresh,
   IconTrash,
+  IconThumbUp,
+  IconThumbDown,
   IconCode,
-  IconBrain,
   IconCalculator,
   IconStethoscope,
   IconCoin,
   IconScale,
   IconAtom,
+  IconPaperclip,
+  IconPlayerStopFilled,
+  IconFileText,
+  IconX,
 } from '@tabler/icons-react'
 import AppNavbar from '../components/AppNavbar.jsx'
 import { askFelatAi } from '../api/aiApi.js'
+import { getCurrentUserProfile } from '../api/authApi.js'
+import { loadSessionUser } from '../utils/session.js'
+
+const SESSIONS_STORAGE_KEY = 'campus-hustle:ai-chat-sessions'
+const MESSAGES_STORAGE_KEY_PREFIX = 'campus-hustle:ai-chat-messages:'
+
+function formatFileSize(bytes) {
+  if (!bytes) return '0 B'
+  const k = 1024
+  const sizes = ['B', 'KB', 'MB', 'GB']
+  const i = Math.floor(Math.log(bytes) / Math.log(k))
+  return `${parseFloat((bytes / Math.pow(k, i)).toFixed(1))} ${sizes[i]}`
+}
+
+function loadStoredSessions() {
+  try {
+    const raw = localStorage.getItem(SESSIONS_STORAGE_KEY)
+    if (!raw) return []
+    const parsed = JSON.parse(raw)
+    return Array.isArray(parsed) ? parsed : []
+  } catch {
+    return []
+  }
+}
+
+function saveStoredSessions(sessions) {
+  try {
+    localStorage.setItem(SESSIONS_STORAGE_KEY, JSON.stringify(sessions))
+  } catch {
+    /* ignore quota errors */
+  }
+}
+
+function loadStoredMessages(sessionId) {
+  if (!sessionId) return []
+  try {
+    const raw = localStorage.getItem(`${MESSAGES_STORAGE_KEY_PREFIX}${sessionId}`)
+    if (!raw) return []
+    const parsed = JSON.parse(raw)
+    return Array.isArray(parsed) ? parsed : []
+  } catch {
+    return []
+  }
+}
+
+function saveStoredMessages(sessionId, messages) {
+  if (!sessionId) return
+  try {
+    const cleanMessages = messages.map((m) => ({
+      ...m,
+      isStreaming: false,
+    }))
+    localStorage.setItem(
+      `${MESSAGES_STORAGE_KEY_PREFIX}${sessionId}`,
+      JSON.stringify(cleanMessages)
+    )
+  } catch {
+    /* ignore quota errors */
+  }
+}
+
+function removeStoredSession(sessionId) {
+  if (!sessionId) return
+  try {
+    localStorage.removeItem(`${MESSAGES_STORAGE_KEY_PREFIX}${sessionId}`)
+  } catch {
+    /* ignore quota errors */
+  }
+}
 
 const SUBJECT_PRESETS = [
   { id: 'cs', name: 'Computer Science', icon: IconCode, color: 'text-sky-500 bg-sky-500/10' },
@@ -24,29 +101,6 @@ const SUBJECT_PRESETS = [
   { id: 'econ', name: 'Economics & Business', icon: IconCoin, color: 'text-amber-500 bg-amber-500/10' },
   { id: 'phys', name: 'Physics & Engineering', icon: IconAtom, color: 'text-indigo-500 bg-indigo-500/10' },
   { id: 'law', name: 'Law & Social Studies', icon: IconScale, color: 'text-teal-500 bg-teal-500/10' },
-]
-
-const QUICK_PROMPTS = [
-  {
-    title: 'Algorithm Complexity',
-    prompt: 'Explain Time Complexity vs Space Complexity with Big-O notation and real code examples.',
-    subject: 'Computer Science',
-  },
-  {
-    title: 'Calculus Integration',
-    prompt: 'How do I solve Integration by Parts? Give me a step-by-step example with formulas.',
-    subject: 'Mathematics',
-  },
-  {
-    title: 'Macroeconomics GDP',
-    prompt: 'Explain the difference between Nominal GDP and Real GDP with an Ethiopian market example.',
-    subject: 'Economics',
-  },
-  {
-    title: 'Exam Prep Strategy',
-    prompt: 'Generate a 5-step active recall study plan for an upcoming university midterm exam.',
-    subject: 'Study Strategy',
-  },
 ]
 
 function parseInlineMarkdown(text) {
@@ -59,14 +113,14 @@ function parseInlineMarkdown(text) {
     if (!token) return null
     if (token.startsWith('**') && token.endsWith('**') && token.length >= 4) {
       return (
-        <strong key={i} className="font-bold text-primary dark:text-ink-950">
+        <strong key={i} className="font-bold text-on-surface dark:text-white">
           {token.slice(2, -2)}
         </strong>
       )
     }
     if (token.startsWith('*') && token.endsWith('*') && token.length >= 2) {
       return (
-        <em key={i} className="italic text-on-surface dark:text-ink-900">
+        <em key={i} className="italic text-on-surface/90 dark:text-neutral-200">
           {token.slice(1, -1)}
         </em>
       )
@@ -75,7 +129,7 @@ function parseInlineMarkdown(text) {
       return (
         <code
           key={i}
-          className="rounded-md bg-surface-container/70 dark:bg-ink-200/80 px-1.5 py-0.5 font-mono text-[11px] font-medium text-primary dark:text-ink-950 border border-surface-variant/40 dark:border-ink-300/40"
+          className="rounded-md bg-surface-container-high dark:bg-neutral-800 px-1.5 py-0.5 font-mono text-[12px] font-medium text-primary dark:text-teal-300 border border-surface-variant/40 dark:border-neutral-700"
         >
           {token.slice(1, -1)}
         </code>
@@ -85,7 +139,7 @@ function parseInlineMarkdown(text) {
       return (
         <span
           key={i}
-          className="inline-block font-mono text-[11px] px-1.5 py-0.5 bg-secondary-container/20 text-secondary dark:text-secondary-fixed rounded font-medium"
+          className="inline-block font-mono text-[12px] px-1.5 py-0.5 bg-secondary-container/20 text-secondary dark:text-secondary-fixed rounded font-medium"
         >
           {token.slice(1, -1)}
         </span>
@@ -105,18 +159,18 @@ function CodeBlock({ lang, code }) {
   }
 
   return (
-    <div className="my-3 overflow-hidden rounded-xl border border-surface-variant/80 bg-surface-lowest dark:border-ink-300 dark:bg-ink-900 text-on-surface dark:text-white shadow-xs">
-      <div className="flex items-center justify-between border-b border-surface-variant/50 bg-surface-low dark:border-ink-700/60 dark:bg-ink-800 px-4 py-2 text-[11px] font-medium text-outline dark:text-ink-400">
-        <span className="font-mono uppercase tracking-wider">{lang || 'code'}</span>
+    <div className="my-3.5 overflow-hidden rounded-xl border border-neutral-700/60 bg-[#1e1e1e] text-neutral-100 shadow-md">
+      <div className="flex items-center justify-between border-b border-neutral-800 bg-[#2d2d2d] px-4 py-1.5 text-[11px] font-mono text-neutral-400">
+        <span className="uppercase tracking-wider font-semibold">{lang || 'code'}</span>
         <button
           type="button"
           onClick={handleCopyCode}
-          className="inline-flex items-center gap-1.5 hover:text-primary dark:hover:text-white transition-colors cursor-pointer text-xs"
+          className="inline-flex items-center gap-1.5 hover:text-white transition-colors cursor-pointer text-xs"
         >
           {copied ? (
             <>
-              <IconCheck size={13} className="text-emerald-500" />
-              <span className="text-emerald-500 font-semibold">Copied</span>
+              <IconCheck size={13} className="text-emerald-400" />
+              <span className="text-emerald-400 font-semibold">Copied</span>
             </>
           ) : (
             <>
@@ -126,7 +180,7 @@ function CodeBlock({ lang, code }) {
           )}
         </button>
       </div>
-      <pre className="overflow-x-auto p-4 font-mono text-xs leading-relaxed scrollbar-thin">
+      <pre className="overflow-x-auto p-4 font-mono text-xs leading-relaxed text-neutral-200 scrollbar-thin">
         <code>{code}</code>
       </pre>
     </div>
@@ -136,7 +190,7 @@ function CodeBlock({ lang, code }) {
 function FormattedAiResponse({ content, isStreaming }) {
   if (!content) {
     return isStreaming ? (
-      <span className="inline-block w-2 h-4 bg-primary dark:bg-secondary-fixed ml-1 animate-pulse align-middle rounded-xs" />
+      <span className="inline-block w-2 h-4 bg-primary dark:bg-emerald-400 ml-1 animate-pulse align-middle rounded-xs" />
     ) : null
   }
 
@@ -251,35 +305,35 @@ function FormattedAiResponse({ content, isStreaming }) {
   }
 
   return (
-    <div className="space-y-2.5 text-sm leading-relaxed break-words">
+    <div className="space-y-3 text-[14.5px] leading-relaxed break-words text-on-surface dark:text-neutral-100">
       {blocks.map((block, idx) => {
         if (block.type === 'code') {
           return <CodeBlock key={idx} lang={block.lang} code={block.code} />
         }
         if (block.type === 'h1') {
           return (
-            <h3 key={idx} className="font-display text-lg font-bold text-primary dark:text-ink-950 mt-3 mb-2 border-b border-surface-variant/50 pb-1.5">
+            <h3 key={idx} className="font-display text-lg font-bold text-primary dark:text-white mt-4 mb-2 border-b border-surface-variant/50 pb-1.5">
               {parseInlineMarkdown(block.text)}
             </h3>
           )
         }
         if (block.type === 'h2') {
           return (
-            <h4 key={idx} className="font-display text-base font-bold text-primary dark:text-ink-950 mt-2.5 mb-1.5">
+            <h4 key={idx} className="font-display text-base font-bold text-primary dark:text-white mt-3.5 mb-1.5">
               {parseInlineMarkdown(block.text)}
             </h4>
           )
         }
         if (block.type === 'h3') {
           return (
-            <h5 key={idx} className="font-display text-sm font-bold text-primary dark:text-ink-900 mt-2 mb-1">
+            <h5 key={idx} className="font-display text-sm font-bold text-primary dark:text-emerald-300 mt-2.5 mb-1">
               {parseInlineMarkdown(block.text)}
             </h5>
           )
         }
         if (block.type === 'quote') {
           return (
-            <div key={idx} className="border-l-4 border-secondary-container bg-secondary-container/10 px-3.5 py-2 rounded-r-xl my-2 text-xs text-on-surface-variant dark:text-ink-700 italic">
+            <div key={idx} className="border-l-3 border-emerald-500 bg-emerald-500/10 px-3.5 py-2 rounded-r-xl my-2 text-xs text-on-surface-variant dark:text-neutral-300 italic">
               {parseInlineMarkdown(block.text)}
             </div>
           )
@@ -288,8 +342,8 @@ function FormattedAiResponse({ content, isStreaming }) {
           return (
             <ul key={idx} className="space-y-1.5 my-2 pl-2 list-none">
               {block.items.map((item, i) => (
-                <li key={i} className="flex items-start gap-2.5 text-on-surface dark:text-ink-950">
-                  <span className="inline-block size-2 rounded-full bg-primary dark:bg-ink-700 shrink-0 mt-2" />
+                <li key={i} className="flex items-start gap-2.5">
+                  <span className="inline-block size-1.5 rounded-full bg-primary/80 dark:bg-emerald-400 shrink-0 mt-2" />
                   <span className="flex-1">{parseInlineMarkdown(item)}</span>
                 </li>
               ))}
@@ -300,8 +354,8 @@ function FormattedAiResponse({ content, isStreaming }) {
           return (
             <ol key={idx} className="space-y-1.5 my-2 pl-1 list-none">
               {block.items.map((item, i) => (
-                <li key={i} className="flex items-start gap-2 text-on-surface dark:text-ink-950">
-                  <span className="font-bold text-primary dark:text-ink-900 shrink-0 text-xs min-w-[18px]">
+                <li key={i} className="flex items-start gap-2">
+                  <span className="font-bold text-primary dark:text-emerald-400 shrink-0 text-xs min-w-[18px]">
                     {i + 1}.
                   </span>
                   <span className="flex-1">{parseInlineMarkdown(item)}</span>
@@ -314,10 +368,10 @@ function FormattedAiResponse({ content, isStreaming }) {
           return <div key={idx} className="h-1" />
         }
         return (
-          <p key={idx} className="text-on-surface dark:text-ink-950">
+          <p key={idx} className="text-on-surface dark:text-neutral-200">
             {parseInlineMarkdown(block.text)}
             {idx === blocks.length - 1 && isStreaming && (
-              <span className="inline-block w-2 h-4 bg-primary dark:bg-secondary-fixed ml-1 animate-pulse align-middle rounded-xs" />
+              <span className="inline-block w-2 h-4 bg-primary dark:bg-emerald-400 ml-1 animate-pulse align-middle rounded-xs" />
             )}
           </p>
         )
@@ -327,24 +381,56 @@ function FormattedAiResponse({ content, isStreaming }) {
 }
 
 export default function AiChatScreen({ user, onLogout, onNavigate }) {
-  const [messages, setMessages] = useState(() => [
-    {
-      id: 'welcome',
-      role: 'ai',
-      content:
-        "Selam! I'm **Felat (ፈላጥ)**, your CampusHustle AI Study Assistant.\n\nI can help you breakdown complex university topics, prepare step-by-step exam solutions, explain course concepts, and write code snippets.\n\nChoose a topic below or type any question to begin!",
-      timestamp: 'Just now',
-    },
-  ])
+  const [profile, setProfile] = useState(() => user || loadSessionUser())
+  const [sessions, setSessions] = useState(() => loadStoredSessions())
+  const [activeSessionId, setActiveSessionId] = useState(() => {
+    const stored = loadStoredSessions()
+    return stored.length > 0 ? stored[0].id : null
+  })
+  const [messages, setMessages] = useState(() => {
+    const stored = loadStoredSessions()
+    return stored.length > 0 ? loadStoredMessages(stored[0].id) : []
+  })
+
   const [draft, setDraft] = useState('')
+  const [attachedFile, setAttachedFile] = useState(null)
   const [isTyping, setIsTyping] = useState(false)
   const [copiedId, setCopiedId] = useState(null)
+  const [likedMap, setLikedMap] = useState({})
   const [selectedSubject, setSelectedSubject] = useState(null)
+  const [sidebarOpen, setSidebarOpen] = useState(true)
 
   const messagesEndRef = useRef(null)
   const inputRef = useRef(null)
-  const idRef = useRef(1)
+  const fileInputRef = useRef(null)
   const streamingTimerRef = useRef(null)
+  const currentAiMsgIdRef = useRef(null)
+  const currentSessionIdRef = useRef(null)
+
+  // Ensure real user from database is loaded into profile
+  useEffect(() => {
+    if (user?.name) {
+      setProfile(user)
+    } else {
+      getCurrentUserProfile()
+        .then((res) => {
+          if (res?.user) setProfile(res.user)
+        })
+        .catch(() => {})
+    }
+  }, [user])
+
+  // Sync sessions to localStorage
+  useEffect(() => {
+    saveStoredSessions(sessions)
+  }, [sessions])
+
+  // Sync active messages to localStorage
+  useEffect(() => {
+    if (activeSessionId && messages.length > 0) {
+      saveStoredMessages(activeSessionId, messages)
+    }
+  }, [activeSessionId, messages])
 
   useEffect(() => {
     if (typeof messagesEndRef.current?.scrollIntoView === 'function') {
@@ -358,29 +444,152 @@ export default function AiChatScreen({ user, onLogout, onNavigate }) {
     }
   }, [])
 
+  const handleSelectSession = (sessId) => {
+    if (streamingTimerRef.current) {
+      clearInterval(streamingTimerRef.current)
+      streamingTimerRef.current = null
+    }
+    setActiveSessionId(sessId)
+    setMessages(loadStoredMessages(sessId))
+    setDraft('')
+    setAttachedFile(null)
+    setIsTyping(false)
+  }
+
+  const handleDeleteSession = (e, sessId) => {
+    e?.stopPropagation?.()
+    removeStoredSession(sessId)
+    const remaining = sessions.filter((s) => s.id !== sessId)
+    setSessions(remaining)
+    saveStoredSessions(remaining)
+
+    if (activeSessionId === sessId) {
+      if (remaining.length > 0) {
+        setActiveSessionId(remaining[0].id)
+        setMessages(loadStoredMessages(remaining[0].id))
+      } else {
+        setActiveSessionId(null)
+        setMessages([])
+      }
+    }
+  }
+
+  const handleClearAllSessions = () => {
+    if (streamingTimerRef.current) {
+      clearInterval(streamingTimerRef.current)
+      streamingTimerRef.current = null
+    }
+    sessions.forEach((s) => removeStoredSession(s.id))
+    setSessions([])
+    saveStoredSessions([])
+    setActiveSessionId(null)
+    setMessages([])
+    setDraft('')
+    setAttachedFile(null)
+    setIsTyping(false)
+  }
+
+  const handleStopGenerating = () => {
+    if (streamingTimerRef.current) {
+      clearInterval(streamingTimerRef.current)
+      streamingTimerRef.current = null
+    }
+    setIsTyping(false)
+
+    setMessages((prev) => {
+      const updated = prev.map((msg) =>
+        msg.isStreaming ? { ...msg, isStreaming: false } : msg
+      )
+      if (currentSessionIdRef.current) {
+        saveStoredMessages(currentSessionIdRef.current, updated)
+      }
+      return updated
+    })
+  }
+
+  const handleFileSelect = (e) => {
+    const file = e.target.files?.[0]
+    if (!file) return
+
+    let previewUrl = null
+    if (file.type.startsWith('image/')) {
+      previewUrl = URL.createObjectURL(file)
+    }
+
+    setAttachedFile({
+      file,
+      name: file.name,
+      size: file.size,
+      type: file.type,
+      previewUrl,
+    })
+
+    e.target.value = ''
+  }
+
+  const handleRemoveAttachment = () => {
+    setAttachedFile(null)
+  }
+
   const handleSend = useCallback(
     async (textToSend) => {
       const content = (textToSend || draft).trim()
-      if (!content || isTyping) return
+      const currentAttachment = attachedFile
+      if ((!content && !currentAttachment) || isTyping) return
 
-      const userMsgId = `u-${idRef.current++}`
+      const finalPromptText = content || (currentAttachment ? `Analyze attached document: ${currentAttachment.name}` : '')
+
+      let currentSessionId = activeSessionId
+
+      // Create new session if none is active or current is empty
+      if (!currentSessionId || messages.length === 0) {
+        currentSessionId = `sess-${Date.now()}`
+        const titleSnippet = finalPromptText.slice(0, 28) + (finalPromptText.length > 28 ? '...' : '')
+        const newSess = {
+          id: currentSessionId,
+          title: titleSnippet,
+          date: 'Today',
+          createdAt: Date.now(),
+        }
+        setSessions((prev) => [newSess, ...prev.filter((s) => s.id !== currentSessionId)])
+        setActiveSessionId(currentSessionId)
+      }
+
+      currentSessionIdRef.current = currentSessionId
+
+      const userMsgId = `u-${Date.now()}-${Math.random().toString(36).slice(2, 7)}`
       const userMessage = {
         id: userMsgId,
         role: 'user',
-        content,
+        content: finalPromptText,
+        attachment: currentAttachment
+          ? {
+              name: currentAttachment.name,
+              size: formatFileSize(currentAttachment.size),
+              type: currentAttachment.type,
+              previewUrl: currentAttachment.previewUrl,
+            }
+          : null,
         timestamp: new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }),
       }
 
-      setMessages((prev) => [...prev, userMessage])
+      const updatedMessagesWithUser = [...messages, userMessage]
+      setMessages(updatedMessagesWithUser)
+      saveStoredMessages(currentSessionId, updatedMessagesWithUser)
       setDraft('')
+      setAttachedFile(null)
       setIsTyping(true)
 
       let fullReply
       try {
         const questionPayload = selectedSubject
-          ? `[Subject: ${selectedSubject}] ${content}`
-          : content
-        const res = await askFelatAi({ question: questionPayload })
+          ? `[Subject: ${selectedSubject}] ${finalPromptText}`
+          : finalPromptText
+
+        const res = await askFelatAi({
+          question: questionPayload,
+          file: currentAttachment?.file,
+        })
         fullReply =
           res?.answer ||
           "I'm Felat (ፈላጥ), your AI study companion. How can I help you master this concept?"
@@ -390,20 +599,26 @@ export default function AiChatScreen({ user, onLogout, onNavigate }) {
           'Unable to reach Felat AI assistant. Please check your connection and try again.'
       }
 
-      const aiMsgId = `ai-${idRef.current++}`
+      const aiMsgId = `ai-${Date.now()}-${Math.random().toString(36).slice(2, 7)}`
+      currentAiMsgIdRef.current = aiMsgId
+
       const timestamp = new Date().toLocaleTimeString([], {
         hour: '2-digit',
         minute: '2-digit',
       })
 
-      setMessages((prev) => [
-        ...prev,
-        { id: aiMsgId, role: 'ai', content: '', isStreaming: true, timestamp },
-      ])
-      setIsTyping(false)
+      const streamingAiMessage = {
+        id: aiMsgId,
+        role: 'ai',
+        content: '',
+        isStreaming: true,
+        timestamp,
+      }
+
+      setMessages((prev) => [...prev, streamingAiMessage])
 
       let charIndex = 0
-      const chunkSize = 5
+      const chunkSize = 6
       if (streamingTimerRef.current) clearInterval(streamingTimerRef.current)
 
       streamingTimerRef.current = setInterval(() => {
@@ -411,11 +626,14 @@ export default function AiChatScreen({ user, onLogout, onNavigate }) {
         if (charIndex >= fullReply.length) {
           clearInterval(streamingTimerRef.current)
           streamingTimerRef.current = null
-          setMessages((prev) =>
-            prev.map((msg) =>
+          setIsTyping(false)
+          setMessages((prev) => {
+            const final = prev.map((msg) =>
               msg.id === aiMsgId ? { ...msg, content: fullReply, isStreaming: false } : msg
             )
-          )
+            saveStoredMessages(currentSessionId, final)
+            return final
+          })
         } else {
           const currentText = fullReply.slice(0, charIndex)
           setMessages((prev) =>
@@ -426,7 +644,7 @@ export default function AiChatScreen({ user, onLogout, onNavigate }) {
         }
       }, 15)
     },
-    [draft, isTyping, selectedSubject]
+    [draft, attachedFile, isTyping, selectedSubject, messages, activeSessionId]
   )
 
   const handleCopy = (id, text) => {
@@ -435,56 +653,65 @@ export default function AiChatScreen({ user, onLogout, onNavigate }) {
     setTimeout(() => setCopiedId(null), 1500)
   }
 
-  const handleClearChat = () => {
+  const handleToggleLike = (id, type) => {
+    setLikedMap((prev) => ({
+      ...prev,
+      [id]: prev[id] === type ? null : type,
+    }))
+  }
+
+  const handleNewChat = () => {
     if (streamingTimerRef.current) {
       clearInterval(streamingTimerRef.current)
       streamingTimerRef.current = null
     }
-    setMessages([
-      {
-        id: `welcome-${Date.now()}`,
-        role: 'ai',
-        content:
-          "Conversation reset! I'm ready for your next study topic or exam question.",
-        timestamp: 'Just now',
-      },
-    ])
+    setActiveSessionId(null)
+    setMessages([])
     setDraft('')
+    setAttachedFile(null)
     setIsTyping(false)
   }
 
-  return (
-    <div className="flex min-h-screen flex-col bg-surface font-body text-on-surface">
-      <AppNavbar user={user} activeView="assistant" onNavigate={onNavigate} onLogout={onLogout} />
+  const hasMessages = messages.length > 0
+  const isGenerating = isTyping || messages.some((m) => m.isStreaming)
+  const displayName = profile?.name || user?.name || 'Student'
+  const userInitial = displayName.charAt(0).toUpperCase()
 
-      <main className="flex flex-1 overflow-hidden h-[calc(100vh-64px)]">
-        {/* ── Left Sidebar: Study Topics & Presets ── */}
-        <aside className="hidden lg:flex w-80 flex-col border-r border-surface-variant bg-surface-lowest p-4">
-          <div className="flex items-center justify-between pb-3 border-b border-surface-variant mb-4">
-            <div className="flex items-center gap-2">
-              <div className="flex size-8 items-center justify-center rounded-xl bg-primary text-on-primary shadow-sm">
-                <IconSparkles size={18} />
-              </div>
-              <div>
-                <h2 className="font-display text-sm font-bold text-primary">Felat (ፈላጥ) AI</h2>
-                <p className="text-[10px] text-outline">Ethiopia's Academic Assistant</p>
-              </div>
-            </div>
+  return (
+    <div className="flex h-screen max-h-screen w-screen overflow-hidden flex-col bg-surface font-body text-on-surface dark:bg-[#212121] dark:text-neutral-100">
+      <div className="shrink-0 z-50">
+        <AppNavbar user={user || profile} activeView="assistant" onNavigate={onNavigate} onLogout={onLogout} />
+      </div>
+
+      <div className="flex flex-1 min-h-0 w-full overflow-hidden">
+        {/* ── Fixed Height, Non-Scrolling ChatGPT-Style Sidebar ── */}
+        <aside
+          className={`${
+            sidebarOpen ? 'w-64 lg:w-72' : 'w-0 -translate-x-full'
+          } shrink-0 h-full flex flex-col border-r border-surface-variant/80 bg-surface-lowest dark:border-neutral-800 dark:bg-[#171717] overflow-hidden z-20 transition-all duration-300 ease-in-out`}
+        >
+          {/* New Chat Button */}
+          <div className="p-3 shrink-0 border-b border-surface-variant/60 dark:border-neutral-800">
             <button
               type="button"
-              onClick={handleClearChat}
-              title="Reset session"
-              className="inline-flex size-8 items-center justify-center rounded-lg border border-surface-variant text-outline hover:text-error hover:border-error transition-colors cursor-pointer"
+              onClick={handleNewChat}
+              className="w-full flex items-center justify-between gap-2 rounded-xl border border-surface-variant bg-surface-low px-3.5 py-2.5 text-xs font-semibold text-on-surface hover:bg-surface-high dark:border-neutral-700/80 dark:bg-neutral-800 dark:text-white dark:hover:bg-neutral-700 transition-all cursor-pointer shadow-xs group"
             >
-              <IconTrash size={16} />
+              <div className="flex items-center gap-2">
+                <IconPlus size={16} className="text-primary dark:text-emerald-400 group-hover:scale-110 transition-transform" />
+                <span>New study chat</span>
+              </div>
+              <span className="text-[10px] font-mono text-outline dark:text-neutral-400 bg-surface dark:bg-neutral-900 px-1.5 py-0.5 rounded border border-surface-variant/50">
+                ⌘K
+              </span>
             </button>
           </div>
 
-          {/* Subject Filter Tag Chips */}
-          <div className="mb-4">
-            <h3 className="text-xs font-bold text-on-surface uppercase tracking-wider mb-2">
-              Subject Focus
-            </h3>
+          {/* Subject Focus Badges */}
+          <div className="p-3 shrink-0 border-b border-surface-variant/50 dark:border-neutral-800/80">
+            <p className="text-[10px] font-bold text-outline dark:text-neutral-400 uppercase tracking-wider mb-2">
+              Academic Focus
+            </p>
             <div className="flex flex-wrap gap-1.5">
               {SUBJECT_PRESETS.map((sub) => {
                 const isSelected = selectedSubject === sub.name
@@ -494,13 +721,13 @@ export default function AiChatScreen({ user, onLogout, onNavigate }) {
                     key={sub.id}
                     type="button"
                     onClick={() => setSelectedSubject(isSelected ? null : sub.name)}
-                    className={`inline-flex items-center gap-1.5 rounded-lg px-2.5 py-1.5 text-xs font-medium transition-all cursor-pointer ${
+                    className={`inline-flex items-center gap-1 rounded-lg px-2 py-1 text-[11px] font-medium transition-all cursor-pointer ${
                       isSelected
-                        ? 'bg-primary text-on-primary shadow-xs'
-                        : 'border border-surface-variant bg-surface-low text-on-surface hover:border-primary/50'
+                        ? 'bg-primary text-on-primary shadow-xs dark:bg-emerald-600'
+                        : 'border border-surface-variant/70 bg-surface-low text-on-surface hover:border-primary/50 dark:border-neutral-700 dark:bg-neutral-800/80 dark:text-neutral-300'
                     }`}
                   >
-                    <Icon size={14} className={isSelected ? 'text-on-primary' : sub.color.split(' ')[0]} />
+                    <Icon size={12} className={isSelected ? 'text-on-primary' : sub.color.split(' ')[0]} />
                     <span>{sub.name}</span>
                   </button>
                 )
@@ -508,177 +735,386 @@ export default function AiChatScreen({ user, onLogout, onNavigate }) {
             </div>
           </div>
 
-          {/* Quick Prompts */}
-          <div className="flex-1 overflow-y-auto pr-1">
-            <h3 className="text-xs font-bold text-on-surface uppercase tracking-wider mb-2.5">
-              Recommended Starters
-            </h3>
-            <div className="space-y-2">
-              {QUICK_PROMPTS.map((qp, i) => (
+          {/* Chat History List (Only this section scrolls within sidebar) */}
+          <div className="flex-1 min-h-0 overflow-y-auto p-2 space-y-1 scrollbar-thin">
+            <div className="flex items-center justify-between px-2 pt-2 pb-1">
+              <p className="text-[10px] font-bold text-outline dark:text-neutral-400 uppercase tracking-wider">
+                Recent Chats
+              </p>
+              {sessions.length > 0 && (
                 <button
-                  key={i}
                   type="button"
-                  onClick={() => handleSend(qp.prompt)}
-                  className="w-full text-left rounded-xl border border-surface-variant bg-surface-low p-3 hover:bg-surface-container hover:border-primary/40 transition-all cursor-pointer group"
+                  onClick={handleClearAllSessions}
+                  className="text-[10px] text-outline hover:text-error dark:text-neutral-400 dark:hover:text-rose-400 transition-colors cursor-pointer"
+                  title="Clear all recorded chats"
                 >
-                  <div className="flex items-center justify-between mb-1">
-                    <span className="font-semibold text-xs text-primary group-hover:underline">
-                      {qp.title}
-                    </span>
-                    <span className="text-[10px] text-outline px-1.5 py-0.5 rounded bg-surface border border-surface-variant/50">
-                      {qp.subject}
-                    </span>
-                  </div>
-                  <p className="text-[11px] text-on-surface-variant line-clamp-2">
-                    {qp.prompt}
-                  </p>
+                  Clear all
                 </button>
-              ))}
+              )}
             </div>
+
+            {sessions.length === 0 ? (
+              <div className="px-3 py-6 text-center text-xs text-outline dark:text-neutral-500">
+                No recent chats yet. Ask a question to start.
+              </div>
+            ) : (
+              sessions.map((sess) => (
+                <div
+                  key={sess.id}
+                  onClick={() => handleSelectSession(sess.id)}
+                  className={`w-full flex items-center justify-between gap-2 rounded-lg px-2.5 py-2 text-xs text-left transition-colors cursor-pointer group ${
+                    activeSessionId === sess.id
+                      ? 'bg-surface-high font-semibold text-primary dark:bg-neutral-800 dark:text-white'
+                      : 'text-on-surface-variant hover:bg-surface-low dark:text-neutral-300 dark:hover:bg-neutral-800/60'
+                  }`}
+                >
+                  <div className="flex items-center gap-2 truncate flex-1 min-w-0">
+                    <IconMessage size={14} className="shrink-0 text-outline dark:text-neutral-400" />
+                    <span className="truncate">{sess.title}</span>
+                  </div>
+                  <button
+                    type="button"
+                    onClick={(e) => handleDeleteSession(e, sess.id)}
+                    title="Delete chat"
+                    className="opacity-0 group-hover:opacity-100 size-5 inline-flex items-center justify-center rounded hover:bg-surface-high hover:text-error dark:hover:bg-neutral-700 transition-all cursor-pointer text-outline dark:text-neutral-400"
+                  >
+                    <IconTrash size={12} />
+                  </button>
+                </div>
+              ))
+            )}
           </div>
 
-          <div className="mt-4 pt-3 border-t border-surface-variant text-[11px] text-outline flex items-center justify-between">
-            <span>Powered by Gemini 1.5</span>
-            <span className="flex items-center gap-1 text-emerald-500 font-medium">
-              <span className="size-1.5 rounded-full bg-emerald-500 animate-pulse" />
-              Online
-            </span>
+          {/* Fixed User Profile Footer */}
+          <div className="p-3 shrink-0 border-t border-surface-variant/60 dark:border-neutral-800 flex items-center justify-between bg-surface-lowest dark:bg-[#171717]">
+            <div className="flex items-center gap-2.5 min-w-0">
+              <div className="size-8 rounded-full bg-primary text-on-primary flex items-center justify-center font-bold text-xs shrink-0 shadow-xs">
+                {userInitial}
+              </div>
+              <div className="truncate">
+                <p className="text-xs font-semibold text-on-surface dark:text-white truncate">
+                  {displayName}
+                </p>
+                <p className="text-[10px] text-outline dark:text-neutral-400 flex items-center gap-1">
+                  <IconSparkles size={10} className="text-emerald-500" />
+                  <span>Felat Plus • Free</span>
+                </p>
+              </div>
+            </div>
+            <button
+              type="button"
+              onClick={handleNewChat}
+              title="New study chat"
+              className="inline-flex size-7 items-center justify-center rounded-lg text-outline hover:text-primary hover:bg-surface-high dark:hover:bg-neutral-800 transition-colors cursor-pointer"
+            >
+              <IconPlus size={14} />
+            </button>
           </div>
         </aside>
 
-        {/* ── Main Chat Area ── */}
-        <section className="flex-1 flex flex-col bg-surface-low overflow-hidden">
-          {/* Header */}
-          <header className="h-14 shrink-0 border-b border-surface-variant bg-surface-lowest px-4 sm:px-6 flex items-center justify-between shadow-xs">
-            <div className="flex items-center gap-2.5">
-              <div className="flex size-8 items-center justify-center rounded-xl bg-primary text-on-primary">
-                <IconBrain size={18} />
-              </div>
-              <div>
-                <h1 className="font-display text-sm sm:text-base font-bold text-on-surface flex items-center gap-2">
-                  <span>Felat (ፈላጥ) AI Study Workspace</span>
-                  {selectedSubject && (
-                    <span className="text-xs px-2 py-0.5 rounded-full bg-primary/10 text-primary font-semibold border border-primary/20">
-                      {selectedSubject}
-                    </span>
-                  )}
-                </h1>
+        {/* ── Main Fixed Workspace Area ── */}
+        <section className="flex-1 min-w-0 min-h-0 flex flex-col bg-surface-lowest dark:bg-[#212121] overflow-hidden relative">
+          {/* Fixed Top Floating Model Header */}
+          <header className="h-14 shrink-0 border-b border-surface-variant/50 dark:border-neutral-800/80 px-4 flex items-center justify-between bg-surface-lowest/80 dark:bg-[#212121]/80 backdrop-blur-md z-10">
+            <div className="flex items-center gap-2">
+              <button
+                type="button"
+                onClick={() => setSidebarOpen((prev) => !prev)}
+                title={sidebarOpen ? 'Close sidebar' : 'Open sidebar'}
+                className="inline-flex size-8 items-center justify-center rounded-lg text-outline hover:bg-surface-high hover:text-on-surface dark:hover:bg-neutral-800 dark:hover:text-white transition-colors cursor-pointer"
+              >
+                <IconLayoutSidebar size={18} />
+              </button>
+
+              {/* Model Switcher Pill */}
+              <div className="inline-flex items-center gap-1.5 px-3 py-1 rounded-xl bg-surface-low dark:bg-neutral-800 text-xs font-bold text-on-surface dark:text-white shadow-xs border border-surface-variant/60 dark:border-neutral-700/80 cursor-default">
+                <span className="flex size-2 rounded-full bg-emerald-500 animate-pulse" />
+                <span>Felat (ፈላጥ) AI Study Workspace</span>
+                <span className="text-[10px] px-1.5 py-0.2 rounded bg-primary/10 text-primary dark:bg-emerald-500/20 dark:text-emerald-300 font-mono">
+                  4o
+                </span>
               </div>
             </div>
 
             <div className="flex items-center gap-2">
+              {selectedSubject && (
+                <span className="hidden sm:inline-flex items-center gap-1 px-2.5 py-0.5 rounded-full text-xs font-semibold bg-primary-container text-on-primary-container">
+                  <span>{selectedSubject}</span>
+                </span>
+              )}
               <button
                 type="button"
-                onClick={handleClearChat}
-                className="lg:hidden inline-flex items-center gap-1 px-2.5 py-1 text-xs rounded-lg border border-surface-variant text-outline hover:text-error cursor-pointer"
+                onClick={handleNewChat}
+                aria-label="Reset session"
+                className="inline-flex items-center gap-1 px-3 py-1 text-xs font-semibold rounded-lg border border-surface-variant text-outline hover:text-primary hover:border-primary transition-colors cursor-pointer"
               >
-                <IconRefresh size={14} />
-                <span>Reset</span>
+                <IconRefresh size={13} />
+                <span>New</span>
               </button>
             </div>
           </header>
 
-          {/* Conversation Thread */}
-          <div className="flex-1 overflow-y-auto p-4 sm:p-6 lg:p-8 space-y-4 max-w-4xl mx-auto w-full">
+          {/* Conversation Stream (Only this central area scrolls when text grows) */}
+          <div className="flex-1 min-h-0 overflow-y-auto px-4 sm:px-6 lg:px-8 py-6 space-y-6 max-w-3xl mx-auto w-full flex flex-col scrollbar-thin">
+            {/* Minimalist ChatGPT Hero Greeting */}
+            {!hasMessages && (
+              <div className="my-auto py-16 text-center animate-in fade-in zoom-in-95 duration-200">
+                <div className="inline-flex size-14 items-center justify-center rounded-2xl bg-gradient-to-tr from-primary to-emerald-600 text-white shadow-lg mb-4">
+                  <IconSparkles size={28} />
+                </div>
+                <h2 className="font-display text-2xl font-bold tracking-tight text-on-surface dark:text-white sm:text-3xl">
+                  Welcome, {displayName}!
+                </h2>
+                <p className="mt-2 text-sm text-outline dark:text-neutral-400">
+                  What would you like to study today?
+                </p>
+              </div>
+            )}
+
+            {/* Render Chat Messages */}
             {messages.map((msg) => (
               <div
                 key={msg.id}
-                className={`flex flex-col ${msg.role === 'user' ? 'items-end' : 'items-start'}`}
+                className={`flex gap-3 sm:gap-4 ${
+                  msg.role === 'user' ? 'justify-end' : 'justify-start'
+                }`}
               >
+                {/* AI Avatar on left */}
+                {msg.role === 'ai' && (
+                  <div className="size-8 rounded-full bg-gradient-to-tr from-primary to-emerald-600 text-white flex items-center justify-center shrink-0 shadow-xs mt-1">
+                    <IconSparkles size={16} />
+                  </div>
+                )}
+
                 <div
-                  className={`relative max-w-[90%] sm:max-w-[80%] rounded-2xl p-4 sm:p-5 leading-relaxed shadow-sm ${
+                  className={`relative ${
                     msg.role === 'user'
-                      ? 'bg-primary text-on-primary rounded-br-xs'
-                      : 'bg-surface-lowest border border-surface-variant text-on-surface rounded-bl-xs'
+                      ? 'max-w-[85%] sm:max-w-[75%] rounded-3xl bg-surface-high dark:bg-[#2f2f2f] px-5 py-3 text-on-surface dark:text-white shadow-xs'
+                      : 'flex-1 max-w-full'
                   }`}
                 >
                   {msg.role === 'user' ? (
-                    <p className="whitespace-pre-wrap text-sm">{msg.content}</p>
+                    <div>
+                      {msg.attachment && (
+                        <div className="mb-2.5 flex items-center gap-2.5 rounded-2xl bg-surface-lowest/90 dark:bg-neutral-800/90 p-2.5 border border-surface-variant/70 dark:border-neutral-700 w-fit max-w-full">
+                          {msg.attachment.previewUrl && msg.attachment.type?.startsWith('image/') ? (
+                            <img
+                              src={msg.attachment.previewUrl}
+                              alt={msg.attachment.name}
+                              className="size-11 rounded-xl object-cover border border-surface-variant shrink-0"
+                            />
+                          ) : (
+                            <div className="flex size-9 items-center justify-center rounded-xl bg-primary/10 text-primary dark:bg-emerald-500/20 dark:text-emerald-300 shrink-0">
+                              <IconFileText size={18} />
+                            </div>
+                          )}
+                          <div className="flex flex-col min-w-0 pr-1">
+                            <span className="text-xs font-semibold text-on-surface dark:text-white truncate max-w-[180px] sm:max-w-[240px]">
+                              {msg.attachment.name}
+                            </span>
+                            {msg.attachment.size && (
+                              <span className="text-[10px] text-outline dark:text-neutral-400">
+                                {msg.attachment.size}
+                              </span>
+                            )}
+                          </div>
+                        </div>
+                      )}
+                      <p className="whitespace-pre-wrap text-sm leading-relaxed">{msg.content}</p>
+                    </div>
                   ) : (
-                    <FormattedAiResponse content={msg.content} isStreaming={msg.isStreaming} />
-                  )}
+                    <div>
+                      <FormattedAiResponse content={msg.content} isStreaming={msg.isStreaming} />
 
-                  {msg.role === 'ai' && !msg.isStreaming && (
-                    <div className="mt-3 flex items-center justify-between pt-2 border-t border-surface-variant/40 text-xs text-outline">
-                      <span className="text-[11px]">{msg.timestamp}</span>
-                      <button
-                        type="button"
-                        onClick={() => handleCopy(msg.id, msg.content)}
-                        className="inline-flex items-center gap-1 text-xs font-medium text-outline hover:text-primary transition-colors cursor-pointer"
-                      >
-                        {copiedId === msg.id ? (
-                          <>
-                            <IconCheck size={14} className="text-emerald-500" />
-                            <span className="text-emerald-500">Copied</span>
-                          </>
-                        ) : (
-                          <>
-                            <IconCopy size={14} />
-                            <span>Copy response</span>
-                          </>
-                        )}
-                      </button>
+                      {/* ChatGPT Style Bottom Action Bar */}
+                      {!msg.isStreaming && (
+                        <div className="mt-3 flex items-center gap-1 text-outline dark:text-neutral-400">
+                          <button
+                            type="button"
+                            onClick={() => handleCopy(msg.id, msg.content)}
+                            title="Copy response"
+                            className="inline-flex size-7 items-center justify-center rounded-md hover:bg-surface-low hover:text-on-surface dark:hover:bg-neutral-800 dark:hover:text-white transition-colors cursor-pointer"
+                          >
+                            {copiedId === msg.id ? (
+                              <IconCheck size={14} className="text-emerald-500" />
+                            ) : (
+                              <IconCopy size={14} />
+                            )}
+                          </button>
+
+                          <button
+                            type="button"
+                            onClick={() => handleToggleLike(msg.id, 'up')}
+                            title="Good response"
+                            className={`inline-flex size-7 items-center justify-center rounded-md transition-colors cursor-pointer ${
+                              likedMap[msg.id] === 'up'
+                                ? 'text-emerald-500'
+                                : 'hover:bg-surface-low hover:text-on-surface dark:hover:bg-neutral-800 dark:hover:text-white'
+                            }`}
+                          >
+                            <IconThumbUp size={14} />
+                          </button>
+
+                          <button
+                            type="button"
+                            onClick={() => handleToggleLike(msg.id, 'down')}
+                            title="Bad response"
+                            className={`inline-flex size-7 items-center justify-center rounded-md transition-colors cursor-pointer ${
+                              likedMap[msg.id] === 'down'
+                                ? 'text-rose-500'
+                                : 'hover:bg-surface-low hover:text-on-surface dark:hover:bg-neutral-800 dark:hover:text-white'
+                            }`}
+                          >
+                            <IconThumbDown size={14} />
+                          </button>
+
+                          <span className="text-[10px] ml-2 text-outline/60 dark:text-neutral-500 font-mono">
+                            {msg.timestamp}
+                          </span>
+                        </div>
+                      )}
                     </div>
                   )}
                 </div>
+
+                {/* User Avatar on right */}
+                {msg.role === 'user' && (
+                  <div className="size-8 rounded-full bg-primary-fixed dark:bg-neutral-700 text-primary dark:text-white flex items-center justify-center font-bold text-xs shrink-0 mt-1 shadow-xs">
+                    {userInitial}
+                  </div>
+                )}
               </div>
             ))}
 
             {isTyping && (
-              <div className="flex items-center gap-2 rounded-2xl bg-surface-lowest border border-surface-variant p-4 w-fit shadow-xs">
-                <span className="size-2 rounded-full bg-primary animate-bounce" />
-                <span className="size-2 rounded-full bg-primary animate-bounce [animation-delay:0.2s]" />
-                <span className="size-2 rounded-full bg-primary animate-bounce [animation-delay:0.4s]" />
-                <span className="text-xs text-outline ml-1 font-medium">Felat is analyzing…</span>
+              <div className="flex gap-3 sm:gap-4 items-start">
+                <div className="size-8 rounded-full bg-gradient-to-tr from-primary to-emerald-600 text-white flex items-center justify-center shrink-0 shadow-xs">
+                  <IconSparkles size={16} />
+                </div>
+                <div className="flex items-center gap-1.5 py-2">
+                  <span className="size-2 rounded-full bg-primary/80 dark:bg-emerald-400 animate-bounce" />
+                  <span className="size-2 rounded-full bg-primary/80 dark:bg-emerald-400 animate-bounce [animation-delay:0.2s]" />
+                  <span className="size-2 rounded-full bg-primary/80 dark:bg-emerald-400 animate-bounce [animation-delay:0.4s]" />
+                </div>
               </div>
             )}
 
             <div ref={messagesEndRef} />
           </div>
 
-          {/* Bottom Chat Prompt Bar */}
-          <div className="shrink-0 border-t border-surface-variant bg-surface-lowest p-3 sm:p-4">
-            <div className="max-w-4xl mx-auto">
+          {/* ── Fixed Bottom Prompt Bar with Dynamic Stop Button & Attachment ── */}
+          <div className="shrink-0 p-4 sm:pb-6 bg-gradient-to-t from-surface-lowest via-surface-lowest to-transparent dark:from-[#212121] dark:via-[#212121] z-10">
+            <div className="max-w-3xl mx-auto">
+              {/* Hidden file input for attachment */}
+              <input
+                ref={fileInputRef}
+                type="file"
+                accept="image/*,application/pdf,text/plain,.doc,.docx"
+                onChange={handleFileSelect}
+                className="hidden"
+                aria-label="Upload note or image"
+              />
+
               <form
                 onSubmit={(e) => {
                   e.preventDefault()
                   handleSend()
                 }}
-                className="relative flex items-end gap-2 rounded-2xl border border-surface-variant bg-surface-low p-2 sm:p-3 transition-all focus-within:border-primary focus-within:ring-2 focus-within:ring-primary/20"
+                className="relative flex flex-col rounded-3xl border border-surface-variant/80 bg-surface-low p-2 sm:p-2.5 shadow-level-2 dark:border-neutral-700 dark:bg-[#2f2f2f] focus-within:border-primary dark:focus-within:border-neutral-500 focus-within:ring-2 focus-within:ring-primary/20 transition-all"
               >
-                <textarea
-                  ref={inputRef}
-                  rows={1}
-                  value={draft}
-                  onChange={(e) => setDraft(e.target.value)}
-                  onKeyDown={(e) => {
-                    if (e.key === 'Enter' && !e.shiftKey) {
-                      e.preventDefault()
-                      handleSend()
-                    }
-                  }}
-                  placeholder="Ask Felat anything about your courses, formulas, coding, or exams... (Enter to send)"
-                  aria-label="Ask Felat AI"
-                  className="max-h-40 w-full resize-none border-0 bg-transparent px-2 py-1.5 text-sm text-on-surface placeholder:text-outline focus:outline-none focus:ring-0"
-                />
+                {/* Active Attached File Pill */}
+                {attachedFile && (
+                  <div className="mb-2 ml-1 flex items-center gap-2 p-1.5 pr-2.5 rounded-2xl bg-surface-lowest dark:bg-neutral-800 border border-surface-variant/80 dark:border-neutral-700 w-fit max-w-full animate-in fade-in zoom-in-95 duration-150">
+                    {attachedFile.previewUrl && attachedFile.type?.startsWith('image/') ? (
+                      <img
+                        src={attachedFile.previewUrl}
+                        alt={attachedFile.name}
+                        className="size-9 rounded-xl object-cover border border-surface-variant shrink-0"
+                      />
+                    ) : (
+                      <div className="flex size-9 items-center justify-center rounded-xl bg-primary/10 text-primary dark:bg-emerald-500/20 dark:text-emerald-300 shrink-0">
+                        <IconFileText size={18} />
+                      </div>
+                    )}
+                    <div className="flex flex-col min-w-0 pr-1">
+                      <span className="text-xs font-semibold text-on-surface dark:text-white truncate max-w-[180px] sm:max-w-[260px]">
+                        {attachedFile.name}
+                      </span>
+                      <span className="text-[10px] text-outline dark:text-neutral-400">
+                        {formatFileSize(attachedFile.size)}
+                      </span>
+                    </div>
+                    <button
+                      type="button"
+                      onClick={handleRemoveAttachment}
+                      aria-label="Remove attached file"
+                      title="Remove attached file"
+                      className="size-6 inline-flex items-center justify-center rounded-full text-outline hover:text-error hover:bg-surface-high dark:hover:bg-neutral-700 transition-colors cursor-pointer ml-1"
+                    >
+                      <IconX size={14} />
+                    </button>
+                  </div>
+                )}
 
-                <button
-                  type="submit"
-                  disabled={!draft.trim() || isTyping}
-                  aria-label="Send query"
-                  className="flex size-10 shrink-0 items-center justify-center rounded-xl bg-primary text-on-primary shadow-sm transition-all hover:bg-primary-container active:scale-95 disabled:cursor-not-allowed disabled:bg-surface-container disabled:text-outline disabled:opacity-50 cursor-pointer"
-                >
-                  <IconSend size={18} />
-                </button>
+                <div className="flex items-end gap-2 w-full">
+                  <button
+                    type="button"
+                    onClick={() => fileInputRef.current?.click()}
+                    title="Attach course note or image"
+                    aria-label="Attach course note or image"
+                    className="flex size-9 shrink-0 items-center justify-center rounded-full text-outline hover:text-on-surface hover:bg-surface-high dark:hover:bg-neutral-800 dark:hover:text-white transition-colors cursor-pointer"
+                  >
+                    <IconPaperclip size={18} />
+                  </button>
+
+                  <textarea
+                    ref={inputRef}
+                    rows={1}
+                    value={draft}
+                    onChange={(e) => setDraft(e.target.value)}
+                    onKeyDown={(e) => {
+                      if (e.key === 'Enter' && !e.shiftKey) {
+                        e.preventDefault()
+                        if (!isGenerating) {
+                          handleSend()
+                        }
+                      }
+                    }}
+                    placeholder="Ask Felat anything about your courses, formulas, coding, or exams..."
+                    aria-label="Ask Felat anything"
+                    className="max-h-48 w-full resize-none border-0 bg-transparent px-2 py-2 text-sm text-on-surface placeholder:text-outline dark:text-white dark:placeholder:text-neutral-400 focus:outline-none focus:ring-0"
+                  />
+
+                  {isGenerating ? (
+                    <button
+                      type="button"
+                      onClick={handleStopGenerating}
+                      aria-label="Stop generating"
+                      title="Stop generating"
+                      className="flex size-9 shrink-0 items-center justify-center rounded-full bg-neutral-900 text-white dark:bg-white dark:text-neutral-900 shadow-sm hover:opacity-90 active:scale-95 transition-all cursor-pointer"
+                    >
+                      <IconPlayerStopFilled size={14} />
+                    </button>
+                  ) : (
+                    <button
+                      type="submit"
+                      disabled={!draft.trim() && !attachedFile}
+                      aria-label="Send query"
+                      className="flex size-9 shrink-0 items-center justify-center rounded-full bg-primary text-on-primary shadow-sm hover:bg-primary-container active:scale-95 disabled:cursor-not-allowed disabled:bg-surface-container disabled:text-outline disabled:opacity-40 dark:bg-white dark:text-black dark:hover:bg-neutral-200 cursor-pointer transition-all"
+                    >
+                      <IconArrowUp size={18} stroke={2.5} />
+                    </button>
+                  )}
+                </div>
               </form>
-              <div className="flex items-center justify-between mt-2 px-1 text-[11px] text-outline font-medium">
-                <span>Press Enter ↵ to submit · Shift+Enter for new line</span>
-                <span>CampusHustle AI Study Engine</span>
-              </div>
+
+              <p className="mt-2 text-center text-[11px] text-outline dark:text-neutral-400">
+                Felat can make mistakes. Verify critical academic facts with your course syllabus and instructor.
+              </p>
             </div>
           </div>
         </section>
-      </main>
+      </div>
     </div>
   )
 }

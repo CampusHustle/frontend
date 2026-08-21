@@ -2,7 +2,6 @@ import { useState } from 'react'
 import {
   IconArrowRight,
   IconBuildingBank,
-  IconCircleCheckFilled,
   IconKey,
   IconLock,
   IconSchool,
@@ -136,15 +135,6 @@ export default function SignupScreen({ onSwitchToLogin, onSignupSuccess, onNavig
             aria-hidden="true"
             className="pointer-events-none absolute -right-10 -top-10 size-28 rounded-full bg-secondary-container/20 blur-xl"
           />
-
-          <div className="mb-4 flex justify-center">
-            <div className="inline-flex items-center gap-1.5 rounded-full border border-outline-variant bg-surface-high px-3 py-0.5">
-              <IconCircleCheckFilled size={14} className="text-primary" aria-hidden="true" />
-              <span className="text-[11px] font-semibold uppercase tracking-wider text-primary">
-                Verified .edu.et Students
-              </span>
-            </div>
-          </div>
 
           <form onSubmit={handleSubmit} className="relative z-10 flex flex-col gap-3" noValidate>
             {/* Name and Email 2-column or stacked */}
