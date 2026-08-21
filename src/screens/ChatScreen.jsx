@@ -456,11 +456,15 @@ export default function ChatScreen({ user, onLogout, onNavigate }) {
 
   // Derive active peer cleanly
   const activePeer = useMemo(() => {
-    if (!activeId) return conversations[0]?.peer || null
-    const matched = conversations.find((c) => c?.peer?._id === activeId)
+    if (!activeId) return null
+    const matched = conversations.find(
+      (c) => (c?.peer?._id || c?.peer?.id) === activeId,
+    )
     if (matched?.peer) return matched.peer
-    if (fetchedPeer && fetchedPeer._id === activeId) return fetchedPeer
-    return { _id: activeId, name: 'Campus Peer', department: 'Peer' }
+    if (fetchedPeer && (fetchedPeer._id === activeId || fetchedPeer.id === activeId)) {
+      return fetchedPeer
+    }
+    return { _id: activeId, id: activeId, name: 'Campus Peer', department: 'Peer' }
   }, [activeId, conversations, fetchedPeer])
 
   // Load conversation inbox on mount
@@ -673,12 +677,13 @@ export default function ChatScreen({ user, onLogout, onNavigate }) {
           {conversations.length > 0 && (
             <div className="flex items-center gap-3 overflow-x-auto px-4 py-3 border-b border-surface-variant/40 shrink-0 no-scrollbar">
               {conversations.slice(0, 8).map((c) => {
-                const isSelected = activePeer?._id === c.peer?._id
+                const peerId = c.peer?._id || c.peer?.id
+                const isSelected = activePeer && (activePeer._id === peerId || activePeer.id === peerId)
                 return (
                   <button
                     key={`story-${c.conversationId}`}
                     type="button"
-                    onClick={() => onNavigate?.(`/chat/${c.peer?._id}`)}
+                    onClick={() => onNavigate?.(`/chat/${peerId}`)}
                     className="flex flex-col items-center gap-1 shrink-0 group cursor-pointer"
                   >
                     <div
@@ -717,13 +722,14 @@ export default function ChatScreen({ user, onLogout, onNavigate }) {
               </div>
             ) : (
               filteredConversations.map((conv) => {
-                const isSelected = activePeer?._id === conv.peer?._id
+                const peerId = conv.peer?._id || conv.peer?.id
+                const isSelected = activePeer && (activePeer._id === peerId || activePeer.id === peerId)
                 return (
                   <button
                     key={conv.conversationId}
                     type="button"
                     onClick={() => {
-                      onNavigate?.(`/chat/${conv.peer?._id}`)
+                      onNavigate?.(`/chat/${peerId}`)
                     }}
                     className={`w-full p-2.5 rounded-2xl text-left flex items-center gap-3 transition-colors cursor-pointer ${
                       isSelected
@@ -776,7 +782,11 @@ export default function ChatScreen({ user, onLogout, onNavigate }) {
                   <button
                     type="button"
                     aria-label="Back to conversations"
-                    onClick={() => onNavigate?.('/chat')}
+                    onClick={() => {
+                      if (onNavigate) {
+                        onNavigate('chat')
+                      }
+                    }}
                     className="md:hidden inline-flex size-8 items-center justify-center rounded-full border border-surface-variant text-on-surface-variant hover:text-primary cursor-pointer shrink-0"
                   >
                     <IconArrowLeft size={17} />
