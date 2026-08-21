@@ -1,12 +1,12 @@
 import { useState, useMemo } from 'react'
 import AuthFiltersSidebar from '../components/AuthFiltersSidebar.jsx'
-import AuthNotesMarketplace, { dummyNotes } from '../components/AuthNotesMarketplace.jsx'
+import AuthNotesMarketplace from '../components/AuthNotesMarketplace.jsx'
 import Footer from '../components/Footer.jsx'
 import AppNavbar from '../components/AppNavbar.jsx'
 
 const VISIBLE_STEP = 6
 
-export default function MarketplaceScreen({ user, onLogout, onNavigate }) {
+export default function MarketplaceScreen({ user, onLogout, onNavigate, availableTutorials = [] }) {
   const [searchQuery, setSearchQuery] = useState('')
   const [selectedDepts, setSelectedDepts] = useState([])
   const [contentTypeFilter, setContentTypeFilter] = useState('All')
@@ -31,7 +31,7 @@ export default function MarketplaceScreen({ user, onLogout, onNavigate }) {
 
   const filteredAndSortedNotes = useMemo(() => {
     const q = searchQuery.trim().toLowerCase()
-    let result = dummyNotes.filter((item) => {
+    let result = availableTutorials.filter((item) => {
       const matchDept = selectedDepts.length === 0 || selectedDepts.includes(item.department)
       const matchFormat = contentTypeFilter === 'All' || item.contentType === contentTypeFilter
       const matchPrice = item.numericPrice <= maxPrice
@@ -51,7 +51,7 @@ export default function MarketplaceScreen({ user, onLogout, onNavigate }) {
     }
 
     return result
-  }, [searchQuery, selectedDepts, contentTypeFilter, maxPrice, sortBy])
+  }, [availableTutorials, searchQuery, selectedDepts, contentTypeFilter, maxPrice, sortBy])
 
   return (
     <div className="flex min-h-screen flex-col bg-surface font-body text-on-surface">

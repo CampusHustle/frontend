@@ -242,10 +242,10 @@ export default function NotePaymentScreen({ user, onNavigate, onLogout, initialS
               </button>
               <button
                 type="button"
-                onClick={() => onNavigate ? onNavigate('assistant') : window.dispatchEvent(new CustomEvent('open-ai-assistant'))}
+                onClick={() => onNavigate ? onNavigate('assistant', { tutorId: note?.tutorId || note?._id }) : window.dispatchEvent(new CustomEvent('open-ai-assistant', { detail: { tutorId: note?.tutorId || note?._id } }))}
                 className="w-full sm:w-auto rounded-full border border-surface-variant bg-surface px-6 py-3 text-xs sm:text-sm font-semibold text-on-surface transition-colors hover:bg-surface-high cursor-pointer"
               >
-                Ask AI Assistant
+                Ask AI Questions Now
               </button>
             </div>
           </div>

@@ -17,7 +17,6 @@ import {
 } from '@tabler/icons-react'
 import { getTutorById } from '../api/tutorApi.js'
 import { createBooking } from '../api/bookingApi.js'
-import { dummyNotes } from '../components/AuthNotesMarketplace.jsx'
 import Footer from '../components/Footer.jsx'
 import AppNavbar from '../components/AppNavbar.jsx'
 
@@ -162,11 +161,10 @@ function AvailabilityGrid({ slots, selected, onSelect }) {
               type="button"
               onClick={() => onSelect({ day: slot.day, time: slot.time })}
               aria-pressed={isSelected}
-              className={`rounded-md p-2 text-center text-xs font-medium transition-colors border ${
-                isSelected
-                  ? 'bg-primary text-on-primary border-primary shadow-level-1'
-                  : 'bg-primary-container text-on-primary-container border-primary hover:bg-primary hover:text-on-primary'
-              }`}
+              className={`rounded-md p-2 text-center text-xs font-medium transition-colors border ${isSelected
+                ? 'bg-primary text-on-primary border-primary shadow-level-1'
+                : 'bg-primary-container text-on-primary-container border-primary hover:bg-primary hover:text-on-primary'
+                }`}
             >
               {slot.time}
             </button>
@@ -175,7 +173,7 @@ function AvailabilityGrid({ slots, selected, onSelect }) {
       </div>
 
       <div className="mt-5 flex items-center gap-4">
-          <span className="flex items-center gap-1.5 text-xs text-outline">
+        <span className="flex items-center gap-1.5 text-xs text-outline">
           <span className="size-3 rounded-full bg-primary-container border border-primary"></span> Available
         </span>
         <span className="flex items-center gap-1.5 text-xs text-outline">
@@ -244,7 +242,7 @@ function BookingPanel({
   return (
     <div className="flex flex-col justify-center rounded-xl border border-surface-variant bg-surface p-6 shadow-level-1">
       <div className="mb-4 text-center">
-        <span className="font-display text-3xl font-bold text-primary">${tutor.hourlyRate}</span>
+        <span className="font-display text-3xl font-bold text-primary">ETB {tutor.hourlyRate}</span>
         <span className="text-base text-outline"> / hour</span>
       </div>
 
@@ -307,15 +305,15 @@ function BookingPanel({
   )
 }
 
-function NotesSection({ tutor, onNavigate }) {
+function NotesSection({ tutor, onNavigate, availableTutorials = [] }) {
   const notes = useMemo(() => {
-    const byDept = dummyNotes.filter((n) => n.department === tutor.department)
-    return (byDept.length > 0 ? byDept : dummyNotes).slice(0, 3).map((note, index) => ({
+    const byDept = availableTutorials.filter((n) => n.department === tutor.department)
+    return (byDept.length > 0 ? byDept : availableTutorials).slice(0, 3).map((note, index) => ({
       ...note,
-      price: `$${[10, 5, 8][index] ?? 5}`,
+      price: `ETB ${[10, 5, 8][index] ?? 5}`,
       Icon: NOTE_ICONS[index % NOTE_ICONS.length],
     }))
-  }, [tutor.department])
+  }, [tutor.department, availableTutorials])
 
   return (
     <section className="flex flex-col gap-4">
@@ -369,7 +367,7 @@ function NotesSection({ tutor, onNavigate }) {
   )
 }
 
-export default function TutorDetailScreen({ user, onLogout, onNavigate, initialBookingStatus = 'idle' }) {
+export default function TutorDetailScreen({ user, onLogout, onNavigate, availableTutorials = [], initialBookingStatus = 'idle' }) {
   const { id } = useParams()
   const [selected, setSelected] = useState(null)
   const [confirmation, setConfirmation] = useState('')
@@ -535,7 +533,7 @@ export default function TutorDetailScreen({ user, onLogout, onNavigate, initialB
         </section>
 
         {/* Study Notes */}
-        <NotesSection tutor={tutor} onNavigate={onNavigate} />
+        <NotesSection tutor={tutor} onNavigate={onNavigate} availableTutorials={availableTutorials} />
       </main>
 
       <Footer onNavigate={onNavigate} user={user} />

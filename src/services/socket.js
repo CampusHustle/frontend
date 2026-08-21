@@ -1,5 +1,5 @@
 import { io } from 'socket.io-client'
-import { loadSessionUser } from '../utils/session.js'
+import { loadSessionUser, getAccessToken } from '../utils/session.js'
 
 function resolveSocketUrl() {
   return import.meta.env?.VITE_SOCKET_URL ?? window.location.origin
@@ -10,8 +10,8 @@ export function createSocket() {
 
   return io(resolveSocketUrl(), {
     auth: {
-      token: user?.token ?? null,
-      userId: user?.id ?? null,
+      token: getAccessToken(),
+      userId: user?._id ?? null,
     },
     autoConnect: false,
     reconnection: true,
