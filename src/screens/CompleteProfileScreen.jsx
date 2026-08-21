@@ -60,7 +60,7 @@ const sectionClass = 'border-b border-surface-highest py-6'
 const labelClass = 'text-sm font-semibold text-on-surface'
 const headingClass = 'font-display mb-4 text-xl font-semibold text-primary'
 
-const SCHEDULE_DAYS = ['Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat']
+const SCHEDULE_DAYS = ['Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat', 'Sun']
 const SCHEDULE_TIMES = ['9:00 AM', '2:00 PM', '5:00 PM']
 
 export default function CompleteProfileScreen({ user, onFinish }) {
@@ -428,7 +428,7 @@ export default function CompleteProfileScreen({ user, onFinish }) {
                 </div>
               </div>
 
-              <div className="grid grid-cols-6 gap-2 pt-2">
+              <div className="grid grid-cols-7 gap-2 pt-2">
                 {SCHEDULE_DAYS.map((day) => (
                   <div key={day} className="mb-1 text-center text-xs font-bold text-outline">
                     {day}

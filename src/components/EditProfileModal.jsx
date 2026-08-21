@@ -53,7 +53,7 @@ function TagInput({ id, placeholder, tags, onChange }) {
   )
 }
 
-const SCHEDULE_DAYS = ['Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat']
+const SCHEDULE_DAYS = ['Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat', 'Sun']
 const SCHEDULE_TIMES = ['9:00 AM', '2:00 PM', '5:00 PM']
 
 function EditProfileForm({ user, onClose, onSave }) {
@@ -408,7 +408,7 @@ function EditProfileForm({ user, onClose, onSave }) {
             </div>
           </div>
 
-          <div className="grid grid-cols-6 gap-1.5 pt-1">
+          <div className="grid grid-cols-7 gap-1.5 pt-1">
             {SCHEDULE_DAYS.map((day) => (
               <div key={day} className="text-center text-[10px] font-bold text-outline">
                 {day}
