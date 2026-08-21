@@ -1,4 +1,4 @@
-import { useState } from 'react'
+import { useState, useMemo } from 'react'
 import { useNavigate, useLocation } from 'react-router-dom'
 import {
   IconArrowRight,
@@ -12,6 +12,7 @@ import {
   IconSchool,
   IconCheck,
   IconAlertCircleFilled,
+  IconFileText,
 } from '@tabler/icons-react'
 import AppNavbar from '../components/AppNavbar.jsx'
 import Footer from '../components/Footer.jsx'
@@ -66,8 +67,27 @@ export default function PostListingScreen({
     return ''
   })
   const [documentFile, setDocumentFile] = useState(null)
+  const [coverImageFile, setCoverImageFile] = useState(null)
+  const [previewImageFiles, setPreviewImageFiles] = useState([])
   const [feedback, setFeedback] = useState('')
   const [feedbackType, setFeedbackType] = useState('success')
+
+  const coverPreviewUrl = useMemo(() => {
+    if (coverImageFile) return URL.createObjectURL(coverImageFile)
+    if (documentFile && documentFile.type?.startsWith('image/')) {
+      return URL.createObjectURL(documentFile)
+    }
+    if (editingNote?.coverImage) return editingNote.coverImage
+    return null
+  }, [coverImageFile, documentFile, editingNote])
+
+  const previewUrls = useMemo(() => {
+    return previewImageFiles.map((f) => ({
+      file: f,
+      url: URL.createObjectURL(f),
+      name: f.name,
+    }))
+  }, [previewImageFiles])
 
   const handleDocumentSelect = (file) => {
     setDocumentFile(file)
@@ -134,7 +154,7 @@ export default function PostListingScreen({
       department: subject || 'Unspecified',
       authorName: user?.name || 'Current User',
       authorAvatar: user?.avatar || user?.profilePicUrl || 'https://i.pravatar.cc/150?u=current',
-      coverImage: 'https://images.unsplash.com/photo-1516116216624-53e697fedbea?w=400&q=80',
+      coverImage: coverPreviewUrl || 'https://images.unsplash.com/photo-1516116216624-53e697fedbea?w=400&q=80',
       description: description.trim(),
     }
 
@@ -351,8 +371,82 @@ export default function PostListingScreen({
                   <span className="mr-2 text-2xl" aria-hidden="true">🎬</span> Media &amp; Assets
                 </h2>
                 <div className="flex w-full justify-center">
-                  <UploadEntryPoint onFileSelect={handleDocumentSelect} />
+                  <UploadEntryPoint
+                    onFileSelect={handleDocumentSelect}
+                    onCoverSelect={(cover) => setCoverImageFile(cover)}
+                    onPreviewsSelect={(previews) => setPreviewImageFiles(previews)}
+                    onMediaChange={({ file, coverImage, previewImages }) => {
+                      if (file !== undefined) setDocumentFile(file)
+                      if (coverImage !== undefined) setCoverImageFile(coverImage)
+                      if (previewImages !== undefined) setPreviewImageFiles(previewImages)
+                    }}
+                  />
                 </div>
+
+                {/* Document Cover Page & Preview Pages Showcase */}
+                {(coverPreviewUrl || previewUrls.length > 0 || documentFile) && (
+                  <div className="mt-6 space-y-4 rounded-xl border border-surface-variant bg-surface-low p-5">
+                    <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2 border-b border-surface-variant/70 pb-3">
+                      <div>
+                        <h3 className="font-display text-sm font-bold text-primary flex items-center gap-1.5">
+                          <IconPhoto size={16} />
+                          <span>Document Cover &amp; Preview Showcase</span>
+                        </h3>
+                        <p className="text-xs text-on-surface-variant">
+                          Live visual preview of your document cover and free sample pages in the marketplace.
+                        </p>
+                      </div>
+                      {previewUrls.length > 0 && (
+                        <span className="self-start sm:self-auto rounded-full bg-secondary-container px-2.5 py-0.5 text-xs font-semibold text-on-secondary-container">
+                          {previewUrls.length} Preview {previewUrls.length === 1 ? 'Page' : 'Pages'}
+                        </span>
+                      )}
+                    </div>
+
+                    <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 md:grid-cols-3">
+                      {/* Main Cover Page Card */}
+                      <div className="flex flex-col gap-2 rounded-xl border border-primary/30 bg-surface p-3 shadow-xs">
+                        <div className="flex items-center justify-between text-xs font-semibold text-primary">
+                          <span>Document Cover</span>
+                          <span className="rounded bg-primary/10 px-1.5 py-0.5 text-[10px] text-primary">Cover Page</span>
+                        </div>
+                        <div className="relative aspect-[3/4] w-full overflow-hidden rounded-lg bg-surface-lowest border border-surface-variant flex items-center justify-center">
+                          {coverPreviewUrl ? (
+                            <img
+                              src={coverPreviewUrl}
+                              alt="Document Cover Preview"
+                              className="size-full object-cover"
+                            />
+                          ) : (
+                            <div className="flex flex-col items-center justify-center p-4 text-center text-outline gap-2">
+                              <IconFileText size={36} className="text-primary/60" />
+                              <span className="text-xs font-medium text-on-surface line-clamp-1">{title.trim() || 'Document Cover'}</span>
+                              <span className="text-[10px] text-outline truncate max-w-[140px]">{documentFile?.name || 'PDF Document'}</span>
+                            </div>
+                          )}
+                        </div>
+                      </div>
+
+                      {/* Preview Pages Cards */}
+                      {previewUrls.map((p, idx) => (
+                        <div key={idx} className="flex flex-col gap-2 rounded-xl border border-surface-variant bg-surface p-3 shadow-xs">
+                          <div className="flex items-center justify-between text-xs font-semibold text-on-surface">
+                            <span>Preview Page {idx + 1}</span>
+                            <span className="rounded bg-surface-container px-1.5 py-0.5 text-[10px] text-outline">Sample</span>
+                          </div>
+                          <div className="relative aspect-[3/4] w-full overflow-hidden rounded-lg bg-surface-lowest border border-surface-variant">
+                            <img
+                              src={p.url}
+                              alt={`Preview Page ${idx + 1}`}
+                              className="size-full object-cover"
+                            />
+                          </div>
+                        </div>
+                      ))}
+                    </div>
+                  </div>
+                )}
+
                 {isEditing && (
                   <p className="mt-3 text-center text-xs text-outline">
                     Leave unchanged to keep your current uploaded document file.
@@ -438,22 +532,57 @@ export default function PostListingScreen({
           <div className="mt-6 lg:col-span-4 lg:mt-0">
             <div className="sticky top-24 space-y-6">
               <div className="glass-card rounded-2xl p-6">
-                <div className="mb-4 flex aspect-video items-center justify-center rounded-lg bg-surface-container">
-                  <IconPhoto size={36} className="text-outline" aria-hidden="true" />
+                <div className="relative mb-4 aspect-[4/3] w-full overflow-hidden rounded-xl border border-surface-variant bg-surface-container shadow-sm flex items-center justify-center group">
+                  {coverPreviewUrl ? (
+                    <img
+                      src={coverPreviewUrl}
+                      alt={title || 'Document cover'}
+                      className="size-full object-cover transition-transform duration-300 group-hover:scale-105"
+                    />
+                  ) : (
+                    <div className="flex flex-col items-center justify-center p-6 text-center text-outline gap-2">
+                      <IconPhoto size={36} className="text-outline" aria-hidden="true" />
+                      <span className="text-xs font-medium">Document Cover Preview</span>
+                    </div>
+                  )}
+
+                  <div className="absolute top-2.5 right-2.5 rounded-md bg-surface-lowest/90 backdrop-blur-xs px-2.5 py-1 text-xs font-bold text-primary shadow-xs">
+                    {isPremium ? (price ? `${price} ETB` : '0 ETB') : 'FREE'}
+                  </div>
+                  {previewUrls.length > 0 && (
+                    <div className="absolute bottom-2.5 left-2.5 rounded-md bg-black/70 backdrop-blur-xs px-2 py-0.5 text-[10px] font-semibold text-white">
+                      {previewUrls.length} Preview {previewUrls.length === 1 ? 'Page' : 'Pages'}
+                    </div>
+                  )}
                 </div>
-                <h3 className="mb-1 font-display text-lg font-bold text-primary">
+
+                <h3 className="mb-1 font-display text-lg font-bold text-primary truncate">
                   {title.trim() || 'Untitled Tutorial'}
                 </h3>
-                <p className="mb-6 flex items-center gap-1 text-sm text-on-surface-variant">
+                <p className="mb-4 flex items-center gap-1 text-sm text-on-surface-variant">
                   <IconSchool size={15} aria-hidden="true" />
-                  {subject || 'No Subject Selected'}
+                  <span className="truncate">{subject || 'No Subject Selected'}</span>
                 </p>
-                <div className="mb-4 flex items-center justify-between border-t border-surface-variant py-4">
-                  <span className="text-sm text-on-surface-variant">Status</span>
-                  <span className="inline-flex items-center rounded-full bg-surface-container px-2.5 py-0.5 text-xs font-medium text-on-surface">
-                    {isEditing ? 'Published' : 'Draft'}
-                  </span>
+
+                <div className="mb-4 space-y-2 border-t border-surface-variant py-3 text-xs">
+                  <div className="flex items-center justify-between">
+                    <span className="text-on-surface-variant">Format</span>
+                    <span className="font-semibold text-on-surface">{contentType || 'PDF Notes'}</span>
+                  </div>
+                  <div className="flex items-center justify-between">
+                    <span className="text-on-surface-variant">Preview Pages</span>
+                    <span className="font-semibold text-on-surface">
+                      {previewUrls.length > 0 ? `${previewUrls.length} Pages` : 'Standard 3 Pages'}
+                    </span>
+                  </div>
+                  <div className="flex items-center justify-between">
+                    <span className="text-on-surface-variant">Status</span>
+                    <span className="inline-flex items-center rounded-full bg-surface-container px-2.5 py-0.5 text-xs font-medium text-on-surface">
+                      {isEditing ? 'Published' : 'Draft'}
+                    </span>
+                  </div>
                 </div>
+
                 <div className="space-y-3">
                   <button
                     type="button"

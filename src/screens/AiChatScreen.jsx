@@ -687,160 +687,210 @@ export default function AiChatScreen({ user, onLogout, onNavigate }) {
         <AppNavbar user={user || profile} activeView="assistant" onNavigate={onNavigate} onLogout={onLogout} />
       </div>
 
-      <div className="flex flex-1 min-h-0 w-full overflow-hidden">
-        {/* ── Fixed Height, Non-Scrolling ChatGPT-Style Sidebar ── */}
-        <aside
-          className={`${
-            sidebarOpen ? 'w-64 lg:w-72' : 'w-0 -translate-x-full'
-          } shrink-0 h-full flex flex-col border-r border-surface-variant bg-surface-lowest overflow-hidden z-20 transition-all duration-300 ease-in-out`}
-        >
-          {/* New Chat Button */}
-          <div className="p-3 shrink-0 border-b border-surface-variant/60">
-            <button
-              type="button"
-              onClick={handleNewChat}
-              className="w-full flex items-center justify-between gap-2 rounded-xl border border-surface-variant bg-surface-low px-3.5 py-2.5 text-xs font-semibold text-on-surface hover:bg-surface-high transition-all cursor-pointer shadow-xs group"
-            >
-              <div className="flex items-center gap-2">
-                <IconPlus size={16} className="text-primary group-hover:scale-110 transition-transform" />
-                <span>New study chat</span>
-              </div>
-              <span className="text-[10px] font-mono text-outline bg-surface-container px-1.5 py-0.5 rounded border border-surface-variant/50">
-                ⌘K
-              </span>
-            </button>
-          </div>
+      <div className="relative flex flex-1 min-h-0 w-full overflow-hidden">
+        {/* ── Mobile Sidebar Backdrop (Smooth Fade) ── */}
+        <div
+          className={`absolute inset-0 z-30 bg-black/60 backdrop-blur-xs transition-opacity duration-300 ease-out md:hidden ${
+            sidebarOpen ? 'opacity-100 pointer-events-auto' : 'opacity-0 pointer-events-none'
+          }`}
+          onClick={() => setSidebarOpen(false)}
+          aria-hidden="true"
+        />
 
-          {/* Subject Focus Badges */}
-          <div className="p-3 shrink-0 border-b border-surface-variant/50">
-            <p className="text-[10px] font-bold text-outline uppercase tracking-wider mb-2">
-              Academic Focus
-            </p>
-            <div className="flex flex-wrap gap-1.5">
-              {SUBJECT_PRESETS.map((sub) => {
-                const isSelected = selectedSubject === sub.name
-                const Icon = sub.icon
-                return (
+        {/* ── Responsive Collapsible ChatGPT-Style Sidebar ── */}
+        <aside
+          className={`absolute md:relative inset-y-0 left-0 z-40 md:z-20 h-full flex flex-col border-r border-surface-variant bg-surface-lowest overflow-hidden transition-transform duration-300 ease-[cubic-bezier(0.16,1,0.3,1)] md:transition-[width,transform] ${
+            sidebarOpen
+              ? 'w-[85vw] max-w-[320px] md:w-64 lg:w-72 translate-x-0 shadow-2xl md:shadow-none'
+              : 'w-[85vw] max-w-[320px] md:w-0 -translate-x-full md:-translate-x-full md:border-r-0'
+          }`}
+        >
+          {/* Inner fixed-width wrapper to prevent any reflow / uncoordinated jitter during sliding */}
+          <div className="w-[85vw] max-w-[320px] md:w-64 lg:w-72 h-full flex flex-col shrink-0 select-none">
+            {/* New Chat Button & Mobile Close Header */}
+            <div className="p-3 shrink-0 border-b border-surface-variant/60 flex items-center gap-2 bg-surface-lowest">
+              <button
+                type="button"
+                onClick={() => {
+                  handleNewChat()
+                  if (typeof window !== 'undefined' && window.innerWidth < 768) {
+                    setSidebarOpen(false)
+                  }
+                }}
+                className="flex-1 flex items-center justify-between gap-2 rounded-xl border border-surface-variant bg-surface-low px-3.5 py-2.5 text-xs font-semibold text-on-surface hover:bg-surface-high hover:border-primary/50 transition-all cursor-pointer shadow-xs group"
+              >
+                <div className="flex items-center gap-2">
+                  <IconPlus size={16} className="text-primary group-hover:scale-110 transition-transform" />
+                  <span>New study chat</span>
+                </div>
+                <span className="text-[10px] font-mono text-outline bg-surface-container px-1.5 py-0.5 rounded border border-surface-variant/50">
+                  ⌘K
+                </span>
+              </button>
+
+              {/* Mobile-Only Close Sidebar Button */}
+              <button
+                type="button"
+                onClick={() => setSidebarOpen(false)}
+                aria-label="Close sidebar"
+                className="md:hidden inline-flex size-9 shrink-0 items-center justify-center rounded-xl border border-surface-variant bg-surface-low text-outline hover:text-on-surface hover:bg-surface-high transition-colors cursor-pointer"
+              >
+                <IconX size={17} />
+              </button>
+            </div>
+
+            {/* Subject Focus Badges */}
+            <div className="p-3 shrink-0 border-b border-surface-variant/50">
+              <p className="text-[10px] font-bold text-outline uppercase tracking-wider mb-2">
+                Academic Focus
+              </p>
+              <div className="flex flex-wrap gap-1.5">
+                {SUBJECT_PRESETS.map((sub) => {
+                  const isSelected = selectedSubject === sub.name
+                  const Icon = sub.icon
+                  return (
+                    <button
+                      key={sub.id}
+                      type="button"
+                      onClick={() => {
+                        setSelectedSubject(isSelected ? null : sub.name)
+                        if (typeof window !== 'undefined' && window.innerWidth < 768) {
+                          setSidebarOpen(false)
+                        }
+                      }}
+                      className={`inline-flex items-center gap-1 rounded-lg px-2 py-1 text-[11px] font-medium transition-all cursor-pointer ${
+                        isSelected
+                          ? 'bg-primary text-on-primary shadow-xs'
+                          : 'border border-surface-variant/70 bg-surface-low text-on-surface hover:border-primary/50 hover:bg-surface-high'
+                      }`}
+                    >
+                      <Icon size={12} className={isSelected ? 'text-on-primary' : sub.color.split(' ')[0]} />
+                      <span>{sub.name}</span>
+                    </button>
+                  )
+                })}
+              </div>
+            </div>
+
+            {/* Chat History List (Only this section scrolls within sidebar) */}
+            <div className="flex-1 min-h-0 overflow-y-auto p-2 space-y-1 scrollbar-thin">
+              <div className="flex items-center justify-between px-2 pt-2 pb-1">
+                <p className="text-[10px] font-bold text-outline uppercase tracking-wider">
+                  Recent Chats
+                </p>
+                {sessions.length > 0 && (
                   <button
-                    key={sub.id}
                     type="button"
-                    onClick={() => setSelectedSubject(isSelected ? null : sub.name)}
-                    className={`inline-flex items-center gap-1 rounded-lg px-2 py-1 text-[11px] font-medium transition-all cursor-pointer ${
-                      isSelected
-                        ? 'bg-primary text-on-primary shadow-xs'
-                        : 'border border-surface-variant/70 bg-surface-low text-on-surface hover:border-primary/50 hover:bg-surface-high'
+                    onClick={handleClearAllSessions}
+                    className="text-[10px] text-outline hover:text-error transition-colors cursor-pointer"
+                    title="Clear all recorded chats"
+                  >
+                    Clear all
+                  </button>
+                )}
+              </div>
+
+              {sessions.length === 0 ? (
+                <div className="px-3 py-6 text-center text-xs text-outline">
+                  No recent chats yet. Ask a question to start.
+                </div>
+              ) : (
+                sessions.map((sess) => (
+                  <div
+                    key={sess.id}
+                    onClick={() => {
+                      handleSelectSession(sess.id)
+                      if (typeof window !== 'undefined' && window.innerWidth < 768) {
+                        setSidebarOpen(false)
+                      }
+                    }}
+                    className={`w-full flex items-center justify-between gap-2 rounded-lg px-2.5 py-2 text-xs text-left transition-colors cursor-pointer group ${
+                      activeSessionId === sess.id
+                        ? 'bg-surface-high font-semibold text-primary'
+                        : 'text-on-surface-variant hover:bg-surface-low hover:text-on-surface'
                     }`}
                   >
-                    <Icon size={12} className={isSelected ? 'text-on-primary' : sub.color.split(' ')[0]} />
-                    <span>{sub.name}</span>
-                  </button>
-                )
-              })}
-            </div>
-          </div>
-
-          {/* Chat History List (Only this section scrolls within sidebar) */}
-          <div className="flex-1 min-h-0 overflow-y-auto p-2 space-y-1 scrollbar-thin">
-            <div className="flex items-center justify-between px-2 pt-2 pb-1">
-              <p className="text-[10px] font-bold text-outline uppercase tracking-wider">
-                Recent Chats
-              </p>
-              {sessions.length > 0 && (
-                <button
-                  type="button"
-                  onClick={handleClearAllSessions}
-                  className="text-[10px] text-outline hover:text-error transition-colors cursor-pointer"
-                  title="Clear all recorded chats"
-                >
-                  Clear all
-                </button>
+                    <div className="flex items-center gap-2 truncate flex-1 min-w-0">
+                      <IconMessage size={14} className="shrink-0 text-outline" />
+                      <span className="truncate">{sess.title}</span>
+                    </div>
+                    <button
+                      type="button"
+                      onClick={(e) => handleDeleteSession(e, sess.id)}
+                      title="Delete chat"
+                      className="opacity-0 group-hover:opacity-100 size-5 inline-flex items-center justify-center rounded hover:bg-surface-high hover:text-error transition-all cursor-pointer text-outline"
+                    >
+                      <IconTrash size={12} />
+                    </button>
+                  </div>
+                ))
               )}
             </div>
 
-            {sessions.length === 0 ? (
-              <div className="px-3 py-6 text-center text-xs text-outline">
-                No recent chats yet. Ask a question to start.
-              </div>
-            ) : (
-              sessions.map((sess) => (
-                <div
-                  key={sess.id}
-                  onClick={() => handleSelectSession(sess.id)}
-                  className={`w-full flex items-center justify-between gap-2 rounded-lg px-2.5 py-2 text-xs text-left transition-colors cursor-pointer group ${
-                    activeSessionId === sess.id
-                      ? 'bg-surface-high font-semibold text-primary'
-                      : 'text-on-surface-variant hover:bg-surface-low hover:text-on-surface'
-                  }`}
-                >
-                  <div className="flex items-center gap-2 truncate flex-1 min-w-0">
-                    <IconMessage size={14} className="shrink-0 text-outline" />
-                    <span className="truncate">{sess.title}</span>
-                  </div>
-                  <button
-                    type="button"
-                    onClick={(e) => handleDeleteSession(e, sess.id)}
-                    title="Delete chat"
-                    className="opacity-0 group-hover:opacity-100 size-5 inline-flex items-center justify-center rounded hover:bg-surface-high hover:text-error transition-all cursor-pointer text-outline"
-                  >
-                    <IconTrash size={12} />
-                  </button>
+            {/* Fixed User Profile Footer */}
+            <div className="p-3 shrink-0 border-t border-surface-variant/60 flex items-center justify-between bg-surface-lowest">
+              <div className="flex items-center gap-2.5 min-w-0">
+                <div className="size-8 rounded-full bg-primary text-on-primary flex items-center justify-center font-bold text-xs shrink-0 shadow-xs">
+                  {userInitial}
                 </div>
-              ))
-            )}
-          </div>
-
-          {/* Fixed User Profile Footer */}
-          <div className="p-3 shrink-0 border-t border-surface-variant/60 flex items-center justify-between bg-surface-lowest">
-            <div className="flex items-center gap-2.5 min-w-0">
-              <div className="size-8 rounded-full bg-primary text-on-primary flex items-center justify-center font-bold text-xs shrink-0 shadow-xs">
-                {userInitial}
+                <div className="truncate">
+                  <p className="text-xs font-semibold text-on-surface truncate">
+                    {displayName}
+                  </p>
+                  <p className="text-[10px] text-outline flex items-center gap-1">
+                    <IconSparkles size={10} className="text-emerald-500" />
+                    <span>Felat Plus • Free</span>
+                  </p>
+                </div>
               </div>
-              <div className="truncate">
-                <p className="text-xs font-semibold text-on-surface truncate">
-                  {displayName}
-                </p>
-                <p className="text-[10px] text-outline flex items-center gap-1">
-                  <IconSparkles size={10} className="text-emerald-500" />
-                  <span>Felat Plus • Free</span>
-                </p>
-              </div>
+              <button
+                type="button"
+                onClick={() => {
+                  handleNewChat()
+                  if (typeof window !== 'undefined' && window.innerWidth < 768) {
+                    setSidebarOpen(false)
+                  }
+                }}
+                title="New study chat"
+                className="inline-flex size-7 items-center justify-center rounded-lg text-outline hover:text-primary hover:bg-surface-high transition-colors cursor-pointer"
+              >
+                <IconPlus size={14} />
+              </button>
             </div>
-            <button
-              type="button"
-              onClick={handleNewChat}
-              title="New study chat"
-              className="inline-flex size-7 items-center justify-center rounded-lg text-outline hover:text-primary hover:bg-surface-high transition-colors cursor-pointer"
-            >
-              <IconPlus size={14} />
-            </button>
           </div>
         </aside>
 
         {/* ── Main Fixed Workspace Area ── */}
         <section className="flex-1 min-w-0 min-h-0 flex flex-col bg-surface-lowest overflow-hidden relative">
           {/* Fixed Top Floating Model Header */}
-          <header className="h-14 shrink-0 border-b border-surface-variant/50 px-4 flex items-center justify-between bg-surface-lowest/80 backdrop-blur-md z-10">
-            <div className="flex items-center gap-2">
+          <header className="h-14 shrink-0 border-b border-surface-variant/50 px-3 sm:px-4 flex items-center justify-between bg-surface-lowest/80 backdrop-blur-md z-10">
+            <div className="flex items-center gap-2 min-w-0">
               <button
                 type="button"
                 onClick={() => setSidebarOpen((prev) => !prev)}
                 title={sidebarOpen ? 'Close sidebar' : 'Open sidebar'}
-                className="inline-flex size-8 items-center justify-center rounded-lg text-outline hover:bg-surface-high hover:text-on-surface transition-colors cursor-pointer"
+                aria-label={sidebarOpen ? 'Close sidebar' : 'Open sidebar'}
+                className={`inline-flex size-8 shrink-0 items-center justify-center rounded-lg transition-colors cursor-pointer border ${
+                  sidebarOpen
+                    ? 'border-primary/40 bg-surface-high text-primary'
+                    : 'border-surface-variant/70 text-outline hover:bg-surface-high hover:text-on-surface'
+                }`}
               >
                 <IconLayoutSidebar size={18} />
               </button>
 
               {/* Model Switcher Pill */}
-              <div className="inline-flex items-center gap-1.5 px-3 py-1 rounded-xl bg-surface-low text-xs font-bold text-on-surface shadow-xs border border-surface-variant/60 cursor-default">
-                <span className="flex size-2 rounded-full bg-emerald-500 animate-pulse" />
-                <span>Felat (ፈላጥ) AI Study Workspace</span>
-                <span className="text-[10px] px-1.5 py-0.2 rounded bg-primary/10 text-primary font-mono">
+              <div className="inline-flex items-center gap-1.5 px-2.5 sm:px-3 py-1 rounded-xl bg-surface-low text-xs font-bold text-on-surface shadow-xs border border-surface-variant/60 cursor-default truncate">
+                <span className="flex size-2 rounded-full bg-emerald-500 animate-pulse shrink-0" />
+                <span className="hidden sm:inline">Felat (ፈላጥ) AI Study Workspace</span>
+                <span className="sm:hidden">Felat (ፈላጥ) AI</span>
+                <span className="text-[10px] px-1.5 py-0.2 rounded bg-primary/10 text-primary font-mono shrink-0">
                   4o
                 </span>
               </div>
             </div>
 
-            <div className="flex items-center gap-2">
+            <div className="flex items-center gap-1.5 sm:gap-2 shrink-0">
               {selectedSubject && (
                 <span className="hidden sm:inline-flex items-center gap-1 px-2.5 py-0.5 rounded-full text-xs font-semibold bg-primary-container text-on-primary-container">
                   <span>{selectedSubject}</span>
@@ -850,7 +900,7 @@ export default function AiChatScreen({ user, onLogout, onNavigate }) {
                 type="button"
                 onClick={handleNewChat}
                 aria-label="Reset session"
-                className="inline-flex items-center gap-1 px-3 py-1 text-xs font-semibold rounded-lg border border-surface-variant text-outline hover:text-primary hover:border-primary transition-colors cursor-pointer"
+                className="inline-flex items-center gap-1 px-2.5 sm:px-3 py-1 text-xs font-semibold rounded-lg border border-surface-variant text-outline hover:text-primary hover:border-primary transition-colors cursor-pointer"
               >
                 <IconRefresh size={13} />
                 <span>New</span>

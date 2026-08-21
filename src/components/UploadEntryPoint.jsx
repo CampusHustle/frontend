@@ -1,11 +1,28 @@
 import { useState } from 'react';
 
-export default function UploadEntryPoint({ onFileSelect }) {
+export default function UploadEntryPoint({
+  onFileSelect,
+  onCoverSelect,
+  onPreviewsSelect,
+  onMediaChange,
+}) {
   const [selectedFile, setSelectedFile] = useState(null);
   const [uploadStatus, setUploadStatus] = useState('idle');
   const [errorMessage, setErrorMessage] = useState('');
   const [coverImage, setCoverImage] = useState(null);
   const [previewImages, setPreviewImages] = useState([]);
+
+  const handleCoverUpdate = (file) => {
+    setCoverImage(file);
+    onCoverSelect?.(file);
+    onMediaChange?.({ file: selectedFile, coverImage: file, previewImages });
+  };
+
+  const handlePreviewsUpdate = (files) => {
+    setPreviewImages(files);
+    onPreviewsSelect?.(files);
+    onMediaChange?.({ file: selectedFile, coverImage, previewImages: files });
+  };
 
   const simulateUploadProgress = () => {
     setUploadStatus('queued');
@@ -115,7 +132,7 @@ export default function UploadEntryPoint({ onFileSelect }) {
                         accept="image/jpeg, image/png, image/*"
                         onChange={(e) => {
                           const file = e.target.files[0];
-                          if (file) setCoverImage(file);
+                          if (file) handleCoverUpdate(file);
                         }}
                       />
                     </label>
@@ -137,7 +154,7 @@ export default function UploadEntryPoint({ onFileSelect }) {
                           accept="image/jpeg, image/png, image/*"
                           onChange={(e) => {
                             const file = e.target.files[0];
-                            if (file) setCoverImage(file);
+                            if (file) handleCoverUpdate(file);
                           }}
                         />
                       </label>
@@ -164,7 +181,7 @@ export default function UploadEntryPoint({ onFileSelect }) {
                         accept="image/jpeg, image/png"
                         onChange={(e) => {
                           const files = Array.from(e.target.files);
-                          if (files.length > 0) setPreviewImages(files);
+                          if (files.length > 0) handlePreviewsUpdate(files);
                         }}
                       />
                     </label>
@@ -184,7 +201,7 @@ export default function UploadEntryPoint({ onFileSelect }) {
                         type="button"
                         onClick={(e) => {
                           e.stopPropagation();
-                          setPreviewImages([]);
+                          handlePreviewsUpdate([]);
                         }}
                         className="mt-4 w-full rounded border border-surface-variant bg-surface-lowest px-4 py-2 text-sm font-semibold text-on-surface shadow-sm transition-colors hover:bg-rose-500/15 hover:text-rose-400 cursor-pointer"
                       >
@@ -203,8 +220,8 @@ export default function UploadEntryPoint({ onFileSelect }) {
                 e.stopPropagation();
                 setUploadStatus('idle');
                 setSelectedFile(null);
-                setCoverImage(null);
-                setPreviewImages([]);
+                handleCoverUpdate(null);
+                handlePreviewsUpdate([]);
                 setErrorMessage('');
               }}
               className="mt-2 rounded-lg bg-rose-500/15 border border-rose-500/30 px-6 py-2 text-sm font-semibold text-rose-500 transition-colors hover:bg-rose-500/25 cursor-pointer"
