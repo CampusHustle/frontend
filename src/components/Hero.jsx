@@ -112,59 +112,66 @@ export default function Hero({ onNavigate }) {
         </div>
 
         {/* Hero Content */}
-        <div className="hero-content">
-          <div className="hero-header">
-            <h1 className="hero-title">
-              <span className="hero-title-line">Trade your notes.</span>
-              <span className="hero-title-line">Tutor your peers.</span>
-              <span className="hero-title-line">Grow your hustle.</span>
-            </h1>
-            <div className="hero-copy">
-              <p className="hero-description">
-                <span className="hero-description-line">Campus Hustle connects Ethiopian university students to</span>
-                <span className="hero-description-line"> buy verified study notes, book top peer tutors, and</span>
-                <span className="hero-description-line"> monetize academic excellence with Telebirr &amp; CBE.</span>
-              </p>
-            </div>
-            <div className="hero-cta-row" aria-label="Primary hero actions">
-              <button className="hero-cta-group" type="button" onClick={handleCta}>
-                <span className="hero-button hero-button-secondary">Start Your Hustle</span>
-                <span className="hero-icon-link">
-                  <svg className="action-link-icon" viewBox="0 0 116 116" fill="none" aria-hidden="true">
-                    <circle cx="57.9961" cy="58" r="48.5" stroke="currentColor" strokeWidth="3" />
-                    <path
-                      d="M38.7276 82.1197L76.9948 33.5985M36.0114 38.4406L76.9948 33.5985L81.837 74.582"
-                      stroke="currentColor"
-                      strokeWidth="3"
-                      strokeLinecap="round"
-                      strokeLinejoin="round"
-                    />
-                  </svg>
-                </span>
-              </button>
-              <button className="hero-cta-group hero-cta-signin" type="button" onClick={() => onNavigate?.('login')}>
-                <span className="hero-button hero-button-tertiary">Sign in</span>
-              </button>
-            </div>
-          </div>
+       <div className="hero-content w-full px-4 sm:px-6">
+         <div className="hero-header w-full">
+    
+    <h1 className="hero-title flex flex-col text-4xl sm:text-5xl md:text-6xl lg:text-7xl font-bold leading-tight break-words">
+      <span className=" block">Trade your notes.</span>
+      <span className=" block">Tutor your peers.</span>
+      <span className=" block text-primary">Grow your hustle.</span>
+    </h1>
+    
+    <div className="hero-copy mt-6 w-full max-w-2xl">
+      <p className="hero-description text-base sm:text-lg md:text-xl whitespace-normal break-words leading-relaxed">
+        Campus Hustle connects Ethiopian university students to buy verified study notes, book top peer tutors, and monetize academic excellence with Telebirr &amp; CBE.
+      </p>
+    </div>
 
-          <div className="hero-bottom">
-            <div className="hero-shop-meta-stage" aria-label="Featured notes and tutors">
+    <div className="hero-cta-row mt-10 flex flex-col sm:flex-row items-stretch sm:items-center gap-4 w-full" aria-label="Primary hero actions">
+      <button className="hero-cta-group group relative flex items-center justify-center gap-2 rounded-full bg-primary px-8 py-4 min-h-[56px] text-base md:text-lg font-bold text-on-primary shadow-lg transition-all hover:bg-primary/90 hover:scale-[1.02] active:scale-95 w-full sm:w-auto" type="button" onClick={handleCta}>
+        <span className="hero-button hero-button-secondary">Start Your Hustle</span>
+        <span className="hero-icon-link flex-shrink-0">
+          <svg className="action-link-icon size-6 transition-transform group-hover:translate-x-1" viewBox="0 0 116 116" fill="none" aria-hidden="true">
+            <circle cx="57.9961" cy="58" r="48.5" stroke="currentColor" strokeWidth="3" />
+            <path
+              d="M38.7276 82.1197L76.9948 33.5985M36.0114 38.4406L76.9948 33.5985L81.837 74.582"
+              stroke="currentColor"
+              strokeWidth="3"
+              strokeLinecap="round"
+              strokeLinejoin="round"
+            />
+          </svg>
+        </span>
+      </button>
+      <button className="hero-cta-group hero-cta-signin flex items-center justify-center rounded-full bg-white/10 backdrop-blur-md border border-white/20 px-8 py-4 min-h-[56px] text-base md:text-lg font-bold text-white transition-all hover:bg-white/20 w-full sm:w-auto" type="button" onClick={() => onNavigate?.('login')}>
+        <span className="hero-button hero-button-tertiary">Sign in</span>
+      </button>
+    </div>
+    
+  </div>
+
+
+          <div className="hero-bottom mt-16 lg:mt-auto w-full pb-8">
+            <div className="hero-shop-meta-stage relative w-full overflow-hidden rounded-2xl bg-black/40 backdrop-blur-md border border-white/10 p-4 sm:p-6 min-h-[140px] sm:min-h-[100px] flex items-center" aria-label="Featured notes and tutors">
               {HERO_SLIDES.map((slide, idx) => (
                 <div
                   key={slide.image}
-                  className={`hero-shop-meta ${idx === activeIndex ? 'is-active' : ''}`}
+                  className={`hero-shop-meta absolute inset-0 flex flex-col sm:flex-row sm:items-center justify-center sm:justify-start p-4 sm:p-6 gap-2 sm:gap-4 lg:gap-6 transition-all duration-700 ease-in-out ${idx === activeIndex ? 'opacity-100 translate-y-0 z-10' : 'opacity-0 translate-y-4 -z-10 pointer-events-none'}`}
                   aria-hidden={idx !== activeIndex}
                 >
-                  <span className="hero-shop-meta-title">{slide.title}</span>
-                  <span className="hero-shop-meta-owner">by {slide.owner}</span>
-                  <span className="hero-shop-meta-campus">{slide.campus}</span>
+                  <span className="hero-shop-meta-title text-xl sm:text-2xl font-bold text-white break-words line-clamp-1">{slide.title}</span>
+                  <div className="flex flex-wrap items-center gap-2 text-sm sm:text-base text-gray-300">
+                    <span className="hero-shop-meta-owner font-medium text-primary-300">by {slide.owner}</span>
+                    <span className="hidden sm:inline text-gray-500">•</span>
+                    <span className="hero-shop-meta-campus break-words text-gray-400">{slide.campus}</span>
+                  </div>
                 </div>
               ))}
             </div>
           </div>
         </div>
       </div>
+      
     </section>
   )
 }
