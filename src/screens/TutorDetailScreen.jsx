@@ -529,9 +529,9 @@ export default function TutorDetailScreen({ user, onLogout, onNavigate, availabl
                   </p>
                 </div>
                 <div className="flex shrink-0 flex-col items-end">
-                  <div className="flex items-center gap-1 rounded-full bg-primary-container px-2.5 py-1">
-                    <IconStarFilled size={14} className="text-on-primary-container" aria-hidden="true" />
-                    <span className="text-sm font-semibold text-on-primary-container">
+                  <div className="flex items-center gap-1 rounded-full bg-surface-container px-2.5 py-1">
+                    <IconStarFilled size={14} className="text-amber-500 dark:text-amber-400" aria-hidden="true" />
+                    <span className="text-sm font-semibold text-on-surface">
                       {tutor.rating.knowledge.toFixed(1)}
                     </span>
                   </div>

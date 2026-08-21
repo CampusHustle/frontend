@@ -47,6 +47,20 @@ export function AppRoutes() {
   const handleAddNote = (newNote) => {
     setAvailableTutorials((prev) => [newNote, ...prev])
   }
+
+  const handleUpdateNote = (updatedNote) => {
+    setAvailableTutorials((prev) =>
+      prev.map((item) =>
+        (item.id || item._id) === (updatedNote.id || updatedNote._id) ? updatedNote : item
+      )
+    )
+  }
+
+  const handleDeleteNote = (noteId) => {
+    setAvailableTutorials((prev) =>
+      prev.filter((item) => (item.id || item._id) !== noteId)
+    )
+  }
   const location = useLocation()
   const [currentUser, setCurrentUser] = useState(() => loadSessionUser())
   const [pendingUser, setPendingUser] = useState(null)
@@ -93,7 +107,11 @@ export function AppRoutes() {
       routeMap[targetView] ||
       (typeof targetView === 'string' && targetView.startsWith('/') ? targetView : '/')
     saveSessionView(targetView)
-    navigate(path)
+    if (context?.note) {
+      navigate(path, { state: { note: context.note } })
+    } else {
+      navigate(path)
+    }
   }
 
   const handleLogout = () => setShowLogoutWarning(true)
@@ -256,6 +274,8 @@ export function AppRoutes() {
               onLogout={handleLogout}
               onNavigate={handleNavigate}
               onUpdateProfile={handleUpdateProfile}
+              userNotes={availableTutorials}
+              onDeleteNote={handleDeleteNote}
             />
           }
         />
@@ -268,6 +288,7 @@ export function AppRoutes() {
               onLogout={handleLogout}
               onNavigate={handleNavigate}
               onAddNote={handleAddNote}
+              onUpdateNote={handleUpdateNote}
             />
           }
         />
