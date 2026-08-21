@@ -1,7 +1,10 @@
 import { describe, it, expect, vi } from 'vitest'
 import { render, screen } from '@testing-library/react'
 import userEvent from '@testing-library/user-event'
+import { MemoryRouter } from 'react-router-dom'
 import ProfilePage from '../pages/ProfilePage.jsx'
+
+const renderWithRouter = (ui) => render(<MemoryRouter>{ui}</MemoryRouter>)
 
 describe('ProfilePage and Edit Profile feature', () => {
   const initialUser = {
@@ -20,7 +23,7 @@ describe('ProfilePage and Edit Profile feature', () => {
   }
 
   it('renders the user profile with details and Edit Profile button', () => {
-    render(<ProfilePage user={initialUser} />)
+    renderWithRouter(<ProfilePage user={initialUser} />)
 
     expect(screen.getByRole('heading', { name: 'My Profile' })).toBeInTheDocument()
     expect(screen.getByRole('heading', { name: 'Daniel Gidey' })).toBeInTheDocument()
@@ -32,7 +35,7 @@ describe('ProfilePage and Edit Profile feature', () => {
 
   it('opens edit profile modal when Edit Profile button is clicked', async () => {
     const user = userEvent.setup()
-    render(<ProfilePage user={initialUser} />)
+    renderWithRouter(<ProfilePage user={initialUser} />)
 
     expect(screen.queryByRole('dialog', { name: /Edit Profile/i })).not.toBeInTheDocument()
 
@@ -48,7 +51,7 @@ describe('ProfilePage and Edit Profile feature', () => {
   it('saves updated profile changes and updates the profile display', async () => {
     const user = userEvent.setup()
     const onUpdateProfile = vi.fn()
-    render(<ProfilePage user={initialUser} onUpdateProfile={onUpdateProfile} />)
+    renderWithRouter(<ProfilePage user={initialUser} onUpdateProfile={onUpdateProfile} />)
 
     await user.click(screen.getByRole('button', { name: 'Edit Profile' }))
 
@@ -82,7 +85,7 @@ describe('ProfilePage and Edit Profile feature', () => {
 
   it('cancels editing without applying changes', async () => {
     const user = userEvent.setup()
-    render(<ProfilePage user={initialUser} />)
+    renderWithRouter(<ProfilePage user={initialUser} />)
 
     await user.click(screen.getByRole('button', { name: 'Edit Profile' }))
 

@@ -53,3 +53,35 @@ export async function purchaseNote(noteId) {
 export async function getMyPurchases(params = {}) {
   return apiClient.get('/api/notes/purchases/me', { params })
 }
+
+/**
+ * Updates a note by ID
+ * @param {string} noteId
+ * @param {FormData|Object} data
+ * @returns {Promise<{ success: boolean, message: string, note?: Object }>}
+ */
+export async function updateNote(noteId, data) {
+  return apiClient.put(`/api/notes/${noteId}`, data)
+}
+
+/**
+ * Deletes a note by ID
+ * @param {string} noteId
+ * @returns {Promise<{ success: boolean, message: string }>}
+ */
+export async function deleteNote(noteId) {
+  return apiClient.delete(`/api/notes/${noteId}`)
+}
+
+/**
+ * Retrieves notes uploaded by the authenticated user
+ * @param {string} [userId]
+ * @returns {Promise<{ success: boolean, notes?: Array, data?: Array }>}
+ */
+export async function getMyUploadedNotes(userId) {
+  if (userId) {
+    return apiClient.get(`/api/notes/tutor/${userId}`)
+  }
+  return apiClient.get('/api/notes/my-notes')
+}
+
