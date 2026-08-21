@@ -20,10 +20,7 @@ import AppNavbar from "../components/AppNavbar.jsx";
 import ConsentModal from "../components/ConsentModal.jsx";
 import { useSocket } from "../hooks/useSocket.js";
 import { MOCK_PEER } from "../api/mockChatApi.js";
-import { getMessagesWithUser } from "../api/chatApi.js";
-import { tutors } from "../api/mockUsers.js";
-import { getTutorById } from "../api/tutorApi.js";
-import { getConversations, getConversationMessages } from "../api/chatApi.js";
+import { getMessagesWithUser, getConversations } from "../api/chatApi.js";
 import { INITIAL_MESSAGES } from "../api/mockChatApi.js";
 import {
   sanitizeMessage,
@@ -422,7 +419,6 @@ export default function ChatScreen({ user, onLogout, onNavigate }) {
   useEffect(() => {
     if (!activeId || !userId) return
     let isMounted = true
-    setIsLoadingMessages(true)
     getMessagesWithUser(activeId)
       .then((res) => {
         if (!isMounted) return

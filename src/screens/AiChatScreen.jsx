@@ -407,18 +407,22 @@ export default function AiChatScreen({ user, onLogout, onNavigate }) {
   const currentAiMsgIdRef = useRef(null)
   const currentSessionIdRef = useRef(null)
 
-  // Ensure real user from database is loaded into profile
+  // Ensure real user from database is loaded into profile if not already available
   useEffect(() => {
-    if (user?.name) {
-      setProfile(user)
-    } else {
+    if (!user?.name && !profile?.name) {
+      let isMounted = true
       getCurrentUserProfile()
         .then((res) => {
-          if (res?.user) setProfile(res.user)
+          if (isMounted && res?.user) {
+            setProfile(res.user)
+          }
         })
         .catch(() => {})
+      return () => {
+        isMounted = false
+      }
     }
-  }, [user])
+  }, [user, profile])
 
   // Sync sessions to localStorage
   useEffect(() => {
