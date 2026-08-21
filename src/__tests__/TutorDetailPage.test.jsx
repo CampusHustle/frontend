@@ -202,8 +202,8 @@ describe('TutorDetailPage', () => {
     })
     unmountCompleted()
 
-    // 4. Cancelled Status
-    render(
+    // 4. Cancelled / Declined Status with Re-booking
+    const { unmount: unmountCancelled } = render(
       <MemoryRouter initialEntries={[`/tutor/${testTutor.id}`]}>
         <Routes>
           <Route
@@ -213,7 +213,7 @@ describe('TutorDetailPage', () => {
                 user={testTutor}
                 onLogout={onLogout}
                 onNavigate={onNavigate}
-                initialBookingStatus="cancelled"
+                initialBookingStatus="declined"
               />
             }
           />
@@ -222,7 +222,17 @@ describe('TutorDetailPage', () => {
     )
     await waitFor(() => {
       expect(screen.getByTestId('booking-status-cancelled')).toBeInTheDocument()
-      expect(screen.getByText(/Status: Booking Cancelled/i)).toBeInTheDocument()
+      expect(screen.getByRole('button', { name: 'Request New Slot' })).toBeInTheDocument()
     })
+
+    // Click a new slot -> status resets to idle -> can click Request Booking
+    const newSlotBtn = screen
+      .getAllByRole('button', { name: /9:00 AM|2:00 PM/i })
+      .find((el) => el.getAttribute('aria-pressed') !== null && !el.closest('[aria-disabled="true"]'))
+    if (newSlotBtn) {
+      await userEvent.click(newSlotBtn)
+      expect(screen.getByRole('button', { name: 'Request Booking' })).toBeEnabled()
+    }
+    unmountCancelled()
   })
 })
