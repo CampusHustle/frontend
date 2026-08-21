@@ -1,5 +1,5 @@
-import { useState, useEffect, useRef, useCallback } from 'react'
-import { useParams } from 'react-router-dom'
+import { useState, useEffect, useRef, useCallback } from "react";
+import { useParams } from "react-router-dom";
 import {
   IconSend,
   IconPaperclip,
@@ -15,39 +15,62 @@ import {
   IconMessages,
   IconUserCheck,
   IconChevronRight,
-} from '@tabler/icons-react'
-import AppNavbar from '../components/AppNavbar.jsx'
-import ConsentModal from '../components/ConsentModal.jsx'
-import { useSocket } from '../hooks/useSocket.js'
-import { getTutorById } from '../api/tutorApi.js'
-import { getConversations, getConversationMessages } from '../api/chatApi.js'
-import { MOCK_PEER, INITIAL_MESSAGES } from '../api/mockChatApi.js'
-import { sanitizeMessage, sanitizeDisplayText, MAX_MESSAGE_LENGTH } from '../utils/sanitize.js'
+} from "@tabler/icons-react";
+import AppNavbar from "../components/AppNavbar.jsx";
+import ConsentModal from "../components/ConsentModal.jsx";
+import { useSocket } from "../hooks/useSocket.js";
+import { MOCK_PEER } from "../api/mockChatApi.js";
+import { getMessagesWithUser, getConversations } from "../api/chatApi.js";
+import { INITIAL_MESSAGES } from "../api/mockChatApi.js";
+import {
+  sanitizeMessage,
+  sanitizeDisplayText,
+  MAX_MESSAGE_LENGTH,
+} from "../utils/sanitize.js";
+import { encodeContactCard, decodeContactCard } from "../utils/contactCard.js";
+
+function mapMessage(m, myId) {
+  const card = decodeContactCard(m.content);
+  const base = {
+    id: m._id || m.id,
+    sender: m.senderId === myId ? "me" : "peer",
+    time: new Date(m.createdAt || Date.now()).toLocaleTimeString([], {
+      hour: "2-digit",
+      minute: "2-digit",
+    }),
+  };
+  return card
+    ? { ...base, type: "contact", contact: card }
+    : { ...base, text: m.content };
+}
 
 const STATUS_CONFIG = {
   connecting: {
-    label: 'Connecting…',
-    badgeClass: 'bg-amber-500/10 text-amber-600 dark:text-amber-400 border border-amber-500/20',
+    label: "Connecting…",
+    badgeClass:
+      "bg-amber-500/10 text-amber-600 dark:text-amber-400 border border-amber-500/20",
     Icon: IconLoader2,
-    iconClass: 'animate-spin',
+    iconClass: "animate-spin",
   },
   connected: {
-    label: 'Online',
-    badgeClass: 'bg-emerald-500/10 text-emerald-600 dark:text-emerald-400 border border-emerald-500/20',
+    label: "Online",
+    badgeClass:
+      "bg-emerald-500/10 text-emerald-600 dark:text-emerald-400 border border-emerald-500/20",
     Icon: IconWifi,
-    iconClass: '',
+    iconClass: "",
   },
   disconnected: {
-    label: 'Offline',
-    badgeClass: 'bg-surface-container text-outline border border-outline-variant/30',
+    label: "Offline",
+    badgeClass:
+      "bg-surface-container text-outline border border-outline-variant/30",
     Icon: IconWifiOff,
-    iconClass: '',
+    iconClass: "",
   },
-}
+};
 
 function ConnectionStatusBadge({ status }) {
-  const cfg = STATUS_CONFIG[status] ?? STATUS_CONFIG.disconnected
-  const { Icon, label, badgeClass, iconClass } = cfg
+  const cfg = STATUS_CONFIG[status] ?? STATUS_CONFIG.disconnected;
+  const { Icon, label, badgeClass, iconClass } = cfg;
   return (
     <span
       role="status"
@@ -57,27 +80,27 @@ function ConnectionStatusBadge({ status }) {
       <Icon size={12} aria-hidden="true" className={iconClass} />
       {label}
     </span>
-  )
+  );
 }
 
-function PeerAvatar({ peer, size = 'md' }) {
-  const dim = size === 'sm' ? 'size-8' : size === 'lg' ? 'size-11' : 'size-10'
-  const text = size === 'sm' ? 'text-xs' : 'text-sm'
-  const initials = (peer?.name ?? '')
-    .split(' ')
+function PeerAvatar({ peer, size = "md" }) {
+  const dim = size === "sm" ? "size-8" : size === "lg" ? "size-11" : "size-10";
+  const text = size === "sm" ? "text-xs" : "text-sm";
+  const initials = (peer?.name ?? "")
+    .split(" ")
     .filter(Boolean)
     .slice(0, 2)
     .map((p) => p[0]?.toUpperCase())
-    .join('')
+    .join("");
 
   if (peer?.profilePicUrl) {
     return (
       <img
         src={peer.profilePicUrl}
-        alt={`${peer.name || 'User'} avatar`}
+        alt={`${peer.name || "User"} avatar`}
         className={`${dim} shrink-0 rounded-full border-2 border-surface object-cover shadow-sm`}
       />
-    )
+    );
   }
   return (
     <div
@@ -86,40 +109,48 @@ function PeerAvatar({ peer, size = 'md' }) {
     >
       {initials || <IconUser size={16} />}
     </div>
-  )
+  );
 }
 
 function MessageBubble({ msg, peer, isMe }) {
   const timeStr = msg.createdAt
-    ? new Date(msg.createdAt).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })
-    : msg.time || new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })
+    ? new Date(msg.createdAt).toLocaleTimeString([], {
+        hour: "2-digit",
+        minute: "2-digit",
+      })
+    : msg.time ||
+      new Date().toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" });
 
   return (
     <div
-      className={`flex items-end gap-2.5 ${isMe ? 'flex-row-reverse self-end' : 'flex-row self-start'} max-w-[85%] sm:max-w-[75%]`}
+      className={`flex items-end gap-2.5 ${isMe ? "flex-row-reverse self-end" : "flex-row self-start"} max-w-[85%] sm:max-w-[75%]`}
     >
       {!isMe && <PeerAvatar peer={peer} size="sm" />}
-      <div className={`flex flex-col gap-1 ${isMe ? 'items-end' : 'items-start'}`}>
+      <div
+        className={`flex flex-col gap-1 ${isMe ? "items-end" : "items-start"}`}
+      >
         <div
           className={
             isMe
-              ? 'rounded-2xl rounded-br-xs bg-primary px-4 py-2.5 text-sm leading-relaxed text-on-primary shadow-level-1'
-              : 'rounded-2xl rounded-bl-xs border border-surface-variant bg-surface px-4 py-2.5 text-sm leading-relaxed text-on-surface shadow-level-1'
+              ? "rounded-2xl rounded-br-xs bg-primary px-4 py-2.5 text-sm leading-relaxed text-on-primary shadow-level-1"
+              : "rounded-2xl rounded-bl-xs border border-surface-variant bg-surface px-4 py-2.5 text-sm leading-relaxed text-on-surface shadow-level-1"
           }
         >
           {msg.content || msg.text}
         </div>
-        <span className="px-1 text-[10px] font-medium text-outline">{timeStr}</span>
+        <span className="px-1 text-[10px] font-medium text-outline">
+          {timeStr}
+        </span>
       </div>
     </div>
-  )
+  );
 }
 
 function ContactCard({ contact, isMe }) {
   return (
     <div
       aria-label="Shared contact information"
-      className={`flex max-w-[85%] sm:max-w-[75%] flex-col gap-1 ${isMe ? 'self-end items-end' : 'self-start items-start'}`}
+      className={`flex max-w-[85%] sm:max-w-[75%] flex-col gap-1 ${isMe ? "self-end items-end" : "self-start items-start"}`}
     >
       <div className="w-full rounded-2xl border border-secondary-container/40 bg-secondary-container/10 p-4 shadow-level-1 backdrop-blur-sm">
         <div className="mb-3 flex items-center gap-2 border-b border-secondary-container/20 pb-3">
@@ -131,17 +162,29 @@ function ContactCard({ contact, isMe }) {
               Verified Contact Shared
             </p>
             <p className="text-[11px] text-on-surface-variant">
-              {isMe ? 'You shared your contact details' : `${contact.name} shared their contact details`}
+              {isMe
+                ? "You shared your contact details"
+                : `${contact.name} shared their contact details`}
             </p>
           </div>
         </div>
         <div className="flex flex-col gap-2">
           <div className="flex items-center gap-2.5">
-            <IconUser size={15} aria-hidden="true" className="shrink-0 text-on-surface-variant" />
-            <span className="text-sm font-semibold text-on-surface">{contact.name}</span>
+            <IconUser
+              size={15}
+              aria-hidden="true"
+              className="shrink-0 text-on-surface-variant"
+            />
+            <span className="text-sm font-semibold text-on-surface">
+              {contact.name}
+            </span>
           </div>
           <div className="flex items-center gap-2.5">
-            <IconMail size={15} aria-hidden="true" className="shrink-0 text-on-surface-variant" />
+            <IconMail
+              size={15}
+              aria-hidden="true"
+              className="shrink-0 text-on-surface-variant"
+            />
             <a
               href={`mailto:${contact.email}`}
               className="text-sm font-medium text-primary underline-offset-2 hover:underline"
@@ -151,7 +194,11 @@ function ContactCard({ contact, isMe }) {
           </div>
           {contact.phone && (
             <div className="flex items-center gap-2.5">
-              <IconPhone size={15} aria-hidden="true" className="shrink-0 text-on-surface-variant" />
+              <IconPhone
+                size={15}
+                aria-hidden="true"
+                className="shrink-0 text-on-surface-variant"
+              />
               <a
                 href={`tel:${contact.phone}`}
                 className="text-sm font-medium text-primary underline-offset-2 hover:underline"
@@ -163,18 +210,21 @@ function ContactCard({ contact, isMe }) {
         </div>
       </div>
       <span className="px-1 text-[10px] text-outline">
-        {new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}
+        {new Date().toLocaleTimeString([], {
+          hour: "2-digit",
+          minute: "2-digit",
+        })}
       </span>
     </div>
-  )
+  );
 }
 
 function ChatThread({ messages, peer, currentUserId }) {
-  const bottomRef = useRef(null)
+  const bottomRef = useRef(null);
 
   useEffect(() => {
-    bottomRef.current?.scrollIntoView({ behavior: 'smooth' })
-  }, [messages])
+    bottomRef.current?.scrollIntoView({ behavior: "smooth" });
+  }, [messages]);
 
   if (messages.length === 0) {
     return (
@@ -182,12 +232,15 @@ function ChatThread({ messages, peer, currentUserId }) {
         <div className="flex size-14 items-center justify-center rounded-2xl bg-primary-container/40 text-primary">
           <IconMessages size={28} />
         </div>
-        <h3 className="font-display text-lg font-bold text-on-surface">No messages yet</h3>
+        <h3 className="font-display text-lg font-bold text-on-surface">
+          No messages yet
+        </h3>
         <p className="max-w-xs text-xs text-on-surface-variant">
-          Send a greeting or ask a question to start your peer study conversation!
+          Send a greeting or ask a question to start your peer study
+          conversation!
         </p>
       </div>
-    )
+    );
   }
 
   return (
@@ -205,15 +258,15 @@ function ChatThread({ messages, peer, currentUserId }) {
       </div>
 
       {messages.map((msg, index) => {
-        const isMe = msg.senderId === currentUserId || msg.sender === 'me'
-        if (msg.type === 'contact' || msg.contact) {
+        const isMe = msg.senderId === currentUserId || msg.sender === "me";
+        if (msg.type === "contact" || msg.contact) {
           return (
             <ContactCard
               key={msg._id || msg.id || index}
               contact={msg.contact}
               isMe={isMe}
             />
-          )
+          );
         }
         return (
           <MessageBubble
@@ -222,42 +275,42 @@ function ChatThread({ messages, peer, currentUserId }) {
             peer={peer}
             isMe={isMe}
           />
-        )
+        );
       })}
 
       <div ref={bottomRef} />
     </div>
-  )
+  );
 }
 
 function MessageInput({ onSend, onShareContact, disabled }) {
-  const [draft, setDraft] = useState('')
-  const textareaRef = useRef(null)
+  const [draft, setDraft] = useState("");
+  const textareaRef = useRef(null);
 
   function handleSend() {
-    const text = sanitizeMessage(draft)
-    if (!text || disabled) return
-    onSend(text)
-    setDraft('')
-    if (textareaRef.current) textareaRef.current.style.height = 'auto'
+    const text = sanitizeMessage(draft);
+    if (!text || disabled) return;
+    onSend(text);
+    setDraft("");
+    if (textareaRef.current) textareaRef.current.style.height = "auto";
   }
 
   function handleKey(e) {
-    if (e.key === 'Enter' && !e.shiftKey) {
-      e.preventDefault()
-      handleSend()
+    if (e.key === "Enter" && !e.shiftKey) {
+      e.preventDefault();
+      handleSend();
     }
   }
 
   function handleInput(e) {
-    const el = e.target
-    el.style.height = 'auto'
-    el.style.height = `${Math.min(el.scrollHeight, 140)}px`
-    setDraft(el.value)
+    const el = e.target;
+    el.style.height = "auto";
+    el.style.height = `${Math.min(el.scrollHeight, 140)}px`;
+    setDraft(el.value);
   }
 
-  const remaining = MAX_MESSAGE_LENGTH - draft.length
-  const nearLimit = remaining <= 100
+  const remaining = MAX_MESSAGE_LENGTH - draft.length;
+  const nearLimit = remaining <= 100;
 
   return (
     <div className="shrink-0 border-t border-surface-variant bg-surface-lowest p-3 sm:p-4">
@@ -271,14 +324,16 @@ function MessageInput({ onSend, onShareContact, disabled }) {
             <IconAddressBook size={14} aria-hidden="true" />
             Share contact info
           </button>
-          <span className="text-[11px] text-outline font-medium">Press Enter ↵ to send</span>
+          <span className="text-[11px] text-outline font-medium">
+            Press Enter ↵ to send
+          </span>
         </div>
 
         <form
           aria-label="Send a message"
           onSubmit={(e) => {
-            e.preventDefault()
-            handleSend()
+            e.preventDefault();
+            handleSend();
           }}
           className="relative flex items-end gap-2 rounded-2xl border border-surface-variant bg-surface-low p-2 transition-all focus-within:border-primary focus-within:ring-2 focus-within:ring-primary/20"
         >
@@ -298,7 +353,9 @@ function MessageInput({ onSend, onShareContact, disabled }) {
             maxLength={MAX_MESSAGE_LENGTH}
             onInput={handleInput}
             onKeyDown={handleKey}
-            placeholder={disabled ? 'Select a conversation to type...' : 'Type a message…'}
+            placeholder={
+              disabled ? "Select a conversation to type..." : "Type a message…"
+            }
             aria-label="Message input"
             className="max-h-36 w-full resize-none border-0 bg-transparent px-2 py-2 text-sm text-on-surface placeholder:text-outline focus:outline-none focus:ring-0"
           />
@@ -320,15 +377,16 @@ function MessageInput({ onSend, onShareContact, disabled }) {
         )}
       </div>
     </div>
-  )
+  );
 }
 
 export default function ChatScreen({ user, onLogout, onNavigate }) {
-  const { id: peerIdParam } = useParams()
-  const { socket, status } = useSocket()
+  const { id: peerIdParam, id: routeId } = useParams()
+  const activeId = peerIdParam || routeId
+  const { socket, status, getSocket } = useSocket()
   const [conversations, setConversations] = useState([])
   const [activePeer, setActivePeer] = useState(() => ({
-    _id: peerIdParam || MOCK_PEER?.id || 'u-sarah',
+    _id: activeId || MOCK_PEER?.id || 'u-sarah',
     name: MOCK_PEER?.name || 'Sarah Johnson',
     department: MOCK_PEER?.department || 'Computer Science',
   }))
@@ -338,6 +396,7 @@ export default function ChatScreen({ user, onLogout, onNavigate }) {
   const [isLoadingMessages, setIsLoadingMessages] = useState(false)
 
   const currentUserId = user?._id || user?.id || 'me'
+  const userId = user?._id || user?.id
 
   // Load conversation inbox on mount
   useEffect(() => {
@@ -346,177 +405,109 @@ export default function ChatScreen({ user, onLogout, onNavigate }) {
       .then((res) => {
         if (isMounted && Array.isArray(res?.conversations)) {
           setConversations(res.conversations)
-          if (!peerIdParam && res.conversations.length > 0 && res.conversations[0].peer) {
+          if (!activeId && res.conversations.length > 0 && res.conversations[0].peer) {
             setActivePeer(res.conversations[0].peer)
           }
         }
       })
-      .catch(() => {})
+      .catch(() => { })
     return () => {
       isMounted = false
     }
-  }, [peerIdParam])
+  }, [activeId])
 
-  // If peerIdParam is provided in URL, load that peer and set active
   useEffect(() => {
-    if (!peerIdParam) return
+    if (!activeId || !userId) return
     let isMounted = true
-
-    getTutorById(peerIdParam)
+    getMessagesWithUser(activeId)
       .then((res) => {
-        if (isMounted && res?.user) {
-          const loadedPeer = {
-            ...res.user,
-            _id: res.user._id || res.user.id || peerIdParam,
-          }
-          setActivePeer(loadedPeer)
-        }
+        if (!isMounted) return
+        const mapped = (res?.messages ?? [])
+          .slice()
+          .reverse()
+          .map((m) => mapMessage(m, userId))
+        setMessages(mapped)
       })
       .catch(() => {
         if (isMounted) {
-          setActivePeer({
-            _id: peerIdParam,
-            name: 'Peer Student',
-            department: 'Academic Contact',
-          })
+          setMessages([])
         }
       })
-
+      .finally(() => {
+        if (isMounted) setIsLoadingMessages(false)
+      })
     return () => {
       isMounted = false
     }
-  }, [peerIdParam])
-
-  // Derive conversation ID between current user and active peer
-  const activeConversationId =
-    currentUserId && activePeer?._id
-      ? [currentUserId, activePeer._id].sort().join('_')
-      : 'conversation-default'
+  }, [activeId, userId])
 
   useEffect(() => {
-    if (!activeConversationId) return
-    let isMounted = true
+    if (!activeId || !userId) return
+    const activeSocket = socket || (typeof getSocket === 'function' ? getSocket() : null)
+    if (!activeSocket) return
 
-    if (socket && socket.connected) {
-      socket.emit('join_conversation', { conversationId: activeConversationId })
+    const conversationId = [userId, activeId].sort().join('_')
+
+    function onReceive(msg) {
+      setMessages((prev) => [...prev, mapMessage(msg, userId)])
     }
 
-    async function loadMessages() {
-      try {
-        const res = await getConversationMessages(activeConversationId)
-        if (isMounted && Array.isArray(res?.messages) && res.messages.length > 0) {
-          setMessages(res.messages)
-        }
-      } catch {
-        // Keep existing messages
-      } finally {
-        if (isMounted) {
-          setIsLoadingMessages(false)
-        }
-      }
+    function onError(err) {
+      console.error('[chat socket error]', err)
     }
 
-    loadMessages()
+    activeSocket.emit('join_conversation', { conversationId })
+    activeSocket.on('message:receive', onReceive)
+    activeSocket.on('error', onError)
 
     return () => {
-      isMounted = false
+      activeSocket.off('message:receive', onReceive)
+      activeSocket.off('error', onError)
     }
-  }, [activeConversationId, socket])
+  }, [activeId, userId, status, socket, getSocket])
 
-  useEffect(() => {
-    if (!socket) return
-
-    function onIncomingMessage(payload) {
-      if (payload.conversationId === activeConversationId) {
-        setMessages((prev) => {
-          if (prev.some((m) => m._id === payload._id)) return prev
-          return [...prev, payload]
-        })
-      }
-
-      setConversations((prev) => {
-        const found = prev.find((c) => c.conversationId === payload.conversationId)
-        if (found) {
-          return prev.map((c) =>
-            c.conversationId === payload.conversationId ? { ...c, lastMessage: payload } : c
-          )
-        }
-        return prev
-      })
-    }
-
-    socket.on('message:receive', onIncomingMessage)
-    return () => {
-      socket.off('message:receive', onIncomingMessage)
-    }
-  }, [socket, activeConversationId])
-
-  const handleSendMessage = useCallback(
+  const handleSend = useCallback(
     (text) => {
-      if (!activeConversationId) return
-
-      const optimisticMsg = {
-        _id: `temp-${Date.now()}`,
-        conversationId: activeConversationId,
-        senderId: currentUserId,
-        sender: 'me',
-        content: text,
-        createdAt: new Date().toISOString(),
-      }
-
-      setMessages((prev) => [...prev, optimisticMsg])
-
-      if (socket && socket.connected) {
-        socket.emit('message:send', {
-          conversationId: activeConversationId,
-          content: text,
-        })
-      }
+      const activeSocket = socket || (typeof getSocket === 'function' ? getSocket() : null)
+      if (!activeSocket || !activeId || !userId) return
+      const conversationId = [userId, activeId].sort().join('_')
+      activeSocket.emit('message:send', { conversationId, content: text })
     },
-    [activeConversationId, currentUserId, socket]
+    [socket, getSocket, activeId, userId]
   )
 
   const handleConsentConfirm = useCallback(() => {
     setConsentOpen(false)
-    const contact = {
-      name: sanitizeDisplayText(user?.name ?? 'Campus Student'),
-      email: sanitizeDisplayText(user?.email ?? 'student@office.mu.edu.et'),
+    const activeSocket = socket || (typeof getSocket === 'function' ? getSocket() : null)
+    if (!activeSocket || !activeId || !userId) return
+
+    const conversationId = [userId, activeId].sort().join('_')
+    const content = encodeContactCard({
+      name: sanitizeDisplayText(user?.name ?? ''),
+      email: sanitizeDisplayText(user?.email ?? ''),
       phone: user?.phone ? sanitizeDisplayText(user.phone) : null,
-    }
+    })
 
-    const contactMsg = {
-      _id: `contact-${Date.now()}`,
-      type: 'contact',
-      sender: 'me',
-      senderId: currentUserId,
-      contact,
-      createdAt: new Date().toISOString(),
-    }
+    activeSocket.emit('message:send', { conversationId, content })
+  }, [socket, getSocket, activeId, userId, user])
 
-    setMessages((prev) => [...prev, contactMsg])
-
-    if (socket && socket.connected && activeConversationId) {
-      socket.emit('message:send', {
-        conversationId: activeConversationId,
-        content: `Contact Info: Name: ${contact.name} | Email: ${contact.email}${contact.phone ? ` | Phone: ${contact.phone}` : ''}`,
-      })
-    }
-  }, [activeConversationId, currentUserId, socket, user])
-
-  const filteredConversations = conversations.filter((c) => {
-    const peerName = c.peer?.name || ''
-    return peerName.toLowerCase().includes(searchQuery.toLowerCase())
-  })
+  const filteredConversations = conversations.filter((c) =>
+    (c?.peer?.name || '').toLowerCase().includes(searchQuery.toLowerCase())
+  )
 
   return (
     <div className="flex min-h-screen flex-col bg-surface font-body text-on-surface">
-      <AppNavbar user={user} activeView="chat" onNavigate={onNavigate} onLogout={onLogout} />
+      <AppNavbar
+        user={user}
+        activeView="chat"
+        onNavigate={onNavigate}
+        onLogout={onLogout}
+      />
 
       <main className="flex flex-1 overflow-hidden h-[calc(100vh-64px)]">
         <aside
-          className={`w-full md:w-80 lg:w-96 flex flex-col border-r border-surface-variant bg-surface-lowest ${
-            activePeer ? 'hidden md:flex' : 'flex'
-          }`}
+          className={`w-full md:w-80 lg:w-96 flex flex-col border-r border-surface-variant bg-surface-lowest ${activePeer ? 'hidden md:flex' : 'flex'
+            }`}
         >
           <div className="p-4 border-b border-surface-variant">
             <div className="flex items-center justify-between mb-3">
@@ -567,9 +558,8 @@ export default function ChatScreen({ user, onLogout, onNavigate }) {
                       setActivePeer(conv.peer)
                       onNavigate?.(`/chat/${conv.peer?._id}`)
                     }}
-                    className={`w-full p-4 text-left flex items-start gap-3 transition-colors hover:bg-surface-low cursor-pointer ${
-                      isSelected ? 'bg-surface-container-low border-l-4 border-primary' : ''
-                    }`}
+                    className={`w-full p-4 text-left flex items-start gap-3 transition-colors hover:bg-surface-low cursor-pointer ${isSelected ? 'bg-surface-container-low border-l-4 border-primary' : ''
+                      }`}
                   >
                     <PeerAvatar peer={conv.peer} size="md" />
                     <div className="flex-1 min-w-0">
@@ -599,9 +589,8 @@ export default function ChatScreen({ user, onLogout, onNavigate }) {
         </aside>
 
         <section
-          className={`flex-1 flex flex-col bg-surface-low ${
-            !activePeer ? 'hidden md:flex' : 'flex'
-          }`}
+          className={`flex-1 flex flex-col bg-surface-low ${!activePeer ? 'hidden md:flex' : 'flex'
+            }`}
         >
           {activePeer ? (
             <>
@@ -647,7 +636,7 @@ export default function ChatScreen({ user, onLogout, onNavigate }) {
               )}
 
               <MessageInput
-                onSend={handleSendMessage}
+                onSend={handleSend}
                 onShareContact={() => setConsentOpen(true)}
               />
             </>
@@ -674,7 +663,7 @@ export default function ChatScreen({ user, onLogout, onNavigate }) {
 
       <ConsentModal
         isOpen={consentOpen}
-        peerName={activePeer?.name || 'Peer Student'}
+        peerName={activePeer?.name || 'Tutor'}
         onCancel={() => setConsentOpen(false)}
         onConfirm={handleConsentConfirm}
       />

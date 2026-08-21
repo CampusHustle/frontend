@@ -1,7 +1,7 @@
 import { describe, it, expect, vi, beforeEach, afterEach } from 'vitest'
 import { render, screen, waitFor, within } from '@testing-library/react'
 import userEvent from '@testing-library/user-event'
-import { MemoryRouter } from 'react-router-dom'
+import { MemoryRouter, Routes, Route } from 'react-router-dom'
 import BookingScreen from '../screens/BookingScreen.jsx'
 import ChatPage from '../pages/ChatPage.jsx'
 import * as bookingApi from '../api/mockBookingApi.js'
@@ -12,8 +12,46 @@ vi.mock('../api/mockBookingApi.js', () => ({
   updateBookingStatus: vi.fn(),
 }))
 
+const mockSocket = {
+  emit: vi.fn((event, data) => {
+    if (event === 'message:send') {
+      mockSocket._listeners['message:receive']?.({
+        _id: `msg-${Date.now()}`,
+        senderId: 'my-user-id',
+        content: data.content,
+        createdAt: new Date().toISOString(),
+      })
+    }
+  }),
+  on: vi.fn((event, cb) => {
+    mockSocket._listeners[event] = cb
+  }),
+  off: vi.fn((event) => {
+    delete mockSocket._listeners[event]
+  }),
+  _listeners: {},
+}
+
 vi.mock('../hooks/useSocket.js', () => ({
-  useSocket: vi.fn(() => ({ getSocket: () => null, status: 'connected' })),
+  useSocket: vi.fn(() => ({ getSocket: () => mockSocket, status: 'connected' })),
+}))
+
+vi.mock('../api/chatApi.js', () => ({
+  getMessagesWithUser: vi.fn(() =>
+    Promise.resolve({
+      success: true,
+      messages: [
+        {
+          _id: 'init-1',
+          senderId: 'peer-id',
+          content: 'Hello there!',
+          createdAt: new Date().toISOString(),
+        },
+      ],
+    }),
+  ),
+  getConversationMessages: vi.fn(() => Promise.resolve({ success: true, messages: [] })),
+  getConversations: vi.fn(() => Promise.resolve({ success: true, conversations: [] })),
 }))
 
 vi.mock('../api/mockChatApi.js', () => ({
@@ -198,20 +236,35 @@ describe('Booking → accept → chat → contact-share flow', () => {
 })
 
 describe('Chat page — send message + share contact', () => {
+  const mockUser = { _id: 'my-user-id', name: 'Alex Demo', email: 'alex@campus.edu.et', phone: null }
+
+  function renderChat(user = mockUser) {
+    return render(
+      <MemoryRouter initialEntries={['/chat/u-sarah']}>
+        <Routes>
+          <Route
+            path="/chat/:id"
+            element={<ChatPage user={user} onNavigate={vi.fn()} onLogout={vi.fn()} />}
+          />
+        </Routes>
+      </MemoryRouter>,
+    )
+  }
+
   beforeEach(() => {
     window.HTMLElement.prototype.scrollIntoView = vi.fn()
   })
   afterEach(() => vi.restoreAllMocks())
 
-  it('renders the chat thread with seed messages', () => {
-    render(<MemoryRouter><ChatPage user={null} onNavigate={vi.fn()} onLogout={vi.fn()} /></MemoryRouter>)
-    expect(screen.getByRole('log', { name: /chat messages/i })).toBeInTheDocument()
+  it('renders the chat thread with seed messages', async () => {
+    renderChat()
+    expect(await screen.findByRole('log', { name: /chat messages/i })).toBeInTheDocument()
     expect(screen.getByText('Hello there!')).toBeInTheDocument()
   })
 
   it('sends a message and it appears in the thread', async () => {
     const user = userEvent.setup()
-    render(<MemoryRouter><ChatPage user={null} onNavigate={vi.fn()} onLogout={vi.fn()} /></MemoryRouter>)
+    renderChat()
 
     const input = screen.getByRole('textbox', { name: /message input/i })
     await user.type(input, 'Can we do 2 PM instead?')
@@ -224,7 +277,7 @@ describe('Chat page — send message + share contact', () => {
 
   it('share contact info button opens consent modal', async () => {
     const user = userEvent.setup()
-    render(<MemoryRouter><ChatPage user={null} onNavigate={vi.fn()} onLogout={vi.fn()} /></MemoryRouter>)
+    renderChat()
 
     await user.click(screen.getByRole('button', { name: /share contact info/i }))
 
@@ -234,8 +287,7 @@ describe('Chat page — send message + share contact', () => {
 
   it('confirming consent adds a contact card to the thread', async () => {
     const user = userEvent.setup()
-    const mockUser = { name: 'Alex Demo', email: 'alex@campus.edu.et', phone: null }
-    render(<MemoryRouter><ChatPage user={mockUser} onNavigate={vi.fn()} onLogout={vi.fn()} /></MemoryRouter>)
+    renderChat()
 
     await user.click(screen.getByRole('button', { name: /share contact info/i }))
 
@@ -252,7 +304,7 @@ describe('Chat page — send message + share contact', () => {
 
   it('cancelling consent does not add a contact card', async () => {
     const user = userEvent.setup()
-    render(<MemoryRouter><ChatPage user={null} onNavigate={vi.fn()} onLogout={vi.fn()} /></MemoryRouter>)
+    renderChat()
 
     await user.click(screen.getByRole('button', { name: /share contact info/i }))
     await user.click(screen.getByRole('button', { name: /^cancel$/i }))

@@ -4,6 +4,10 @@ import userEvent from '@testing-library/user-event'
 import NoteDetailPage from '../pages/NoteDetailPage.jsx'
 import NotePaymentPage from '../pages/NotePaymentPage.jsx'
 
+vi.mock('../api/noteApi.js', () => ({
+  getNoteById: vi.fn().mockRejectedValue(new Error('Network unavailable')),
+}))
+
 describe('NoteDetailPage & NotePaymentPage', () => {
   beforeEach(() => {
     Object.defineProperty(navigator, 'clipboard', {

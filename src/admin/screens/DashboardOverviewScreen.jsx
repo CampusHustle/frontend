@@ -1,19 +1,19 @@
-import { useState } from 'react'
+﻿import { useState } from 'react'
 import { Link } from 'react-router-dom'
 import {
-  Users,
-  ShieldCheck,
-  Flag,
-  DollarSign,
-  Zap,
-  TrendingUp,
-  TrendingDown,
-  ArrowUpRight,
-  Sparkles,
-  Clock,
-  ShieldAlert,
-  CheckCircle2,
-} from 'lucide-react'
+  IconUsers,
+  IconShieldCheck,
+  IconFlag,
+  IconCurrencyDollar,
+  IconBolt,
+  IconTrendingUp,
+  IconTrendingDown,
+  IconArrowUpRight,
+  IconSparkles,
+  IconClock,
+  IconShieldExclamation,
+  IconCircleCheck,
+} from '@tabler/icons-react'
 import { INITIAL_KPIS, RECENT_ACTIVITIES } from '../mockData'
 import { RevenueTrendChart, CampusDistributionChart } from '../components/InteractiveCharts'
 import { useAdminTheme } from '../context/AdminThemeContext'
@@ -24,11 +24,11 @@ export default function DashboardOverviewScreen() {
   const [activities] = useState(RECENT_ACTIVITIES)
 
   const kpiIcons = {
-    'kpi-active-users': Users,
-    'kpi-pending-verifications': ShieldCheck,
-    'kpi-open-reports': Flag,
-    'kpi-total-volume': DollarSign,
-    'kpi-daily-hustles': Zap,
+    'kpi-active-IconUsers': IconUsers,
+    'kpi-pending-verifications': IconShieldCheck,
+    'kpi-open-reports': IconFlag,
+    'kpi-total-volume': IconCurrencyDollar,
+    'kpi-daily-hustles': IconBolt,
   }
 
   return (
@@ -44,7 +44,7 @@ export default function DashboardOverviewScreen() {
         <div className="flex flex-col md:flex-row md:items-center justify-between gap-6 relative z-10">
           <div className="space-y-2">
             <div className="inline-flex items-center gap-2 px-3 py-1 bg-white/10 border border-white/20 text-white rounded-full text-xs font-bold backdrop-blur-xs">
-              <Sparkles className="w-3.5 h-3.5" /> CampusHustle Core Command Center
+              <IconSparkles className="w-3.5 h-3.5" /> CampusHustle Core Command Center
             </div>
             <h1 className="text-2xl sm:text-3xl font-black tracking-tight text-white">
               Marketplace Executive Analytics
@@ -59,22 +59,22 @@ export default function DashboardOverviewScreen() {
               to="/admin/verifications"
               className="px-4 py-2.5 bg-white hover:bg-slate-100 text-indigo-950 rounded-xl text-xs font-bold flex items-center gap-2 shadow-md transition-all hover:scale-105"
             >
-              <ShieldCheck className="w-4 h-4 text-indigo-600" /> Review Queue (48)
+              <IconShieldCheck className="w-4 h-4 text-indigo-600" /> Review Queue (48)
             </Link>
             <Link
               to="/admin/reports"
               className="px-4 py-2.5 bg-black/20 hover:bg-black/30 text-white border border-white/20 rounded-xl text-xs font-bold flex items-center gap-2 transition-all backdrop-blur-xs"
             >
-              <Flag className="w-4 h-4 text-rose-300" /> Moderation Queue
+              <IconFlag className="w-4 h-4 text-rose-300" /> Moderation Queue
             </Link>
           </div>
         </div>
       </div>
 
-      {/* --- High Level KPI Grid (5 Cards) --- */}
-      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-5 gap-4">
+      {/* --- High Level KPI IconLayoutGrid (5 Cards) --- */}
+      <div className="IconLayoutGrid IconLayoutGrid-cols-1 sm:IconLayoutGrid-cols-2 lg:IconLayoutGrid-cols-5 gap-4">
         {kpis.map((kpi) => {
-          const IconComponent = kpiIcons[kpi.id] || Users
+          const IconComponent = kpiIcons[kpi.id] || IconUsers
 
           return (
             <div
@@ -116,7 +116,7 @@ export default function DashboardOverviewScreen() {
                       : 'bg-rose-50 text-rose-700 border-rose-200'
                   }`}
                 >
-                  {kpi.isPositive ? <TrendingUp className="w-3 h-3" /> : <TrendingDown className="w-3 h-3" />}
+                  {kpi.isPositive ? <IconTrendingUp className="w-3 h-3" /> : <IconTrendingDown className="w-3 h-3" />}
                   {kpi.change}
                 </span>
                 <span className={`text-[11px] ${isDark ? 'text-slate-500' : 'text-slate-500'}`}>{kpi.timeframe}</span>
@@ -131,7 +131,7 @@ export default function DashboardOverviewScreen() {
       </div>
 
       {/* --- Interactive Metric Charts Section --- */}
-      <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
+      <div className="IconLayoutGrid IconLayoutGrid-cols-1 lg:IconLayoutGrid-cols-3 gap-6">
         <div className="lg:col-span-2">
           <RevenueTrendChart />
         </div>
@@ -141,7 +141,7 @@ export default function DashboardOverviewScreen() {
       </div>
 
       {/* --- Quick Activity Feed & Platform Security --- */}
-      <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
+      <div className="IconLayoutGrid IconLayoutGrid-cols-1 lg:IconLayoutGrid-cols-3 gap-6">
         {/* Activity Feed */}
         <div
           className={`lg:col-span-2 border rounded-2xl p-6 shadow-xs ${
@@ -151,7 +151,7 @@ export default function DashboardOverviewScreen() {
           <div className="flex items-center justify-between mb-6">
             <div className="flex items-center gap-2">
               <div className={`p-2 rounded-lg ${isDark ? 'bg-blue-500/10 text-blue-400' : 'bg-blue-50 text-blue-600 border border-blue-200'}`}>
-                <Clock className="w-5 h-5" />
+                <IconClock className="w-5 h-5" />
               </div>
               <div>
                 <h3 className={`text-lg font-bold ${isDark ? 'text-slate-100' : 'text-slate-900'}`}>
@@ -163,10 +163,10 @@ export default function DashboardOverviewScreen() {
               </div>
             </div>
             <Link
-              to="/admin/users"
+              to="/admin/IconUsers"
               className="text-xs text-indigo-600 hover:text-indigo-700 font-bold flex items-center gap-1"
             >
-              View Users <ArrowUpRight className="w-3.5 h-3.5" />
+              View IconUsers <IconArrowUpRight className="w-3.5 h-3.5" />
             </Link>
           </div>
 
@@ -181,10 +181,10 @@ export default function DashboardOverviewScreen() {
                 }`}
               >
                 <div className="flex items-start gap-3">
-                  <img src={act.avatar} alt={act.user} className="w-9 h-9 rounded-xl object-cover ring-1 ring-slate-300" />
+                  <img src={act.avatar} alt={act.IconUser} className="w-9 h-9 rounded-xl object-cover ring-1 ring-slate-300" />
                   <div>
                     <div className="flex items-center gap-2">
-                      <span className={`font-bold ${isDark ? 'text-slate-200' : 'text-slate-900'}`}>{act.user}</span>
+                      <span className={`font-bold ${isDark ? 'text-slate-200' : 'text-slate-900'}`}>{act.IconUser}</span>
                       <span className={`text-[10px] px-2 py-0.5 rounded-md border font-semibold ${isDark ? 'bg-slate-900 border-slate-800 text-slate-400' : 'bg-white border-slate-200 text-slate-600'}`}>
                         {act.campus}
                       </span>
@@ -218,7 +218,7 @@ export default function DashboardOverviewScreen() {
         >
           <div className="flex items-center gap-2">
             <div className={`p-2 rounded-lg ${isDark ? 'bg-emerald-500/10 text-emerald-400' : 'bg-emerald-50 text-emerald-600 border border-emerald-200'}`}>
-              <ShieldAlert className="w-5 h-5" />
+              <IconShieldExclamation className="w-5 h-5" />
             </div>
             <div>
               <h3 className={`text-lg font-bold ${isDark ? 'text-slate-100' : 'text-slate-900'}`}>Platform Security</h3>
@@ -230,7 +230,7 @@ export default function DashboardOverviewScreen() {
             <div className={`p-3 rounded-xl border flex justify-between items-center ${isDark ? 'bg-slate-950 border-slate-800' : 'bg-slate-50 border-slate-200'}`}>
               <span className={isDark ? 'text-slate-400' : 'text-slate-600'}>AI Spam Filter</span>
               <span className="text-emerald-600 font-bold flex items-center gap-1">
-                <CheckCircle2 className="w-3.5 h-3.5" /> Active (99.8%)
+                <IconCircleCheck className="w-3.5 h-3.5" /> Active (99.8%)
               </span>
             </div>
             <div className={`p-3 rounded-xl border flex justify-between items-center ${isDark ? 'bg-slate-950 border-slate-800' : 'bg-slate-50 border-slate-200'}`}>
@@ -245,7 +245,7 @@ export default function DashboardOverviewScreen() {
 
           <div className={`p-4 rounded-xl border text-xs space-y-2 ${isDark ? 'bg-indigo-950/40 border-indigo-500/30' : 'bg-indigo-50/80 border-indigo-200'}`}>
             <h4 className="font-bold text-indigo-700 flex items-center gap-1.5">
-              <Sparkles className="w-4 h-4 text-indigo-600" /> Action Required
+              <IconSparkles className="w-4 h-4 text-indigo-600" /> Action Required
             </h4>
             <p className={isDark ? 'text-slate-300' : 'text-slate-700'}>
               48 student verification requests are currently in the queue. 14 from ASTU require student ID badge checks.

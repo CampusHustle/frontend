@@ -11,17 +11,14 @@ describe('LogoutWarningModal component', () => {
     university: 'Addis Ababa University',
   }
 
-  it('renders the warning dialog with title, copy, single initial avatar, and user info', () => {
+  it('renders the clean warning dialog with title, concise copy, and action buttons', () => {
     render(<LogoutWarningModal user={mockUser} onConfirm={vi.fn()} onCancel={vi.fn()} />)
 
     expect(screen.getByRole('alertdialog')).toBeInTheDocument()
     expect(screen.getByRole('heading', { name: 'Log Out of CampusHustle?' })).toBeInTheDocument()
-    expect(screen.getByText(/You are about to end your current active session/i)).toBeInTheDocument()
-    expect(screen.getByText('Sarah Connor')).toBeInTheDocument()
-    expect(screen.getByText('sarah@campus.edu.et')).toBeInTheDocument()
-    expect(screen.getByText('Computer Science • Addis Ababa University')).toBeInTheDocument()
-    expect(screen.getByText('S')).toBeInTheDocument()
-    expect(screen.getByText(/Your published notes, active tutor bookings, and peer reviews will remain safe/i)).toBeInTheDocument()
+    expect(screen.getByText(/Are you sure you want to end your session/i)).toBeInTheDocument()
+    expect(screen.getByRole('button', { name: 'Stay Logged In' })).toBeInTheDocument()
+    expect(screen.getByRole('button', { name: /Yes, Log Out/i })).toBeInTheDocument()
   })
 
   it('calls onCancel when Stay Logged In button is clicked', async () => {

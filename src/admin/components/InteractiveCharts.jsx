@@ -1,5 +1,5 @@
-import { useState } from 'react'
-import { TrendingUp, Calendar, Building2, DollarSign, Users } from 'lucide-react'
+﻿import { useState } from 'react'
+import { IconTrendingUp, IconCalendar, IconBuilding, IconCurrencyDollar, IconUsers } from '@tabler/icons-react'
 import { REVENUE_TRENDS_DATA, CAMPUS_DISTRIBUTION } from '../mockData'
 import { useAdminTheme } from '../context/AdminThemeContext'
 
@@ -13,48 +13,44 @@ export function RevenueTrendChart() {
 
   return (
     <div
-      className={`border rounded-2xl p-6 transition-all shadow-sm ${
-        isDark
+      className={`border rounded-2xl p-6 transition-all shadow-sm ${isDark
           ? 'bg-slate-900/90 border-slate-800 text-slate-100'
           : 'bg-white border-slate-200 text-slate-900'
-      }`}
+        }`}
     >
       <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 mb-6">
         <div>
           <div className="flex items-center gap-2">
             <div
-              className={`p-2 rounded-lg ${
-                isDark ? 'bg-emerald-500/10 border border-emerald-500/20 text-emerald-400' : 'bg-emerald-50 text-emerald-600 border border-emerald-200'
-              }`}
+              className={`p-2 rounded-lg ${isDark ? 'bg-emerald-500/10 border border-emerald-500/20 text-emerald-400' : 'bg-emerald-50 text-emerald-600 border border-emerald-200'
+                }`}
             >
-              <TrendingUp className="w-5 h-5" />
+              <IconTrendingUp className="w-5 h-5" />
             </div>
             <h3 className={`text-lg font-bold ${isDark ? 'text-slate-100' : 'text-slate-900'}`}>
               Revenue & Volume Trends
             </h3>
           </div>
           <p className={`text-xs mt-1 ${isDark ? 'text-slate-400' : 'text-slate-500'}`}>
-            Real-time marketplace revenue, volume, and active user analytics
+            Real-time marketplace revenue, volume, and active IconUser analytics
           </p>
         </div>
 
         {/* Timeframe selector */}
         <div
-          className={`flex items-center p-1 rounded-xl border text-xs font-semibold ${
-            isDark ? 'bg-slate-950 border-slate-800' : 'bg-slate-100 border-slate-200'
-          }`}
+          className={`flex items-center p-1 rounded-xl border text-xs font-semibold ${isDark ? 'bg-slate-950 border-slate-800' : 'bg-slate-100 border-slate-200'
+            }`}
         >
           {['7d', '30d', '1y'].map((tf) => (
             <button
               key={tf}
               onClick={() => setTimeframe(tf)}
-              className={`px-3 py-1.5 rounded-lg transition-all ${
-                timeframe === tf
+              className={`px-3 py-1.5 rounded-lg transition-all ${timeframe === tf
                   ? 'bg-indigo-600 text-white shadow-sm'
                   : isDark
-                  ? 'text-slate-400 hover:text-slate-200 hover:bg-slate-800/50'
-                  : 'text-slate-600 hover:text-slate-900 hover:bg-slate-200/60'
-              }`}
+                    ? 'text-slate-400 hover:text-slate-200 hover:bg-slate-800/50'
+                    : 'text-slate-600 hover:text-slate-900 hover:bg-slate-200/60'
+                }`}
             >
               {tf.toUpperCase()}
             </button>
@@ -67,14 +63,13 @@ export function RevenueTrendChart() {
         {/* Tooltip */}
         {hoveredPoint !== null && (
           <div
-            className={`absolute top-2 right-4 text-xs rounded-xl p-3 shadow-xl z-10 border animate-in fade-in duration-150 ${
-              isDark ? 'bg-slate-950 border-indigo-500/30 text-slate-200' : 'bg-white border-indigo-200 text-slate-800 shadow-indigo-100'
-            }`}
+            className={`absolute top-2 right-4 text-xs rounded-xl p-3 shadow-xl z-10 border animate-in fade-in duration-150 ${isDark ? 'bg-slate-950 border-indigo-500/30 text-slate-200' : 'bg-white border-indigo-200 text-slate-800 shadow-indigo-100'
+              }`}
           >
             <p className="font-bold text-indigo-600">{data[hoveredPoint].label}</p>
             <div className="mt-1 space-y-1">
               <p className="flex items-center gap-1.5">
-                <DollarSign className="w-3.5 h-3.5 text-emerald-600" />
+                <IconCurrencyDollar className="w-3.5 h-3.5 text-emerald-600" />
                 <span>
                   Revenue:{' '}
                   <strong className="text-emerald-600">
@@ -83,15 +78,15 @@ export function RevenueTrendChart() {
                 </span>
               </p>
               <p className="flex items-center gap-1.5">
-                <Calendar className="w-3.5 h-3.5 text-blue-600" />
+                <IconCalendar className="w-3.5 h-3.5 text-blue-600" />
                 <span>
                   Hustles: <strong className="text-blue-600">{data[hoveredPoint].volume} orders</strong>
                 </span>
               </p>
               <p className="flex items-center gap-1.5">
-                <Users className="w-3.5 h-3.5 text-purple-600" />
+                <IconUsers className="w-3.5 h-3.5 text-purple-600" />
                 <span>
-                  Users:{' '}
+                  IconUsers:{' '}
                   <strong className="text-purple-600">
                     {data[hoveredPoint].activeUsers.toLocaleString()}
                   </strong>
@@ -114,7 +109,7 @@ export function RevenueTrendChart() {
             </linearGradient>
           </defs>
 
-          {/* Grid lines */}
+          {/* IconLayoutGrid lines */}
           {[0, 50, 100, 150].map((y) => (
             <line
               key={y}
@@ -154,9 +149,8 @@ export function RevenueTrendChart() {
                       cx={pt.x}
                       cy={pt.y}
                       r={hoveredPoint === i ? '7' : '4.5'}
-                      className={`cursor-pointer transition-all duration-200 ${
-                        isDark ? 'fill-slate-900 stroke-emerald-400 stroke-[3]' : 'fill-white stroke-emerald-500 stroke-[3]'
-                      }`}
+                      className={`cursor-pointer transition-all duration-200 ${isDark ? 'fill-slate-900 stroke-emerald-400 stroke-[3]' : 'fill-white stroke-emerald-500 stroke-[3]'
+                        }`}
                     />
                   </g>
                 ))}
@@ -183,18 +177,16 @@ export function CampusDistributionChart() {
 
   return (
     <div
-      className={`border rounded-2xl p-6 transition-all shadow-sm ${
-        isDark ? 'bg-slate-900/90 border-slate-800 text-slate-100' : 'bg-white border-slate-200 text-slate-900'
-      }`}
+      className={`border rounded-2xl p-6 transition-all shadow-sm ${isDark ? 'bg-slate-900/90 border-slate-800 text-slate-100' : 'bg-white border-slate-200 text-slate-900'
+        }`}
     >
       <div className="flex items-center justify-between mb-6">
         <div className="flex items-center gap-2">
           <div
-            className={`p-2 rounded-lg ${
-              isDark ? 'bg-indigo-500/10 border border-indigo-500/20 text-indigo-400' : 'bg-indigo-50 border border-indigo-200 text-indigo-600'
-            }`}
+            className={`p-2 rounded-lg ${isDark ? 'bg-indigo-500/10 border border-indigo-500/20 text-indigo-400' : 'bg-indigo-50 border border-indigo-200 text-indigo-600'
+              }`}
           >
-            <Building2 className="w-5 h-5" />
+            <IconBuilding className="w-5 h-5" />
           </div>
           <div>
             <h3 className={`text-lg font-bold ${isDark ? 'text-slate-100' : 'text-slate-900'}`}>
@@ -206,11 +198,10 @@ export function CampusDistributionChart() {
           </div>
         </div>
         <span
-          className={`text-xs font-bold px-2.5 py-1 rounded-full border ${
-            isDark
+          className={`text-xs font-bold px-2.5 py-1 rounded-full border ${isDark
               ? 'bg-indigo-500/10 border-indigo-500/20 text-indigo-400'
               : 'bg-indigo-50 border-indigo-200 text-indigo-700'
-          }`}
+            }`}
         >
           6 Campuses
         </span>
@@ -232,23 +223,21 @@ export function CampusDistributionChart() {
             <div key={item.campus} className="group">
               <div className="flex justify-between items-center text-xs mb-1.5">
                 <span
-                  className={`font-semibold transition-colors ${
-                    isDark ? 'text-slate-200 group-hover:text-indigo-400' : 'text-slate-800 group-hover:text-indigo-600'
-                  }`}
+                  className={`font-semibold transition-colors ${isDark ? 'text-slate-200 group-hover:text-indigo-400' : 'text-slate-800 group-hover:text-indigo-600'
+                    }`}
                 >
                   {item.campus}
                 </span>
                 <div className={`flex items-center gap-3 ${isDark ? 'text-slate-400' : 'text-slate-500'}`}>
-                  <span>{item.users.toLocaleString()} users</span>
+                  <span>{item.IconUsers.toLocaleString()} IconUsers</span>
                   <span className={`font-bold ${isDark ? 'text-slate-200' : 'text-slate-900'}`}>
                     {item.percentage}%
                   </span>
                 </div>
               </div>
               <div
-                className={`w-full h-3 rounded-full overflow-hidden p-0.5 border ${
-                  isDark ? 'bg-slate-950 border-slate-800' : 'bg-slate-100 border-slate-200'
-                }`}
+                className={`w-full h-3 rounded-full overflow-hidden p-0.5 border ${isDark ? 'bg-slate-950 border-slate-800' : 'bg-slate-100 border-slate-200'
+                  }`}
               >
                 <div
                   className={`h-full rounded-full transition-all duration-700 ease-out ${barColor}`}

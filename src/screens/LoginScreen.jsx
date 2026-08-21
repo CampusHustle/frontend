@@ -96,10 +96,6 @@ export default function LoginScreen({ onSwitchToSignup, onLoginSuccess }) {
               <IconArrowRight size={18} aria-hidden="true" />
             </PrimaryButton>
           </form>
-
-          <p className="mt-4 text-center text-xs text-on-surface-variant">
-            Demo account: student@campus.edu.et / password123
-          </p>
         </div>
 
         <p className="mt-6 text-center text-base text-on-surface-variant">

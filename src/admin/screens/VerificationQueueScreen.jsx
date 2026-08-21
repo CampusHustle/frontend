@@ -1,14 +1,14 @@
-import { useState } from 'react'
+﻿import { useState } from 'react'
 import {
-  ShieldCheck,
-  Search,
-  CheckCircle2,
-  List,
-  Grid,
-  Mail,
-  FileText,
-  Eye,
-} from 'lucide-react'
+  IconShieldCheck,
+  IconSearch,
+  IconCircleCheck,
+  IconList,
+  IconLayoutGrid,
+  IconMail,
+  IconFileText,
+  IconEye,
+} from '@tabler/icons-react'
 import { INITIAL_VERIFICATIONS } from '../mockData'
 import {
   DocumentPreviewDrawer,
@@ -108,7 +108,7 @@ export default function VerificationQueueScreen() {
         <div>
           <div className="flex items-center gap-2">
             <div className={`p-2 rounded-lg ${isDark ? 'bg-indigo-500/10 text-indigo-400' : 'bg-indigo-50 text-indigo-600 border border-indigo-200'}`}>
-              <ShieldCheck className="w-5 h-5" />
+              <IconShieldCheck className="w-5 h-5" />
             </div>
             <h1 className={`text-xl font-black ${isDark ? 'text-white' : 'text-slate-900'}`}>
               Student & Seller Verification Queue
@@ -127,7 +127,7 @@ export default function VerificationQueueScreen() {
               viewMode === 'table' ? 'bg-indigo-600 text-white shadow-xs' : isDark ? 'text-slate-400 hover:text-slate-200' : 'text-slate-600 hover:text-slate-900'
             }`}
           >
-            <List className="w-4 h-4" /> Table View
+            <IconList className="w-4 h-4" /> Table View
           </button>
           <button
             onClick={() => setViewMode('cards')}
@@ -135,20 +135,20 @@ export default function VerificationQueueScreen() {
               viewMode === 'cards' ? 'bg-indigo-600 text-white shadow-xs' : isDark ? 'text-slate-400 hover:text-slate-200' : 'text-slate-600 hover:text-slate-900'
             }`}
           >
-            <Grid className="w-4 h-4" /> Card View
+            <IconLayoutGrid className="w-4 h-4" /> Card View
           </button>
         </div>
       </div>
 
-      {/* Filter & Search Bar */}
-      <div className={`grid grid-cols-1 sm:grid-cols-4 gap-3 border p-4 rounded-2xl ${isDark ? 'bg-slate-900/60 border-slate-800' : 'bg-white border-slate-200 shadow-xs'}`}>
+      {/* Filter & IconSearch Bar */}
+      <div className={`IconLayoutGrid IconLayoutGrid-cols-1 sm:IconLayoutGrid-cols-4 gap-3 border p-4 rounded-2xl ${isDark ? 'bg-slate-900/60 border-slate-800' : 'bg-white border-slate-200 shadow-xs'}`}>
         <div className="relative sm:col-span-2">
-          <Search className={`w-4 h-4 absolute left-3.5 top-1/2 -translate-y-1/2 ${isDark ? 'text-slate-500' : 'text-slate-400'}`} />
+          <IconSearch className={`w-4 h-4 absolute left-3.5 top-1/2 -translate-y-1/2 ${isDark ? 'text-slate-500' : 'text-slate-400'}`} />
           <input
             type="text"
             value={searchQuery}
             onChange={(e) => setSearchQuery(e.target.value)}
-            placeholder="Search by student name, .edu email, or ID number..."
+            placeholder="IconSearch by student name, .edu email, or ID number..."
             className={`w-full pl-10 pr-4 py-2 rounded-xl text-xs outline-none border transition-all ${
               isDark
                 ? 'bg-slate-950 border-slate-800 text-slate-200 placeholder-slate-500 focus:border-indigo-500'
@@ -245,7 +245,7 @@ export default function VerificationQueueScreen() {
                           }`}
                           title="Preview Documents"
                         >
-                          <Eye className="w-4 h-4" />
+                          <IconEye className="w-4 h-4" />
                         </button>
                         {item.status === 'Pending' && (
                           <>
@@ -253,7 +253,7 @@ export default function VerificationQueueScreen() {
                               onClick={() => handleApprove(item.id)}
                               className="px-2.5 py-1.5 bg-emerald-600 hover:bg-emerald-500 text-white rounded-lg font-bold flex items-center gap-1 shadow-xs transition-all"
                             >
-                              <CheckCircle2 className="w-3.5 h-3.5" /> Approve
+                              <IconCircleCheck className="w-3.5 h-3.5" /> Approve
                             </button>
                             <button
                               onClick={() => {
@@ -275,7 +275,7 @@ export default function VerificationQueueScreen() {
           </div>
         </div>
       ) : (
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+        <div className="IconLayoutGrid IconLayoutGrid-cols-1 md:IconLayoutGrid-cols-2 lg:IconLayoutGrid-cols-3 gap-4">
           {filteredItems.map((item) => (
             <div
               key={item.id}
@@ -302,10 +302,10 @@ export default function VerificationQueueScreen() {
 
                 <div className={`p-3 rounded-xl border space-y-1 text-xs ${isDark ? 'bg-slate-950 border-slate-800' : 'bg-slate-50 border-slate-200'}`}>
                   <p className={`flex items-center gap-1.5 ${isDark ? 'text-slate-400' : 'text-slate-600'}`}>
-                    <Mail className="w-3.5 h-3.5 text-slate-400" /> {item.userEmail}
+                    <IconMail className="w-3.5 h-3.5 text-slate-400" /> {item.userEmail}
                   </p>
                   <p className={`flex items-center gap-1.5 ${isDark ? 'text-slate-400' : 'text-slate-600'}`}>
-                    <FileText className="w-3.5 h-3.5 text-slate-400" /> ID: {item.studentIdNum}
+                    <IconFileText className="w-3.5 h-3.5 text-slate-400" /> ID: {item.studentIdNum}
                   </p>
                 </div>
               </div>
@@ -320,7 +320,7 @@ export default function VerificationQueueScreen() {
                     isDark ? 'bg-slate-800 hover:bg-slate-700 text-slate-200 border-slate-700' : 'bg-slate-100 hover:bg-slate-200 text-slate-700 border-slate-200'
                   }`}
                 >
-                  <Eye className="w-4 h-4" /> Preview Docs
+                  <IconEye className="w-4 h-4" /> Preview Docs
                 </button>
                 {item.status === 'Pending' && (
                   <button
