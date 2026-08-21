@@ -5,10 +5,6 @@ import BookingCard from '../components/BookingCard.jsx'
 import ConsentModal from '../components/ConsentModal.jsx'
 import Footer from '../components/Footer.jsx'
 import {
-  fetchBookings,
-  updateBookingStatus as updateMockBookingStatus,
-} from '../api/mockBookingApi.js'
-import {
   getUserBookings,
   updateBookingStatus as updateLiveBookingStatus,
 } from '../api/bookingApi.js'
@@ -25,50 +21,37 @@ export default function BookingScreen({ user, onLogout, onNavigate }) {
   const [bookings, setBookings] = useState([])
   const [loading, setLoading] = useState(true)
   const [error, setError] = useState(null)
-  const [modeTab, setModeTab] = useState('student') // 'student' (My Sessions) or 'tutor' (Incoming Requests)
   const [activeTab, setActiveTab] = useState('all')
   const [toastMsg, setToastMsg] = useState(null)
   const [consentBookingId, setConsentBookingId] = useState(null)
 
-  const isTutor = user?.role === 'tutor' || user?.isTutor === true
-
-  /* ── load bookings from backend with mock fallback ── */
+  /* ── load student bookings exclusively from live API ── */
   const loadBookings = useCallback(async () => {
     setLoading(true)
     setError(null)
     try {
-      const queryRole = isTutor ? (modeTab === 'tutor' ? 'tutor' : 'student') : undefined
-      const res = await getUserBookings(queryRole ? { role: queryRole } : undefined)
-      if (res?.data && Array.isArray(res.data) && res.data.length > 0) {
-        const formatted = res.data.map((b) => ({
-          ...b,
-          id: b._id || b.id,
-          tutorName: b.tutorId?.name || b.tutorName || 'Tutor',
-          tutorProfilePicUrl: b.tutorId?.profilePicUrl || b.tutorPic || b.tutorProfilePicUrl || '',
-          studentName: b.studentId?.name || b.studentName || 'Student',
-          scheduledDate: b.availabilityId
-            ? `${b.availabilityId.dayOfWeek || ''} at ${b.availabilityId.startTime || ''}`.trim() || 'Upcoming'
-            : b.time || b.scheduledDate || 'Upcoming',
-          subject: b.subject || 'Tutoring Session',
-          title: b.title || b.subject || 'Tutoring Session',
-          price: b.price || b.tutorId?.hourlyRate || 35,
-        }))
-        setBookings(formatted)
-      } else {
-        const data = await fetchBookings()
-        setBookings(data)
-      }
-    } catch {
-      try {
-        const data = await fetchBookings()
-        setBookings(data)
-      } catch {
-        setError('Failed to load bookings. Please try again.')
-      }
+      const res = await getUserBookings({ role: 'student' })
+      const list = res?.data || res?.bookings || []
+      const formatted = list.map((b) => ({
+        ...b,
+        id: b._id || b.id,
+        tutorName: b.tutorId?.name || b.tutorName || 'Tutor',
+        tutorProfilePicUrl: b.tutorId?.profilePicUrl || b.tutorPic || b.tutorProfilePicUrl || '',
+        studentName: b.studentId?.name || b.studentName || 'Student',
+        scheduledDate: b.availabilityId
+          ? `${b.availabilityId.dayOfWeek || ''} at ${b.availabilityId.startTime || ''}`.trim() || 'Upcoming'
+          : b.time || b.scheduledDate || 'Upcoming',
+        subject: b.subject || 'Tutoring Session',
+        title: b.title || b.subject || 'Tutoring Session',
+        price: b.price || b.tutorId?.hourlyRate || 35,
+      }))
+      setBookings(formatted)
+    } catch (err) {
+      setError(err?.message || 'Failed to load bookings. Please try again.')
     } finally {
       setLoading(false)
     }
-  }, [isTutor, modeTab])
+  }, [])
 
   useEffect(() => {
     loadBookings()
@@ -102,33 +85,17 @@ export default function BookingScreen({ user, onLogout, onNavigate }) {
       }
       showToast(labels[newStatus] ?? 'Status updated.')
     } catch (err) {
-      try {
-        const updated = await updateMockBookingStatus(id, newStatus)
-        setBookings((prev) =>
-          prev.map((b) => (b.id === id ? { ...b, ...updated, status: newStatus } : b)),
-        )
-        const labels = {
-          confirmed: 'Booking confirmed.',
-          completed: 'Booking marked as completed.',
-          cancelled: 'Booking cancelled.',
-          declined: 'Booking declined.',
-        }
-        showToast(labels[newStatus] ?? 'Status updated.')
-      } catch (mockErr) {
-        setBookings((prev) =>
-          prev.map((b) =>
-            b.id === id ? { ...b, status: b._prevStatus ?? prevStatus ?? b.status } : b,
-          ),
-        )
-        showToast(`Error: ${err?.message || mockErr?.message || 'Failed to update booking status'}`)
-      }
+      setBookings((prev) =>
+        prev.map((b) =>
+          b.id === id ? { ...b, status: b._prevStatus ?? prevStatus ?? b.status } : b,
+        ),
+      )
+      showToast(`Error: ${err?.message || 'Failed to update booking status'}`)
     }
   }
 
   const handleOpenChat = (booking) => {
-    const peerId = isTutor
-      ? (booking.studentId?._id || booking.studentId?.id || booking.studentId)
-      : (booking.tutorId?._id || booking.tutorId?.id || booking.tutorId || booking.tutorIdStr)
+    const peerId = booking.tutorId?._id || booking.tutorId?.id || booking.tutorId || booking.tutorIdStr
     const target = peerId || booking.id
     if (target) {
       onNavigate?.(`/chat/${target}`)
@@ -156,7 +123,7 @@ export default function BookingScreen({ user, onLogout, onNavigate }) {
     <div className="flex min-h-screen flex-col bg-background text-on-background font-body-md overflow-x-hidden">
       <AppNavbar
         user={user}
-        activeView="tutor"
+        activeView="bookings"
         onNavigate={onNavigate}
         onLogout={onLogout}
       />
@@ -168,34 +135,6 @@ export default function BookingScreen({ user, onLogout, onNavigate }) {
           <p className="text-sm text-on-surface-variant mt-1">
             Track and manage your tutoring sessions.
           </p>
-
-          {/* Mode switch tabs for Tutors */}
-          {isTutor && (
-            <div className="mt-4 flex rounded-xl border border-surface-variant bg-surface-low p-1 max-w-md">
-              <button
-                type="button"
-                onClick={() => setModeTab('student')}
-                className={`flex-1 rounded-lg py-2 text-xs font-bold transition-all cursor-pointer ${
-                  modeTab === 'student'
-                    ? 'bg-primary text-on-primary shadow-sm'
-                    : 'text-on-surface-variant hover:text-on-surface'
-                }`}
-              >
-                My Sessions (Student)
-              </button>
-              <button
-                type="button"
-                onClick={() => setModeTab('tutor')}
-                className={`flex-1 rounded-lg py-2 text-xs font-bold transition-all cursor-pointer ${
-                  modeTab === 'tutor'
-                    ? 'bg-primary text-on-primary shadow-sm'
-                    : 'text-on-surface-variant hover:text-on-surface'
-                }`}
-              >
-                Incoming Requests (Tutor)
-              </button>
-            </div>
-          )}
         </div>
 
         {/* status filter tabs */}
@@ -280,8 +219,6 @@ export default function BookingScreen({ user, onLogout, onNavigate }) {
               booking={booking}
               onChat={() => handleOpenChat(booking)}
               onCancel={(id) => handleStatusChange(id, 'cancelled')}
-              onAccept={(isTutor || modeTab === 'tutor') ? (id) => handleStatusChange(id, 'confirmed') : undefined}
-              onDecline={(isTutor || modeTab === 'tutor') ? (id) => handleStatusChange(id, 'declined') : undefined}
               onShareContact={(id) => setConsentBookingId(id)}
             />
           ))}

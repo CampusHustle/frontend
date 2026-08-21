@@ -245,6 +245,7 @@ export function BookingStatusBadge({ status }) {
           <span>Status: Session Completed</span>
         </div>
       )
+    case 'declined':
     case 'cancelled':
       return (
         <div
@@ -252,7 +253,7 @@ export function BookingStatusBadge({ status }) {
           className="flex items-center gap-2 rounded-lg border border-rose-500/30 bg-rose-500/10 px-3 py-2 text-xs sm:text-sm font-semibold text-rose-700 dark:text-rose-400"
         >
           <IconCircleX size={16} className="shrink-0 text-rose-600" aria-hidden="true" />
-          <span>Status: Booking Cancelled</span>
+          <span>Status: Request Declined / Cancelled</span>
         </div>
       )
     default:
@@ -315,7 +316,7 @@ function BookingPanel({
         </button>
       )}
 
-      {bookingStatus === 'cancelled' && (
+      {(bookingStatus === 'cancelled' || bookingStatus === 'declined') && (
         <button
           type="button"
           disabled={!selected}
@@ -481,19 +482,21 @@ export default function TutorDetailScreen({ user, onLogout, onNavigate, availabl
     const dayLabel = selected.dayOfWeek || selected.day || 'Monday'
     const timeLabel = selected.startTime || selected.time || '09:00'
     const slotId = selected._id || selected.id
+    const targetTutorId = tutor?._id || tutor?.id || id
+    const isMongoId = typeof slotId === 'string' && /^[0-9a-fA-F]{24}$/.test(slotId)
 
     setBookingStatus('pending')
     setConfirmation(`Booking request sent for ${dayLabel} at ${timeLabel}.`)
 
     createBooking({
-      availabilityId: slotId || undefined,
-      tutorId: tutor?._id || tutor?.id || id,
+      availabilityId: isMongoId ? slotId : undefined,
+      tutorId: targetTutorId,
       dayOfWeek: dayLabel,
       startTime: timeLabel,
       day: dayLabel,
       time: timeLabel,
-    }).catch(() => {
-      // Optimistic fallback for test/offline
+    }).catch((err) => {
+      console.error('Booking request error:', err)
     })
   }
 
@@ -574,7 +577,18 @@ export default function TutorDetailScreen({ user, onLogout, onNavigate, availabl
 
         {/* Availability + Booking */}
         <section className="grid grid-cols-1 gap-4 lg:grid-cols-3">
-          <AvailabilityGrid slots={slots} selected={selected} onSelect={setSelected} loading={loadingSlots} />
+          <AvailabilityGrid
+            slots={slots}
+            selected={selected}
+            onSelect={(slot) => {
+              setSelected(slot)
+              if (bookingStatus === 'declined' || bookingStatus === 'cancelled') {
+                setBookingStatus('idle')
+                setConfirmation('')
+              }
+            }}
+            loading={loadingSlots}
+          />
           <BookingPanel
             tutor={tutor}
             selected={selected}
