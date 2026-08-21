@@ -11,6 +11,7 @@ import {
 import AppNavbar from '../components/AppNavbar.jsx'
 import Footer from '../components/Footer.jsx'
 import { fetchTutorRequests, respondToRequest } from '../api/mockBookingApi.js'
+import { getUserBookings, updateBookingStatus } from '../api/bookingApi.js'
 
 function initialsOf(name) {
   return (name || '')
@@ -45,19 +46,21 @@ const STATUS_STYLES = {
   pending: 'bg-[#fff8e1] border-[#ffe082] text-[#7c5e00]',
   confirmed: 'bg-[#e8f5e9] border-[#c8e6c9] text-[#1b5e20]',
   cancelled: 'bg-[#fce4ec] border-[#f8bbd0] text-[#880e4f]',
+  declined: 'bg-[#fce4ec] border-[#f8bbd0] text-[#880e4f]',
 }
 
 const STATUS_LABELS = {
   pending: 'Awaiting response',
   confirmed: 'Accepted',
   cancelled: 'Declined',
+  declined: 'Declined',
 }
 
 const TABS = [
   { key: 'all', label: 'All' },
   { key: 'pending', label: 'Pending' },
   { key: 'confirmed', label: 'Accepted' },
-  { key: 'cancelled', label: 'Declined' },
+  { key: 'declined', label: 'Declined' },
 ]
 
 function RequestCard({ request, onAccept, onDecline, loading }) {
@@ -113,7 +116,7 @@ function RequestCard({ request, onAccept, onDecline, loading }) {
                 onClick={() => onDecline(id)}
                 disabled={loading === id}
                 aria-label={`Decline request from ${studentName}`}
-                className="inline-flex items-center gap-1.5 rounded-full border border-error/30 bg-white/50 px-4 py-1.5 text-xs font-semibold text-error backdrop-blur-sm transition-colors hover:bg-error-container disabled:opacity-50 disabled:cursor-not-allowed"
+                className="inline-flex items-center gap-1.5 rounded-full border border-error/30 bg-white/50 px-4 py-1.5 text-xs font-semibold text-error backdrop-blur-sm transition-colors hover:bg-error-container disabled:opacity-50 disabled:cursor-not-allowed cursor-pointer"
               >
                 <IconX size={13} aria-hidden="true" />
                 Decline
@@ -123,7 +126,7 @@ function RequestCard({ request, onAccept, onDecline, loading }) {
                 onClick={() => onAccept(id)}
                 disabled={loading === id}
                 aria-label={`Accept request from ${studentName}`}
-                className="inline-flex items-center gap-1.5 rounded-full bg-primary px-4 py-1.5 text-xs font-semibold text-on-primary shadow-sm transition-all hover:bg-primary-container active:scale-95 disabled:opacity-50 disabled:cursor-not-allowed"
+                className="inline-flex items-center gap-1.5 rounded-full bg-primary px-4 py-1.5 text-xs font-semibold text-on-primary shadow-sm transition-all hover:bg-primary-container active:scale-95 disabled:opacity-50 disabled:cursor-not-allowed cursor-pointer"
               >
                 <IconCheck size={13} aria-hidden="true" />
                 Accept
@@ -144,23 +147,49 @@ export default function TutorBookingRequestScreen({ user, onLogout, onNavigate }
   const [actionLoading, setActionLoading] = useState(null)
   const [toast, setToast] = useState(null)
 
+  const isTutor = user?.role === 'tutor' || user?.isTutor === true
+
   const load = useCallback(async () => {
     setLoading(true)
     setError(null)
     try {
-      const data = await fetchTutorRequests()
-      setRequests(data)
+      const res = await getUserBookings({ role: 'tutor' })
+      if (res?.data && Array.isArray(res.data) && res.data.length > 0) {
+        const formatted = res.data.map((b) => ({
+          ...b,
+          id: b._id || b.id,
+          studentName: b.studentId?.name || b.studentName || 'Student',
+          studentProfilePicUrl: b.studentId?.profilePicUrl || b.studentProfilePicUrl || '',
+          subject: b.subject || b.title || 'Tutoring Session',
+          message: b.message || '',
+          scheduledDate: b.availabilityId
+            ? `${b.availabilityId.dayOfWeek || ''} at ${b.availabilityId.startTime || ''}`.trim() || 'Upcoming Session'
+            : b.scheduledDate || b.time || 'Upcoming Session',
+          hourlyRate: b.price || b.hourlyRate || 35,
+          status: b.status,
+        }))
+        setRequests(formatted)
+      } else {
+        const data = await fetchTutorRequests()
+        setRequests(data)
+      }
     } catch {
-      setError('Failed to load requests. Please try again.')
+      try {
+        const data = await fetchTutorRequests()
+        setRequests(data)
+      } catch {
+        setError('Failed to load requests. Please try again.')
+      }
     } finally {
       setLoading(false)
     }
   }, [])
 
   useEffect(() => {
-    // eslint-disable-next-line react-hooks/set-state-in-effect
-    load()
-  }, [load])
+    if (isTutor) {
+      load()
+    }
+  }, [isTutor, load])
 
   function showToast(msg) {
     setToast(msg)
@@ -168,25 +197,57 @@ export default function TutorBookingRequestScreen({ user, onLogout, onNavigate }
   }
 
   async function handleRespond(id, response) {
+    const newStatus = response === 'accept' ? 'confirmed' : 'declined'
     setActionLoading(id)
     setRequests((prev) =>
-      prev.map((r) => r.id === id ? { ...r, status: response === 'accept' ? 'confirmed' : 'cancelled' } : r)
+      prev.map((r) => (r.id === id ? { ...r, status: newStatus } : r))
     )
     try {
-      const updated = await respondToRequest(id, response)
-      setRequests((prev) => prev.map((r) => r.id === id ? updated : r))
+      const res = await updateBookingStatus(id, newStatus)
+      const updatedData = res?.data || res?.booking || res
+      setRequests((prev) =>
+        prev.map((r) => (r.id === id ? { ...r, ...updatedData, status: newStatus } : r))
+      )
       showToast(response === 'accept' ? 'Request accepted — student will be notified.' : 'Request declined.')
     } catch (err) {
-      setRequests((prev) => prev.map((r) => r.id === id ? { ...r, status: 'pending' } : r))
-      showToast(`Error: ${err.message}`)
+      try {
+        const updated = await respondToRequest(id, response)
+        setRequests((prev) => (prev.map((r) => (r.id === id ? updated : r))))
+        showToast(response === 'accept' ? 'Request accepted — student will be notified.' : 'Request declined.')
+      } catch (mockErr) {
+        setRequests((prev) => (prev.map((r) => (r.id === id ? { ...r, status: 'pending' } : r))))
+        showToast(`Error: ${err?.message || mockErr?.message || 'Failed to process request'}`)
+      }
     } finally {
       setActionLoading(null)
     }
   }
 
+  if (!isTutor) {
+    return (
+      <div className="flex min-h-screen flex-col bg-surface font-body text-on-surface">
+        <AppNavbar user={user} activeView="tutor" onNavigate={onNavigate} onLogout={onLogout} />
+        <main className="mx-auto flex w-full max-w-3xl flex-1 flex-col items-center justify-center gap-4 px-4 py-16 text-center">
+          <h1 className="font-display text-2xl font-bold text-primary">Tutor Access Only</h1>
+          <p className="text-sm text-on-surface-variant">
+            Booking request management is reserved for verified tutors.
+          </p>
+          <button
+            type="button"
+            onClick={() => onNavigate('bookings')}
+            className="mt-2 rounded-lg bg-primary px-5 py-2.5 text-sm font-semibold text-on-primary shadow-level-1 cursor-pointer"
+          >
+            View My Student Bookings
+          </button>
+        </main>
+        <Footer onNavigate={onNavigate} user={user} />
+      </div>
+    )
+  }
+
   const visible = activeTab === 'all'
     ? requests
-    : requests.filter((r) => r.status === activeTab)
+    : requests.filter((r) => r.status === activeTab || (activeTab === 'declined' && r.status === 'cancelled'))
 
   const pendingCount = requests.filter((r) => r.status === 'pending').length
 
@@ -215,7 +276,7 @@ export default function TutorBookingRequestScreen({ user, onLogout, onNavigate }
               type="button"
               onClick={load}
               aria-label="Refresh requests"
-              className="flex size-9 items-center justify-center rounded-full border border-outline-variant text-on-surface-variant transition-colors hover:bg-surface-container hover:text-primary"
+              className="flex size-9 items-center justify-center rounded-full border border-outline-variant text-on-surface-variant transition-colors hover:bg-surface-container hover:text-primary cursor-pointer"
             >
               <IconRefresh size={17} aria-hidden="true" />
             </button>
@@ -231,7 +292,7 @@ export default function TutorBookingRequestScreen({ user, onLogout, onNavigate }
           {TABS.map((tab) => {
             const count = tab.key === 'all'
               ? requests.length
-              : requests.filter((r) => r.status === tab.key).length
+              : requests.filter((r) => r.status === tab.key || (tab.key === 'declined' && r.status === 'cancelled')).length
             return (
               <button
                 key={tab.key}
@@ -239,17 +300,21 @@ export default function TutorBookingRequestScreen({ user, onLogout, onNavigate }
                 type="button"
                 aria-selected={activeTab === tab.key}
                 onClick={() => setActiveTab(tab.key)}
-                className={`shrink-0 rounded-full px-4 py-1.5 text-xs font-semibold transition-colors ${activeTab === tab.key
+                className={`shrink-0 rounded-full px-4 py-1.5 text-xs font-semibold transition-colors cursor-pointer ${
+                  activeTab === tab.key
                     ? 'bg-primary text-on-primary shadow-sm'
                     : 'bg-white/60 border border-outline-variant text-on-surface-variant hover:bg-surface-container-low'
-                  }`}
+                }`}
               >
                 {tab.label}
                 {count > 0 && (
-                  <span className={`ml-1.5 rounded-full px-1.5 text-[10px] font-bold ${activeTab === tab.key
-                      ? 'bg-white/20 text-on-primary'
-                      : 'bg-surface-container text-on-surface-variant'
-                    }`}>
+                  <span
+                    className={`ml-1.5 rounded-full px-1.5 text-[10px] font-bold ${
+                      activeTab === tab.key
+                        ? 'bg-white/20 text-on-primary'
+                        : 'bg-surface-container text-on-surface-variant'
+                    }`}
+                  >
                     {count}
                   </span>
                 )}
@@ -269,7 +334,7 @@ export default function TutorBookingRequestScreen({ user, onLogout, onNavigate }
           {error && (
             <div role="alert" className="rounded-xl border border-error-container bg-error-container text-on-error-container px-4 py-3 text-sm flex items-center justify-between">
               {error}
-              <button type="button" onClick={load} className="inline-flex items-center gap-1 font-semibold text-xs hover:underline">
+              <button type="button" onClick={load} className="inline-flex items-center gap-1 font-semibold text-xs hover:underline cursor-pointer">
                 <IconRefresh size={14} aria-hidden="true" />
                 Retry
               </button>

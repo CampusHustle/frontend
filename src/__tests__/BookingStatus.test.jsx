@@ -334,12 +334,13 @@ describe('BookingScreen', () => {
     })
   })
 
-  it('opens the chat panel when Message is clicked on a pending booking', async () => {
+  it('navigates to chat when Message is clicked on a booking', async () => {
     const user = userEvent.setup()
+    const onNavigate = vi.fn()
     // scrollIntoView is not implemented in jsdom
     window.HTMLElement.prototype.scrollIntoView = vi.fn()
 
-    renderWithRouter(<BookingScreen />)
+    renderWithRouter(<BookingScreen onNavigate={onNavigate} />)
 
     await waitFor(() => expect(screen.getAllByRole('status')).toHaveLength(4))
 
@@ -351,9 +352,7 @@ describe('BookingScreen', () => {
     expect(pendingCard).toBeDefined()
     await user.click(within(pendingCard).getByRole('button', { name: /message/i }))
 
-    expect(
-      await screen.findByRole('region', { name: /chat with sarah jenkins/i }),
-    ).toBeInTheDocument()
+    expect(onNavigate).toHaveBeenCalled()
   })
 
   it('shows a loading indicator while bookings are being fetched', () => {

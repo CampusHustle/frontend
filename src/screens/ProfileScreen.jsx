@@ -3,6 +3,7 @@ import { IconCircleCheckFilled, IconStarFilled, IconEdit } from '@tabler/icons-r
 import AppNavbar from '../components/AppNavbar.jsx'
 import Footer from '../components/Footer.jsx'
 import EditProfileModal from '../components/EditProfileModal.jsx'
+import AvailabilityManager from '../components/AvailabilityManager.jsx'
 
 function initialsOf(name) {
   return (name || '')
@@ -214,6 +215,10 @@ export default function ProfileScreen({ user, onNavigate, onLogout, onUpdateProf
         </header>
 
         <ProfileCard user={activeUser} />
+
+        {(activeUser?.role === 'tutor' || activeUser?.isTutor) && (
+          <AvailabilityManager />
+        )}
 
         <div className="mt-6 flex justify-center">
           <button

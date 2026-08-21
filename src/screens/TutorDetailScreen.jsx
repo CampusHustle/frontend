@@ -16,7 +16,7 @@ import {
   IconStarFilled,
 } from '@tabler/icons-react'
 import { getTutorById } from '../api/tutorApi.js'
-import { createBooking } from '../api/bookingApi.js'
+import { createBooking, getTutorAvailability } from '../api/bookingApi.js'
 import Footer from '../components/Footer.jsx'
 import AppNavbar from '../components/AppNavbar.jsx'
 
@@ -104,9 +104,12 @@ function RatingBreakdown({ rating = {} }) {
   )
 }
 
-function AvailabilityGrid({ slots, selected, onSelect }) {
+function AvailabilityGrid({ slots = [], selected, onSelect, loading }) {
   const [week, setWeek] = useState(0)
   const label = `Oct ${23 + week * 7} - Oct ${29 + week * 7}`
+
+  const flatSlots = Array.isArray(slots) ? slots.flat() : []
+
   return (
     <div className="rounded-xl border border-surface-variant bg-surface p-6 shadow-level-1 lg:col-span-2">
       <div className="mb-5 flex items-center justify-between">
@@ -132,45 +135,71 @@ function AvailabilityGrid({ slots, selected, onSelect }) {
         </div>
       </div>
 
-      <div className="grid grid-cols-5 gap-2">
-        {DAYS.map((day) => (
-          <div
-            key={day}
-            className="mb-2 text-center text-xs font-medium text-outline"
-          >
-            {day}
-          </div>
-        ))}
-        {slots.flat().map((slot) => {
-          const isSelected = selected?.day === slot.day && selected?.time === slot.time
-          if (slot.booked) {
+      {loading ? (
+        <div className="py-12 text-center text-xs text-outline">Loading tutor availability…</div>
+      ) : flatSlots.length === 0 ? (
+        <div className="py-12 text-center text-xs text-outline">
+          No available time slots set by tutor yet.
+        </div>
+      ) : (
+        <div className="grid grid-cols-2 gap-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5">
+          {flatSlots.map((slot, index) => {
+            const dayName = slot.dayOfWeek || slot.day || 'Mon'
+            const timeStr = slot.startTime || slot.time || '9:00 AM'
+            const isBooked = slot.isBooked === true || slot.booked === true
+            const slotId = slot._id || slot.id || `${dayName}-${timeStr}-${index}`
+
+            const isSelected =
+              (selected?._id && selected._id === slot._id) ||
+              (selected?.id && selected.id === slot.id) ||
+              (selected?.day === dayName && selected?.time === timeStr) ||
+              (selected?.dayOfWeek === dayName && selected?.startTime === timeStr)
+
+            const normalizedSlot = {
+              ...slot,
+              _id: slot._id || slot.id,
+              id: slot._id || slot.id,
+              dayOfWeek: dayName,
+              startTime: timeStr,
+              day: dayName,
+              time: timeStr,
+              isBooked,
+              booked: isBooked,
+            }
+
+            if (isBooked) {
+              return (
+                <div
+                  key={slotId}
+                  aria-disabled="true"
+                  title="Booked"
+                  className="cursor-not-allowed rounded-md bg-surface-container-highest p-2 text-center text-xs font-medium text-outline-variant border border-outline-variant"
+                >
+                  <div className="font-semibold">{dayName}</div>
+                  <div>{timeStr}</div>
+                </div>
+              )
+            }
+
             return (
-              <div
-                key={`${slot.day}-${slot.time}`}
-                aria-disabled="true"
-                title="Booked"
-                className="cursor-not-allowed rounded-md bg-surface-container-highest p-2 text-center text-xs font-medium text-outline-variant border border-outline-variant"
-              >
-                {slot.time}
-              </div>
-            )
-          }
-          return (
-            <button
-              key={`${slot.day}-${slot.time}`}
-              type="button"
-              onClick={() => onSelect({ day: slot.day, time: slot.time })}
-              aria-pressed={isSelected}
-              className={`rounded-md p-2 text-center text-xs font-medium transition-colors border ${isSelected
-                ? 'bg-primary text-on-primary border-primary shadow-level-1'
-                : 'bg-primary-container text-on-primary-container border-primary hover:bg-primary hover:text-on-primary'
+              <button
+                key={slotId}
+                type="button"
+                onClick={() => onSelect(normalizedSlot)}
+                aria-pressed={isSelected}
+                className={`rounded-md p-2 text-center text-xs font-medium transition-colors border cursor-pointer ${
+                  isSelected
+                    ? 'bg-primary text-on-primary border-primary shadow-level-1'
+                    : 'bg-primary-container text-on-primary-container border-primary hover:bg-primary hover:text-on-primary'
                 }`}
-            >
-              {slot.time}
-            </button>
-          )
-        })}
-      </div>
+              >
+                <div className="font-semibold">{dayName}</div>
+                <div>{timeStr}</div>
+              </button>
+            )
+          })}
+        </div>
+      )}
 
       <div className="mt-5 flex items-center gap-4">
         <span className="flex items-center gap-1.5 text-xs text-outline">
@@ -239,6 +268,9 @@ function BookingPanel({
   bookingStatus = 'idle',
   onSendMessage,
 }) {
+  const selectedDay = selected?.dayOfWeek || selected?.day
+  const selectedTime = selected?.startTime || selected?.time
+
   return (
     <div className="flex flex-col justify-center rounded-xl border border-surface-variant bg-surface p-6 shadow-level-1">
       <div className="mb-4 text-center">
@@ -256,7 +288,7 @@ function BookingPanel({
       ) : (
         <p className="mb-5 text-center text-sm text-on-surface-variant">
           {selected
-            ? `You selected ${selected.day} at ${selected.time}. Request a booking to confirm.`
+            ? `You selected ${selectedDay} at ${selectedTime}. Request a booking to confirm.`
             : 'Select a time slot from the grid to request a booking. Sessions are held via campus library or Zoom.'}
         </p>
       )}
@@ -266,7 +298,7 @@ function BookingPanel({
           type="button"
           disabled={!selected}
           onClick={onRequestBooking}
-          className="w-full rounded-lg bg-secondary-container py-3 text-sm font-semibold text-on-secondary-container shadow-level-1 transition-all hover:shadow-level-2 hover:-translate-y-px disabled:cursor-not-allowed disabled:opacity-50 disabled:hover:shadow-level-1 disabled:hover:translate-y-0"
+          className="w-full rounded-lg bg-secondary-container py-3 text-sm font-semibold text-on-secondary-container shadow-level-1 transition-all hover:shadow-level-2 hover:-translate-y-px disabled:cursor-not-allowed disabled:opacity-50 disabled:hover:shadow-level-1 disabled:hover:translate-y-0 cursor-pointer"
         >
           Request Booking
         </button>
@@ -276,7 +308,7 @@ function BookingPanel({
         <button
           type="button"
           onClick={onSendMessage}
-          className="w-full rounded-lg bg-emerald-600 py-3 text-sm font-semibold text-white shadow-level-1 transition-all hover:bg-emerald-500 hover:shadow-level-2 flex items-center justify-center gap-2"
+          className="w-full rounded-lg bg-emerald-600 py-3 text-sm font-semibold text-white shadow-level-1 transition-all hover:bg-emerald-500 hover:shadow-level-2 flex items-center justify-center gap-2 cursor-pointer"
         >
           <IconMessageCircle size={18} />
           <span>Join Live Chat</span>
@@ -288,7 +320,7 @@ function BookingPanel({
           type="button"
           disabled={!selected}
           onClick={onRequestBooking}
-          className="w-full rounded-lg bg-secondary-container py-3 text-sm font-semibold text-on-secondary-container shadow-level-1 transition-all hover:shadow-level-2 hover:-translate-y-px disabled:cursor-not-allowed disabled:opacity-50"
+          className="w-full rounded-lg bg-secondary-container py-3 text-sm font-semibold text-on-secondary-container shadow-level-1 transition-all hover:shadow-level-2 hover:-translate-y-px disabled:cursor-not-allowed disabled:opacity-50 cursor-pointer"
         >
           Request New Slot
         </button>
@@ -297,7 +329,7 @@ function BookingPanel({
       <button
         type="button"
         onClick={onSendMessage}
-        className="mt-2 w-full rounded-lg border border-primary py-3 text-sm font-semibold text-primary transition-colors hover:bg-surface-container-low"
+        className="mt-2 w-full rounded-lg border border-primary py-3 text-sm font-semibold text-primary transition-colors hover:bg-surface-container-low cursor-pointer"
       >
         Send Message
       </button>
@@ -324,7 +356,7 @@ function NotesSection({ tutor, onNavigate, availableTutorials = [] }) {
         <button
           type="button"
           onClick={() => onNavigate('marketplace')}
-          className="text-sm font-medium text-primary transition-colors hover:text-secondary-container"
+          className="text-sm font-medium text-primary transition-colors hover:text-secondary-container cursor-pointer"
         >
           View All
         </button>
@@ -335,7 +367,7 @@ function NotesSection({ tutor, onNavigate, availableTutorials = [] }) {
             key={note.id}
             type="button"
             onClick={() => onNavigate('marketplace')}
-            className="group flex w-[280px] min-w-[280px] snap-start flex-col rounded-xl border border-surface-variant bg-surface p-4 shadow-level-1 transition-shadow hover:shadow-level-2"
+            className="group flex w-[280px] min-w-[280px] snap-start flex-col rounded-xl border border-surface-variant bg-surface p-4 shadow-level-1 transition-shadow hover:shadow-level-2 cursor-pointer"
           >
             <div className="relative mb-3 flex h-32 items-center justify-center overflow-hidden rounded-lg bg-surface-container">
               <img
@@ -373,10 +405,25 @@ export default function TutorDetailScreen({ user, onLogout, onNavigate, availabl
   const [confirmation, setConfirmation] = useState('')
   const [bookingStatus, setBookingStatus] = useState(initialBookingStatus)
   const [tutor, setTutor] = useState(null)
+  const [slots, setSlots] = useState(() => buildSlots(id ?? 'unknown'))
+  const [loadingSlots, setLoadingSlots] = useState(false)
 
   useEffect(() => {
     if (!id) return
     let isMounted = true
+
+    setSlots(buildSlots(id))
+
+    getTutorAvailability(id)
+      .then((res) => {
+        if (!isMounted) return
+        if (res?.data && Array.isArray(res.data) && res.data.length > 0) {
+          setSlots(res.data)
+        } else if (res?.slots && Array.isArray(res.slots) && res.slots.length > 0) {
+          setSlots(res.slots)
+        }
+      })
+      .catch(() => {})
 
     async function fetchTutorProfile() {
       try {
@@ -401,12 +448,11 @@ export default function TutorDetailScreen({ user, onLogout, onNavigate, availabl
     }
 
     fetchTutorProfile()
+
     return () => {
       isMounted = false
     }
   }, [id])
-
-  const slots = useMemo(() => buildSlots(id ?? 'unknown'), [id])
 
   if (!tutor) {
     return (
@@ -432,14 +478,20 @@ export default function TutorDetailScreen({ user, onLogout, onNavigate, availabl
 
   const handleRequestBooking = () => {
     if (!selected) return
+    const dayLabel = selected.dayOfWeek || selected.day || 'Monday'
+    const timeLabel = selected.startTime || selected.time || '09:00'
+    const slotId = selected._id || selected.id
+
     setBookingStatus('pending')
-    setConfirmation(`Booking request sent for ${selected.day} at ${selected.time}.`)
+    setConfirmation(`Booking request sent for ${dayLabel} at ${timeLabel}.`)
 
     createBooking({
+      availabilityId: slotId || undefined,
       tutorId: tutor?._id || tutor?.id || id,
-      day: selected.day,
-      time: selected.time,
-      startTime: selected.time,
+      dayOfWeek: dayLabel,
+      startTime: timeLabel,
+      day: dayLabel,
+      time: timeLabel,
     }).catch(() => {
       // Optimistic fallback for test/offline
     })
@@ -522,7 +574,7 @@ export default function TutorDetailScreen({ user, onLogout, onNavigate, availabl
 
         {/* Availability + Booking */}
         <section className="grid grid-cols-1 gap-4 lg:grid-cols-3">
-          <AvailabilityGrid slots={slots} selected={selected} onSelect={setSelected} />
+          <AvailabilityGrid slots={slots} selected={selected} onSelect={setSelected} loading={loadingSlots} />
           <BookingPanel
             tutor={tutor}
             selected={selected}

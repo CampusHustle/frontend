@@ -124,9 +124,10 @@ describe('Booking → accept → chat → contact-share flow', () => {
     })
   })
 
-  it('opens the inline chat panel after clicking Message on a confirmed booking', async () => {
+  it('navigates to real chat screen after clicking Message on a confirmed booking', async () => {
     const user = userEvent.setup()
-    render(<MemoryRouter><BookingScreen onNavigate={vi.fn()} /></MemoryRouter>)
+    const onNavigate = vi.fn()
+    render(<MemoryRouter><BookingScreen onNavigate={onNavigate} /></MemoryRouter>)
 
     await waitFor(() => expect(screen.getAllByRole('article')).toHaveLength(2))
 
@@ -136,46 +137,7 @@ describe('Booking → accept → chat → contact-share flow', () => {
 
     await user.click(within(confirmedCard).getByRole('button', { name: /message/i }))
 
-    expect(await screen.findByRole('region', { name: /chat with james okafor/i })).toBeInTheDocument()
-  })
-
-  it('shows "Open in Chat" link inside the chat panel', async () => {
-    const user = userEvent.setup()
-    render(<MemoryRouter><BookingScreen onNavigate={vi.fn()} /></MemoryRouter>)
-
-    await waitFor(() => expect(screen.getAllByRole('article')).toHaveLength(2))
-
-    const confirmedCard = screen
-      .getAllByRole('article')
-      .find((el) => within(el).queryByText('Python for Beginners'))
-
-    await user.click(within(confirmedCard).getByRole('button', { name: /message/i }))
-
-    await screen.findByRole('region', { name: /chat with james okafor/i })
-    expect(screen.getByRole('button', { name: /open in chat/i })).toBeInTheDocument()
-  })
-
-  it('sends a message in the inline chat panel', async () => {
-    const user = userEvent.setup()
-    render(<MemoryRouter><BookingScreen onNavigate={vi.fn()} /></MemoryRouter>)
-
-    await waitFor(() => expect(screen.getAllByRole('article')).toHaveLength(2))
-
-    const confirmedCard = screen
-      .getAllByRole('article')
-      .find((el) => within(el).queryByText('Python for Beginners'))
-
-    await user.click(within(confirmedCard).getByRole('button', { name: /message/i }))
-
-    const chatPanel = await screen.findByRole('region', { name: /chat with james okafor/i })
-    const input = within(chatPanel).getByRole('textbox', { name: /message input/i })
-
-    await user.type(input, 'Looking forward to the session!')
-    await user.keyboard('{Enter}')
-
-    await waitFor(() => {
-      expect(within(chatPanel).getByText('Looking forward to the session!')).toBeInTheDocument()
-    })
+    expect(onNavigate).toHaveBeenCalled()
   })
 
   it('clicking Share Contact opens consent modal without sharing yet', async () => {
