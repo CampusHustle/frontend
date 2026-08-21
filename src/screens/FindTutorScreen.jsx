@@ -84,7 +84,7 @@ function TutorCard({ tutor, onView }) {
           </p>
 
           <div className="flex items-center gap-1.5">
-            <IconStarFilled size={14} className="text-primary" aria-hidden="true" />
+            <IconStarFilled size={14} className="text-amber-500 dark:text-amber-400" aria-hidden="true" />
             <span className="font-bold text-xs text-on-surface">
               {ratingValue.toFixed(1)}
             </span>

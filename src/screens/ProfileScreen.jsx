@@ -117,7 +117,7 @@ function ProfileCard({ user }) {
               )}
 
               <span className="inline-flex items-center gap-1.5 rounded-full bg-surface-high px-4 py-1.5 text-sm font-semibold text-on-surface">
-                <IconStarFilled size={16} className="text-primary-container" aria-hidden="true" />
+                <IconStarFilled size={16} className="text-amber-500 dark:text-amber-400" aria-hidden="true" />
                 {hasRatings ? `${average.toFixed(1)} (${rating.count} ratings)` : 'No ratings yet'}
               </span>
             </div>
