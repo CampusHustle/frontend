@@ -52,6 +52,7 @@ vi.mock('../api/chatApi.js', () => ({
     }),
   ),
   getConversationMessages: vi.fn(() => Promise.resolve({ success: true, messages: [] })),
+  getConversations: vi.fn(() => Promise.resolve({ success: true, conversations: [] })),
 }))
 
 vi.mock('../api/mockChatApi.js', () => ({

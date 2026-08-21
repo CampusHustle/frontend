@@ -140,9 +140,8 @@ export function AppRoutes() {
   }, [])
 
   const handleNavigate = (targetView, context = {}) => {
-    if (targetView === 'assistant') {
+    if (context && Object.keys(context).length > 0) {
       window.dispatchEvent(new CustomEvent('open-ai-assistant', { detail: context }))
-      return
     }
     const routeMap = {
       home: '/',
@@ -161,6 +160,7 @@ export function AppRoutes() {
       'tutor-requests': '/tutor-requests',
       assistant: '/assistant',
       ai: '/assistant',
+      'ai-chat': '/assistant',
       terms: '/terms',
       privacy: '/privacy',
     }
@@ -172,6 +172,7 @@ export function AppRoutes() {
   }
 
   const handleLogout = () => setShowLogoutWarning(true)
+  const handleCancelLogout = () => setShowLogoutWarning(false)
 
   const handleConfirmLogout = () => {
     setShowLogoutWarning(false)
@@ -426,15 +427,19 @@ export function AppRoutes() {
         <Route path="*" element={<Navigate to="/" replace />} />
       </Routes>
 
-      {!location.pathname.startsWith('/admin') && (
-        <FloatingAiAssistant user={currentUser} />
-      )}
+      {currentUser &&
+        !['/', '/login', '/signup', '/verify-email', '/complete-profile', '/terms', '/privacy', '/assistant', '/ai'].includes(
+          location.pathname
+        ) &&
+        !location.pathname.startsWith('/admin') && (
+          <FloatingAiAssistant user={currentUser} />
+        )}
 
       {showLogoutWarning && (
         <LogoutWarningModal
           user={currentUser}
           onConfirm={handleConfirmLogout}
-          onCancel={() => setShowLogoutWarning(false)}
+          onCancel={handleCancelLogout}
         />
       )}
     </>

@@ -246,7 +246,7 @@ describe('App navigation and session persistence', () => {
     // Logout warning overlay should appear on top of current page
     expect(screen.getByRole('alertdialog')).toBeInTheDocument()
     expect(screen.getByRole('heading', { name: 'Log Out of CampusHustle?' })).toBeInTheDocument()
-    expect(screen.getByText('Demo Student')).toBeInTheDocument()
+    expect(screen.getByText(/Are you sure you want to end your session/i)).toBeInTheDocument()
 
     // Clicking "Stay Logged In" dismisses the overlay and keeps user on Find Tutors
     await user.click(screen.getByRole('button', { name: 'Stay Logged In' }))
