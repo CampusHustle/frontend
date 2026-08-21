@@ -21,7 +21,7 @@ import { getNotesByTutor } from '../api/noteApi.js'
 import Footer from '../components/Footer.jsx'
 import AppNavbar from '../components/AppNavbar.jsx'
 
-const DAYS = ['Mon', 'Tue', 'Wed', 'Thu', 'Fri']
+const DAYS = ['Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat', 'Sun']
 const SLOT_TIMES = ['9:00 AM', '2:00 PM']
 
 const NOTE_ICONS = [IconFileText, IconCode, IconBinaryTree2, IconBook2]
@@ -67,8 +67,8 @@ function buildSlots(tutorId) {
   const rand = seededRand(
     [...tutorId].reduce((acc, ch) => acc + ch.charCodeAt(0), 7),
   )
-  const slots = DAYS.map((day) =>
-    SLOT_TIMES.map((time) => ({ day, time, booked: rand() < 0.45 })),
+  const slots = SLOT_TIMES.map((time) =>
+    DAYS.map((day) => ({ day, time, booked: rand() < 0.45 })),
   )
   if (slots.every((row) => row.every((s) => s.booked))) {
     slots[0][0].booked = false
@@ -133,7 +133,7 @@ function AvailabilityGrid({ slots, selected, onSelect }) {
         </div>
       </div>
 
-      <div className="grid grid-cols-5 gap-2">
+      <div className="grid grid-cols-7 gap-2">
         {DAYS.map((day) => (
           <div
             key={day}

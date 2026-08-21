@@ -449,3 +449,170 @@
 .landing-page a[href^="#"] {
   scroll-behavior: smooth;
 }
+
+/* ============================================================
+   LANDING PAGE DARK THEME OVERRIDES
+   ============================================================ */
+
+/* Supported Universities / Marquee */
+.dark .landing-page .campus-section {
+  background: var(--color-surface, #0a0f1d) !important;
+  border-bottom: 1px solid var(--color-surface-variant, #233252);
+}
+
+.dark .landing-page .campus-section-label {
+  color: var(--color-outline, #94a3b8) !important;
+}
+
+.dark .landing-page .campus-name-display {
+  color: var(--color-on-surface, #f8fafc) !important;
+}
+
+.dark .landing-page .campus-item {
+  color: var(--color-on-surface, #f8fafc) !important;
+}
+
+.dark .landing-page .campus-dot {
+  color: var(--color-outline, #64748b) !important;
+}
+
+/* Features Section — clean white canvas with crisp solid black/dark text no matter what (Light & Dark) */
+.landing-page .features-section,
+.dark .landing-page .features-section {
+  background: #ffffff !important;
+}
+
+.landing-page .features-header-title,
+.dark .landing-page .features-header-title,
+.landing-page .features-section .features-header-title,
+.dark .landing-page .features-section .features-header-title {
+  color: #000000 !important;
+}
+
+.landing-page .features-header-desc,
+.dark .landing-page .features-header-desc,
+.landing-page .features-section .features-header-desc,
+.dark .landing-page .features-section .features-header-desc {
+  color: #1e293b !important;
+}
+
+.landing-page .features-header-eyebrow,
+.dark .landing-page .features-header-eyebrow,
+.landing-page .features-section .features-header-eyebrow,
+.dark .landing-page .features-section .features-header-eyebrow {
+  color: #0941b2 !important;
+}
+
+.landing-page .feature-title,
+.dark .landing-page .feature-title,
+.landing-page .features-section .feature-title,
+.dark .landing-page .features-section .feature-title {
+  color: #000000 !important;
+}
+
+.landing-page .feature-desc,
+.dark .landing-page .feature-desc,
+.landing-page .features-section .feature-desc,
+.dark .landing-page .features-section .feature-desc {
+  color: #334155 !important;
+}
+
+.landing-page .feature-label,
+.dark .landing-page .feature-label,
+.landing-page .features-section .feature-label,
+.dark .landing-page .features-section .feature-label {
+  color: #0941b2 !important;
+}
+
+.landing-page .feature-quote,
+.dark .landing-page .feature-quote,
+.landing-page .features-section .feature-quote,
+.dark .landing-page .features-section .feature-quote {
+  background: #ffffff !important;
+  border: 1px solid #e2e8f0 !important;
+  box-shadow: 0 4px 20px rgba(0, 0, 0, 0.05) !important;
+}
+
+.landing-page .feature-quote-text,
+.dark .landing-page .feature-quote-text,
+.landing-page .features-section .feature-quote-text,
+.dark .landing-page .features-section .feature-quote-text {
+  color: #000000 !important;
+}
+
+.landing-page .feature-quote-attr,
+.dark .landing-page .feature-quote-attr,
+.landing-page .features-section .feature-quote-attr,
+.dark .landing-page .features-section .feature-quote-attr {
+  color: #1e293b !important;
+}
+
+.landing-page .feature-quote-attr strong,
+.dark .landing-page .feature-quote-attr strong,
+.landing-page .features-section .feature-quote-attr strong,
+.dark .landing-page .features-section .feature-quote-attr strong {
+  color: #000000 !important;
+}
+
+/* Launch CTA Box inside Features */
+.dark .landing-page .launch-cta {
+  background: linear-gradient(135deg, #0941b2 0%, #111827 100%) !important;
+  border: 1px solid rgba(255, 255, 255, 0.15) !important;
+}
+
+.dark .landing-page .launch-cta-title {
+  color: #ffffff !important;
+}
+
+.dark .landing-page .launch-cta-sub {
+  color: rgba(255, 255, 255, 0.85) !important;
+}
+
+.dark .landing-page .launch-cta-btn {
+  background: #ffffff !important;
+  color: #041534 !important;
+  font-weight: 700 !important;
+}
+
+.dark .landing-page .launch-cta-btn:hover {
+  background: #f1f5f9 !important;
+  color: #041534 !important;
+}
+
+.dark .landing-page .launch-cta-btn-secondary {
+  background: rgba(255, 255, 255, 0.15) !important;
+  color: #ffffff !important;
+  border: 1.5px solid rgba(255, 255, 255, 0.3) !important;
+}
+
+.dark .landing-page .launch-cta-btn-secondary:hover {
+  background: rgba(255, 255, 255, 0.25) !important;
+}
+
+/* Ecosystem Section */
+.dark .landing-page .ecosystem-section {
+  background: var(--color-surface-lowest, #060913) !important;
+}
+
+.dark .landing-page .ecosystem-label {
+  color: var(--color-secondary, #ffd37a) !important;
+}
+
+.dark .landing-page .ecosystem-title {
+  color: var(--color-on-surface, #f8fafc) !important;
+}
+
+.dark .landing-page .eco-card {
+  background: var(--color-surface-low, #10172a) !important;
+  border: 1px solid var(--color-surface-variant, #233252) !important;
+  box-shadow: 0 8px 24px rgba(0, 0, 0, 0.35) !important;
+}
+
+.dark .landing-page .eco-card-title {
+  color: var(--color-on-surface, #f8fafc) !important;
+}
+
+.dark .landing-page .eco-card-desc {
+  color: var(--color-on-surface-variant, #94a3b8) !important;
+}
+

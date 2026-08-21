@@ -113,14 +113,14 @@ function parseInlineMarkdown(text) {
     if (!token) return null
     if (token.startsWith('**') && token.endsWith('**') && token.length >= 4) {
       return (
-        <strong key={i} className="font-bold text-on-surface dark:text-white">
+        <strong key={i} className="font-bold text-on-surface">
           {token.slice(2, -2)}
         </strong>
       )
     }
     if (token.startsWith('*') && token.endsWith('*') && token.length >= 2) {
       return (
-        <em key={i} className="italic text-on-surface/90 dark:text-neutral-200">
+        <em key={i} className="italic text-on-surface-variant">
           {token.slice(1, -1)}
         </em>
       )
@@ -129,7 +129,7 @@ function parseInlineMarkdown(text) {
       return (
         <code
           key={i}
-          className="rounded-md bg-surface-container-high dark:bg-neutral-800 px-1.5 py-0.5 font-mono text-[12px] font-medium text-primary dark:text-teal-300 border border-surface-variant/40 dark:border-neutral-700"
+          className="rounded-md bg-surface-container px-1.5 py-0.5 font-mono text-[12px] font-medium text-amber-500 dark:text-amber-400 border border-surface-variant/60"
         >
           {token.slice(1, -1)}
         </code>
@@ -139,7 +139,7 @@ function parseInlineMarkdown(text) {
       return (
         <span
           key={i}
-          className="inline-block font-mono text-[12px] px-1.5 py-0.5 bg-secondary-container/20 text-secondary dark:text-secondary-fixed rounded font-medium"
+          className="inline-block font-mono text-[12px] px-1.5 py-0.5 bg-secondary-container/15 text-amber-600 dark:text-amber-300 rounded font-medium border border-secondary-container/20"
         >
           {token.slice(1, -1)}
         </span>
@@ -159,18 +159,18 @@ function CodeBlock({ lang, code }) {
   }
 
   return (
-    <div className="my-3.5 overflow-hidden rounded-xl border border-neutral-700/60 bg-[#1e1e1e] text-neutral-100 shadow-md">
-      <div className="flex items-center justify-between border-b border-neutral-800 bg-[#2d2d2d] px-4 py-1.5 text-[11px] font-mono text-neutral-400">
+    <div className="my-3.5 overflow-hidden rounded-xl border border-surface-variant bg-surface-lowest shadow-xs">
+      <div className="flex items-center justify-between border-b border-surface-variant bg-surface-low px-4 py-1.5 text-[11px] font-mono text-outline">
         <span className="uppercase tracking-wider font-semibold">{lang || 'code'}</span>
         <button
           type="button"
           onClick={handleCopyCode}
-          className="inline-flex items-center gap-1.5 hover:text-white transition-colors cursor-pointer text-xs"
+          className="inline-flex items-center gap-1.5 hover:text-on-surface transition-colors cursor-pointer text-xs"
         >
           {copied ? (
             <>
-              <IconCheck size={13} className="text-emerald-400" />
-              <span className="text-emerald-400 font-semibold">Copied</span>
+              <IconCheck size={13} className="text-emerald-500" />
+              <span className="text-emerald-500 font-semibold">Copied</span>
             </>
           ) : (
             <>
@@ -180,7 +180,7 @@ function CodeBlock({ lang, code }) {
           )}
         </button>
       </div>
-      <pre className="overflow-x-auto p-4 font-mono text-xs leading-relaxed text-neutral-200 scrollbar-thin">
+      <pre className="overflow-x-auto p-4 font-mono text-xs leading-relaxed text-on-surface scrollbar-thin">
         <code>{code}</code>
       </pre>
     </div>
@@ -190,7 +190,7 @@ function CodeBlock({ lang, code }) {
 function FormattedAiResponse({ content, isStreaming }) {
   if (!content) {
     return isStreaming ? (
-      <span className="inline-block w-2 h-4 bg-primary dark:bg-emerald-400 ml-1 animate-pulse align-middle rounded-xs" />
+      <span className="inline-block w-2 h-4 bg-primary ml-1 animate-pulse align-middle rounded-xs" />
     ) : null
   }
 
@@ -305,35 +305,35 @@ function FormattedAiResponse({ content, isStreaming }) {
   }
 
   return (
-    <div className="space-y-3 text-[14.5px] leading-relaxed break-words text-on-surface dark:text-neutral-100">
+    <div className="space-y-3 text-[14.5px] leading-relaxed break-words text-on-surface">
       {blocks.map((block, idx) => {
         if (block.type === 'code') {
           return <CodeBlock key={idx} lang={block.lang} code={block.code} />
         }
         if (block.type === 'h1') {
           return (
-            <h3 key={idx} className="font-display text-lg font-bold text-primary dark:text-white mt-4 mb-2 border-b border-surface-variant/50 pb-1.5">
+            <h3 key={idx} className="font-display text-lg font-bold text-primary mt-4 mb-2 border-b border-surface-variant/50 pb-1.5">
               {parseInlineMarkdown(block.text)}
             </h3>
           )
         }
         if (block.type === 'h2') {
           return (
-            <h4 key={idx} className="font-display text-base font-bold text-primary dark:text-white mt-3.5 mb-1.5">
+            <h4 key={idx} className="font-display text-base font-bold text-primary mt-3.5 mb-1.5">
               {parseInlineMarkdown(block.text)}
             </h4>
           )
         }
         if (block.type === 'h3') {
           return (
-            <h5 key={idx} className="font-display text-sm font-bold text-primary dark:text-emerald-300 mt-2.5 mb-1">
+            <h5 key={idx} className="font-display text-sm font-bold text-primary mt-2.5 mb-1">
               {parseInlineMarkdown(block.text)}
             </h5>
           )
         }
         if (block.type === 'quote') {
           return (
-            <div key={idx} className="border-l-3 border-emerald-500 bg-emerald-500/10 px-3.5 py-2 rounded-r-xl my-2 text-xs text-on-surface-variant dark:text-neutral-300 italic">
+            <div key={idx} className="border-l-3 border-emerald-500 bg-emerald-500/10 px-3.5 py-2 rounded-r-xl my-2 text-xs text-on-surface-variant italic">
               {parseInlineMarkdown(block.text)}
             </div>
           )
@@ -343,7 +343,7 @@ function FormattedAiResponse({ content, isStreaming }) {
             <ul key={idx} className="space-y-1.5 my-2 pl-2 list-none">
               {block.items.map((item, i) => (
                 <li key={i} className="flex items-start gap-2.5">
-                  <span className="inline-block size-1.5 rounded-full bg-primary/80 dark:bg-emerald-400 shrink-0 mt-2" />
+                  <span className="inline-block size-1.5 rounded-full bg-primary/80 shrink-0 mt-2" />
                   <span className="flex-1">{parseInlineMarkdown(item)}</span>
                 </li>
               ))}
@@ -355,7 +355,7 @@ function FormattedAiResponse({ content, isStreaming }) {
             <ol key={idx} className="space-y-1.5 my-2 pl-1 list-none">
               {block.items.map((item, i) => (
                 <li key={i} className="flex items-start gap-2">
-                  <span className="font-bold text-primary dark:text-emerald-400 shrink-0 text-xs min-w-[18px]">
+                  <span className="font-bold text-primary shrink-0 text-xs min-w-[18px]">
                     {i + 1}.
                   </span>
                   <span className="flex-1">{parseInlineMarkdown(item)}</span>
@@ -368,10 +368,10 @@ function FormattedAiResponse({ content, isStreaming }) {
           return <div key={idx} className="h-1" />
         }
         return (
-          <p key={idx} className="text-on-surface dark:text-neutral-200">
+          <p key={idx} className="text-on-surface">
             {parseInlineMarkdown(block.text)}
             {idx === blocks.length - 1 && isStreaming && (
-              <span className="inline-block w-2 h-4 bg-primary dark:bg-emerald-400 ml-1 animate-pulse align-middle rounded-xs" />
+              <span className="inline-block w-2 h-4 bg-primary ml-1 animate-pulse align-middle rounded-xs" />
             )}
           </p>
         )
@@ -682,7 +682,7 @@ export default function AiChatScreen({ user, onLogout, onNavigate }) {
   const userInitial = displayName.charAt(0).toUpperCase()
 
   return (
-    <div className="flex h-screen max-h-screen w-screen overflow-hidden flex-col bg-surface font-body text-on-surface dark:bg-[#212121] dark:text-neutral-100">
+    <div className="flex h-screen max-h-screen w-screen overflow-hidden flex-col bg-surface font-body text-on-surface">
       <div className="shrink-0 z-50">
         <AppNavbar user={user || profile} activeView="assistant" onNavigate={onNavigate} onLogout={onLogout} />
       </div>
@@ -692,28 +692,28 @@ export default function AiChatScreen({ user, onLogout, onNavigate }) {
         <aside
           className={`${
             sidebarOpen ? 'w-64 lg:w-72' : 'w-0 -translate-x-full'
-          } shrink-0 h-full flex flex-col border-r border-surface-variant/80 bg-surface-lowest dark:border-neutral-800 dark:bg-[#171717] overflow-hidden z-20 transition-all duration-300 ease-in-out`}
+          } shrink-0 h-full flex flex-col border-r border-surface-variant bg-surface-lowest overflow-hidden z-20 transition-all duration-300 ease-in-out`}
         >
           {/* New Chat Button */}
-          <div className="p-3 shrink-0 border-b border-surface-variant/60 dark:border-neutral-800">
+          <div className="p-3 shrink-0 border-b border-surface-variant/60">
             <button
               type="button"
               onClick={handleNewChat}
-              className="w-full flex items-center justify-between gap-2 rounded-xl border border-surface-variant bg-surface-low px-3.5 py-2.5 text-xs font-semibold text-on-surface hover:bg-surface-high dark:border-neutral-700/80 dark:bg-neutral-800 dark:text-white dark:hover:bg-neutral-700 transition-all cursor-pointer shadow-xs group"
+              className="w-full flex items-center justify-between gap-2 rounded-xl border border-surface-variant bg-surface-low px-3.5 py-2.5 text-xs font-semibold text-on-surface hover:bg-surface-high transition-all cursor-pointer shadow-xs group"
             >
               <div className="flex items-center gap-2">
-                <IconPlus size={16} className="text-primary dark:text-emerald-400 group-hover:scale-110 transition-transform" />
+                <IconPlus size={16} className="text-primary group-hover:scale-110 transition-transform" />
                 <span>New study chat</span>
               </div>
-              <span className="text-[10px] font-mono text-outline dark:text-neutral-400 bg-surface dark:bg-neutral-900 px-1.5 py-0.5 rounded border border-surface-variant/50">
+              <span className="text-[10px] font-mono text-outline bg-surface-container px-1.5 py-0.5 rounded border border-surface-variant/50">
                 ⌘K
               </span>
             </button>
           </div>
 
           {/* Subject Focus Badges */}
-          <div className="p-3 shrink-0 border-b border-surface-variant/50 dark:border-neutral-800/80">
-            <p className="text-[10px] font-bold text-outline dark:text-neutral-400 uppercase tracking-wider mb-2">
+          <div className="p-3 shrink-0 border-b border-surface-variant/50">
+            <p className="text-[10px] font-bold text-outline uppercase tracking-wider mb-2">
               Academic Focus
             </p>
             <div className="flex flex-wrap gap-1.5">
@@ -727,8 +727,8 @@ export default function AiChatScreen({ user, onLogout, onNavigate }) {
                     onClick={() => setSelectedSubject(isSelected ? null : sub.name)}
                     className={`inline-flex items-center gap-1 rounded-lg px-2 py-1 text-[11px] font-medium transition-all cursor-pointer ${
                       isSelected
-                        ? 'bg-primary text-on-primary shadow-xs dark:bg-emerald-600'
-                        : 'border border-surface-variant/70 bg-surface-low text-on-surface hover:border-primary/50 dark:border-neutral-700 dark:bg-neutral-800/80 dark:text-neutral-300'
+                        ? 'bg-primary text-on-primary shadow-xs'
+                        : 'border border-surface-variant/70 bg-surface-low text-on-surface hover:border-primary/50 hover:bg-surface-high'
                     }`}
                   >
                     <Icon size={12} className={isSelected ? 'text-on-primary' : sub.color.split(' ')[0]} />
@@ -742,14 +742,14 @@ export default function AiChatScreen({ user, onLogout, onNavigate }) {
           {/* Chat History List (Only this section scrolls within sidebar) */}
           <div className="flex-1 min-h-0 overflow-y-auto p-2 space-y-1 scrollbar-thin">
             <div className="flex items-center justify-between px-2 pt-2 pb-1">
-              <p className="text-[10px] font-bold text-outline dark:text-neutral-400 uppercase tracking-wider">
+              <p className="text-[10px] font-bold text-outline uppercase tracking-wider">
                 Recent Chats
               </p>
               {sessions.length > 0 && (
                 <button
                   type="button"
                   onClick={handleClearAllSessions}
-                  className="text-[10px] text-outline hover:text-error dark:text-neutral-400 dark:hover:text-rose-400 transition-colors cursor-pointer"
+                  className="text-[10px] text-outline hover:text-error transition-colors cursor-pointer"
                   title="Clear all recorded chats"
                 >
                   Clear all
@@ -758,7 +758,7 @@ export default function AiChatScreen({ user, onLogout, onNavigate }) {
             </div>
 
             {sessions.length === 0 ? (
-              <div className="px-3 py-6 text-center text-xs text-outline dark:text-neutral-500">
+              <div className="px-3 py-6 text-center text-xs text-outline">
                 No recent chats yet. Ask a question to start.
               </div>
             ) : (
@@ -768,19 +768,19 @@ export default function AiChatScreen({ user, onLogout, onNavigate }) {
                   onClick={() => handleSelectSession(sess.id)}
                   className={`w-full flex items-center justify-between gap-2 rounded-lg px-2.5 py-2 text-xs text-left transition-colors cursor-pointer group ${
                     activeSessionId === sess.id
-                      ? 'bg-surface-high font-semibold text-primary dark:bg-neutral-800 dark:text-white'
-                      : 'text-on-surface-variant hover:bg-surface-low dark:text-neutral-300 dark:hover:bg-neutral-800/60'
+                      ? 'bg-surface-high font-semibold text-primary'
+                      : 'text-on-surface-variant hover:bg-surface-low hover:text-on-surface'
                   }`}
                 >
                   <div className="flex items-center gap-2 truncate flex-1 min-w-0">
-                    <IconMessage size={14} className="shrink-0 text-outline dark:text-neutral-400" />
+                    <IconMessage size={14} className="shrink-0 text-outline" />
                     <span className="truncate">{sess.title}</span>
                   </div>
                   <button
                     type="button"
                     onClick={(e) => handleDeleteSession(e, sess.id)}
                     title="Delete chat"
-                    className="opacity-0 group-hover:opacity-100 size-5 inline-flex items-center justify-center rounded hover:bg-surface-high hover:text-error dark:hover:bg-neutral-700 transition-all cursor-pointer text-outline dark:text-neutral-400"
+                    className="opacity-0 group-hover:opacity-100 size-5 inline-flex items-center justify-center rounded hover:bg-surface-high hover:text-error transition-all cursor-pointer text-outline"
                   >
                     <IconTrash size={12} />
                   </button>
@@ -790,16 +790,16 @@ export default function AiChatScreen({ user, onLogout, onNavigate }) {
           </div>
 
           {/* Fixed User Profile Footer */}
-          <div className="p-3 shrink-0 border-t border-surface-variant/60 dark:border-neutral-800 flex items-center justify-between bg-surface-lowest dark:bg-[#171717]">
+          <div className="p-3 shrink-0 border-t border-surface-variant/60 flex items-center justify-between bg-surface-lowest">
             <div className="flex items-center gap-2.5 min-w-0">
               <div className="size-8 rounded-full bg-primary text-on-primary flex items-center justify-center font-bold text-xs shrink-0 shadow-xs">
                 {userInitial}
               </div>
               <div className="truncate">
-                <p className="text-xs font-semibold text-on-surface dark:text-white truncate">
+                <p className="text-xs font-semibold text-on-surface truncate">
                   {displayName}
                 </p>
-                <p className="text-[10px] text-outline dark:text-neutral-400 flex items-center gap-1">
+                <p className="text-[10px] text-outline flex items-center gap-1">
                   <IconSparkles size={10} className="text-emerald-500" />
                   <span>Felat Plus • Free</span>
                 </p>
@@ -809,7 +809,7 @@ export default function AiChatScreen({ user, onLogout, onNavigate }) {
               type="button"
               onClick={handleNewChat}
               title="New study chat"
-              className="inline-flex size-7 items-center justify-center rounded-lg text-outline hover:text-primary hover:bg-surface-high dark:hover:bg-neutral-800 transition-colors cursor-pointer"
+              className="inline-flex size-7 items-center justify-center rounded-lg text-outline hover:text-primary hover:bg-surface-high transition-colors cursor-pointer"
             >
               <IconPlus size={14} />
             </button>
@@ -817,24 +817,24 @@ export default function AiChatScreen({ user, onLogout, onNavigate }) {
         </aside>
 
         {/* ── Main Fixed Workspace Area ── */}
-        <section className="flex-1 min-w-0 min-h-0 flex flex-col bg-surface-lowest dark:bg-[#212121] overflow-hidden relative">
+        <section className="flex-1 min-w-0 min-h-0 flex flex-col bg-surface-lowest overflow-hidden relative">
           {/* Fixed Top Floating Model Header */}
-          <header className="h-14 shrink-0 border-b border-surface-variant/50 dark:border-neutral-800/80 px-4 flex items-center justify-between bg-surface-lowest/80 dark:bg-[#212121]/80 backdrop-blur-md z-10">
+          <header className="h-14 shrink-0 border-b border-surface-variant/50 px-4 flex items-center justify-between bg-surface-lowest/80 backdrop-blur-md z-10">
             <div className="flex items-center gap-2">
               <button
                 type="button"
                 onClick={() => setSidebarOpen((prev) => !prev)}
                 title={sidebarOpen ? 'Close sidebar' : 'Open sidebar'}
-                className="inline-flex size-8 items-center justify-center rounded-lg text-outline hover:bg-surface-high hover:text-on-surface dark:hover:bg-neutral-800 dark:hover:text-white transition-colors cursor-pointer"
+                className="inline-flex size-8 items-center justify-center rounded-lg text-outline hover:bg-surface-high hover:text-on-surface transition-colors cursor-pointer"
               >
                 <IconLayoutSidebar size={18} />
               </button>
 
               {/* Model Switcher Pill */}
-              <div className="inline-flex items-center gap-1.5 px-3 py-1 rounded-xl bg-surface-low dark:bg-neutral-800 text-xs font-bold text-on-surface dark:text-white shadow-xs border border-surface-variant/60 dark:border-neutral-700/80 cursor-default">
+              <div className="inline-flex items-center gap-1.5 px-3 py-1 rounded-xl bg-surface-low text-xs font-bold text-on-surface shadow-xs border border-surface-variant/60 cursor-default">
                 <span className="flex size-2 rounded-full bg-emerald-500 animate-pulse" />
                 <span>Felat (ፈላጥ) AI Study Workspace</span>
-                <span className="text-[10px] px-1.5 py-0.2 rounded bg-primary/10 text-primary dark:bg-emerald-500/20 dark:text-emerald-300 font-mono">
+                <span className="text-[10px] px-1.5 py-0.2 rounded bg-primary/10 text-primary font-mono">
                   4o
                 </span>
               </div>
@@ -866,10 +866,10 @@ export default function AiChatScreen({ user, onLogout, onNavigate }) {
                 <div className="inline-flex size-14 items-center justify-center rounded-2xl bg-gradient-to-tr from-primary to-emerald-600 text-white shadow-lg mb-4">
                   <IconSparkles size={28} />
                 </div>
-                <h2 className="font-display text-2xl font-bold tracking-tight text-on-surface dark:text-white sm:text-3xl">
+                <h2 className="font-display text-2xl font-bold tracking-tight text-on-surface sm:text-3xl">
                   Welcome, {displayName}!
                 </h2>
-                <p className="mt-2 text-sm text-outline dark:text-neutral-400">
+                <p className="mt-2 text-sm text-outline">
                   What would you like to study today?
                 </p>
               </div>
@@ -893,14 +893,14 @@ export default function AiChatScreen({ user, onLogout, onNavigate }) {
                 <div
                   className={`relative ${
                     msg.role === 'user'
-                      ? 'max-w-[85%] sm:max-w-[75%] rounded-3xl bg-surface-high dark:bg-[#2f2f2f] px-5 py-3 text-on-surface dark:text-white shadow-xs'
+                      ? 'max-w-[85%] sm:max-w-[75%] rounded-3xl bg-surface-high px-5 py-3 text-on-surface shadow-xs'
                       : 'flex-1 max-w-full'
                   }`}
                 >
                   {msg.role === 'user' ? (
                     <div>
                       {msg.attachment && (
-                        <div className="mb-2.5 flex items-center gap-2.5 rounded-2xl bg-surface-lowest/90 dark:bg-neutral-800/90 p-2.5 border border-surface-variant/70 dark:border-neutral-700 w-fit max-w-full">
+                        <div className="mb-2.5 flex items-center gap-2.5 rounded-2xl bg-surface-lowest/90 p-2.5 border border-surface-variant/70 w-fit max-w-full">
                           {msg.attachment.previewUrl && msg.attachment.type?.startsWith('image/') ? (
                             <img
                               src={msg.attachment.previewUrl}
@@ -908,16 +908,16 @@ export default function AiChatScreen({ user, onLogout, onNavigate }) {
                               className="size-11 rounded-xl object-cover border border-surface-variant shrink-0"
                             />
                           ) : (
-                            <div className="flex size-9 items-center justify-center rounded-xl bg-primary/10 text-primary dark:bg-emerald-500/20 dark:text-emerald-300 shrink-0">
+                            <div className="flex size-9 items-center justify-center rounded-xl bg-primary/10 text-primary shrink-0">
                               <IconFileText size={18} />
                             </div>
                           )}
                           <div className="flex flex-col min-w-0 pr-1">
-                            <span className="text-xs font-semibold text-on-surface dark:text-white truncate max-w-[180px] sm:max-w-[240px]">
+                            <span className="text-xs font-semibold text-on-surface truncate max-w-[180px] sm:max-w-[240px]">
                               {msg.attachment.name}
                             </span>
                             {msg.attachment.size && (
-                              <span className="text-[10px] text-outline dark:text-neutral-400">
+                              <span className="text-[10px] text-outline">
                                 {msg.attachment.size}
                               </span>
                             )}
@@ -932,12 +932,12 @@ export default function AiChatScreen({ user, onLogout, onNavigate }) {
 
                       {/* ChatGPT Style Bottom Action Bar */}
                       {!msg.isStreaming && (
-                        <div className="mt-3 flex items-center gap-1 text-outline dark:text-neutral-400">
+                        <div className="mt-3 flex items-center gap-1 text-outline">
                           <button
                             type="button"
                             onClick={() => handleCopy(msg.id, msg.content)}
                             title="Copy response"
-                            className="inline-flex size-7 items-center justify-center rounded-md hover:bg-surface-low hover:text-on-surface dark:hover:bg-neutral-800 dark:hover:text-white transition-colors cursor-pointer"
+                            className="inline-flex size-7 items-center justify-center rounded-md hover:bg-surface-low hover:text-on-surface transition-colors cursor-pointer"
                           >
                             {copiedId === msg.id ? (
                               <IconCheck size={14} className="text-emerald-500" />
@@ -953,7 +953,7 @@ export default function AiChatScreen({ user, onLogout, onNavigate }) {
                             className={`inline-flex size-7 items-center justify-center rounded-md transition-colors cursor-pointer ${
                               likedMap[msg.id] === 'up'
                                 ? 'text-emerald-500'
-                                : 'hover:bg-surface-low hover:text-on-surface dark:hover:bg-neutral-800 dark:hover:text-white'
+                                : 'hover:bg-surface-low hover:text-on-surface'
                             }`}
                           >
                             <IconThumbUp size={14} />
@@ -966,13 +966,13 @@ export default function AiChatScreen({ user, onLogout, onNavigate }) {
                             className={`inline-flex size-7 items-center justify-center rounded-md transition-colors cursor-pointer ${
                               likedMap[msg.id] === 'down'
                                 ? 'text-rose-500'
-                                : 'hover:bg-surface-low hover:text-on-surface dark:hover:bg-neutral-800 dark:hover:text-white'
+                                : 'hover:bg-surface-low hover:text-on-surface'
                             }`}
                           >
                             <IconThumbDown size={14} />
                           </button>
 
-                          <span className="text-[10px] ml-2 text-outline/60 dark:text-neutral-500 font-mono">
+                          <span className="text-[10px] ml-2 text-outline/60 font-mono">
                             {msg.timestamp}
                           </span>
                         </div>
@@ -983,7 +983,7 @@ export default function AiChatScreen({ user, onLogout, onNavigate }) {
 
                 {/* User Avatar on right */}
                 {msg.role === 'user' && (
-                  <div className="size-8 rounded-full bg-primary-fixed dark:bg-neutral-700 text-primary dark:text-white flex items-center justify-center font-bold text-xs shrink-0 mt-1 shadow-xs">
+                  <div className="size-8 rounded-full bg-surface-high text-primary flex items-center justify-center font-bold text-xs shrink-0 mt-1 shadow-xs border border-surface-variant/50">
                     {userInitial}
                   </div>
                 )}
@@ -996,9 +996,9 @@ export default function AiChatScreen({ user, onLogout, onNavigate }) {
                   <IconSparkles size={16} />
                 </div>
                 <div className="flex items-center gap-1.5 py-2">
-                  <span className="size-2 rounded-full bg-primary/80 dark:bg-emerald-400 animate-bounce" />
-                  <span className="size-2 rounded-full bg-primary/80 dark:bg-emerald-400 animate-bounce [animation-delay:0.2s]" />
-                  <span className="size-2 rounded-full bg-primary/80 dark:bg-emerald-400 animate-bounce [animation-delay:0.4s]" />
+                  <span className="size-2 rounded-full bg-primary/80 animate-bounce" />
+                  <span className="size-2 rounded-full bg-primary/80 animate-bounce [animation-delay:0.2s]" />
+                  <span className="size-2 rounded-full bg-primary/80 animate-bounce [animation-delay:0.4s]" />
                 </div>
               </div>
             )}
@@ -1007,7 +1007,7 @@ export default function AiChatScreen({ user, onLogout, onNavigate }) {
           </div>
 
           {/* ── Fixed Bottom Prompt Bar with Dynamic Stop Button & Attachment ── */}
-          <div className="shrink-0 p-4 sm:pb-6 bg-gradient-to-t from-surface-lowest via-surface-lowest to-transparent dark:from-[#212121] dark:via-[#212121] z-10">
+          <div className="shrink-0 p-4 sm:pb-6 bg-gradient-to-t from-surface-lowest via-surface-lowest to-transparent z-10">
             <div className="max-w-3xl mx-auto">
               {/* Hidden file input for attachment */}
               <input
@@ -1024,11 +1024,11 @@ export default function AiChatScreen({ user, onLogout, onNavigate }) {
                   e.preventDefault()
                   handleSend()
                 }}
-                className="relative flex flex-col rounded-3xl border border-surface-variant/80 bg-surface-low p-2 sm:p-2.5 shadow-level-2 dark:border-neutral-700 dark:bg-[#2f2f2f] focus-within:border-primary dark:focus-within:border-neutral-500 focus-within:ring-2 focus-within:ring-primary/20 transition-all"
+                className="relative flex flex-col rounded-3xl border border-surface-variant/80 bg-surface-low p-2 sm:p-2.5 shadow-level-2 focus-within:border-primary focus-within:ring-2 focus-within:ring-primary/20 transition-all"
               >
                 {/* Active Attached File Pill */}
                 {attachedFile && (
-                  <div className="mb-2 ml-1 flex items-center gap-2 p-1.5 pr-2.5 rounded-2xl bg-surface-lowest dark:bg-neutral-800 border border-surface-variant/80 dark:border-neutral-700 w-fit max-w-full animate-in fade-in zoom-in-95 duration-150">
+                  <div className="mb-2 ml-1 flex items-center gap-2 p-1.5 pr-2.5 rounded-2xl bg-surface-lowest border border-surface-variant/80 w-fit max-w-full animate-in fade-in zoom-in-95 duration-150">
                     {attachedFile.previewUrl && attachedFile.type?.startsWith('image/') ? (
                       <img
                         src={attachedFile.previewUrl}
@@ -1036,15 +1036,15 @@ export default function AiChatScreen({ user, onLogout, onNavigate }) {
                         className="size-9 rounded-xl object-cover border border-surface-variant shrink-0"
                       />
                     ) : (
-                      <div className="flex size-9 items-center justify-center rounded-xl bg-primary/10 text-primary dark:bg-emerald-500/20 dark:text-emerald-300 shrink-0">
+                      <div className="flex size-9 items-center justify-center rounded-xl bg-primary/10 text-primary shrink-0">
                         <IconFileText size={18} />
                       </div>
                     )}
                     <div className="flex flex-col min-w-0 pr-1">
-                      <span className="text-xs font-semibold text-on-surface dark:text-white truncate max-w-[180px] sm:max-w-[260px]">
+                      <span className="text-xs font-semibold text-on-surface truncate max-w-[180px] sm:max-w-[260px]">
                         {attachedFile.name}
                       </span>
-                      <span className="text-[10px] text-outline dark:text-neutral-400">
+                      <span className="text-[10px] text-outline">
                         {formatFileSize(attachedFile.size)}
                       </span>
                     </div>
@@ -1053,7 +1053,7 @@ export default function AiChatScreen({ user, onLogout, onNavigate }) {
                       onClick={handleRemoveAttachment}
                       aria-label="Remove attached file"
                       title="Remove attached file"
-                      className="size-6 inline-flex items-center justify-center rounded-full text-outline hover:text-error hover:bg-surface-high dark:hover:bg-neutral-700 transition-colors cursor-pointer ml-1"
+                      className="size-6 inline-flex items-center justify-center rounded-full text-outline hover:text-error hover:bg-surface-high transition-colors cursor-pointer ml-1"
                     >
                       <IconX size={14} />
                     </button>
@@ -1066,7 +1066,7 @@ export default function AiChatScreen({ user, onLogout, onNavigate }) {
                     onClick={() => fileInputRef.current?.click()}
                     title="Attach course note or image"
                     aria-label="Attach course note or image"
-                    className="flex size-9 shrink-0 items-center justify-center rounded-full text-outline hover:text-on-surface hover:bg-surface-high dark:hover:bg-neutral-800 dark:hover:text-white transition-colors cursor-pointer"
+                    className="flex size-9 shrink-0 items-center justify-center rounded-full text-outline hover:text-on-surface hover:bg-surface-high transition-colors cursor-pointer"
                   >
                     <IconPaperclip size={18} />
                   </button>
@@ -1086,7 +1086,7 @@ export default function AiChatScreen({ user, onLogout, onNavigate }) {
                     }}
                     placeholder="Ask Felat anything about your courses, formulas, coding, or exams..."
                     aria-label="Ask Felat anything"
-                    className="max-h-48 w-full resize-none border-0 bg-transparent px-2 py-2 text-sm text-on-surface placeholder:text-outline dark:text-white dark:placeholder:text-neutral-400 focus:outline-none focus:ring-0"
+                    className="max-h-48 w-full resize-none border-0 bg-transparent px-2 py-2 text-sm text-on-surface placeholder:text-outline focus:outline-none focus:ring-0"
                   />
 
                   {isGenerating ? (
@@ -1095,7 +1095,7 @@ export default function AiChatScreen({ user, onLogout, onNavigate }) {
                       onClick={handleStopGenerating}
                       aria-label="Stop generating"
                       title="Stop generating"
-                      className="flex size-9 shrink-0 items-center justify-center rounded-full bg-neutral-900 text-white dark:bg-white dark:text-neutral-900 shadow-sm hover:opacity-90 active:scale-95 transition-all cursor-pointer"
+                      className="flex size-9 shrink-0 items-center justify-center rounded-full bg-primary text-on-primary shadow-sm hover:opacity-90 active:scale-95 transition-all cursor-pointer"
                     >
                       <IconPlayerStopFilled size={14} />
                     </button>
@@ -1104,7 +1104,7 @@ export default function AiChatScreen({ user, onLogout, onNavigate }) {
                       type="submit"
                       disabled={!draft.trim() && !attachedFile}
                       aria-label="Send query"
-                      className="flex size-9 shrink-0 items-center justify-center rounded-full bg-primary text-on-primary shadow-sm hover:bg-primary-container active:scale-95 disabled:cursor-not-allowed disabled:bg-surface-container disabled:text-outline disabled:opacity-40 dark:bg-white dark:text-black dark:hover:bg-neutral-200 cursor-pointer transition-all"
+                      className="flex size-9 shrink-0 items-center justify-center rounded-full bg-primary text-on-primary shadow-sm hover:bg-primary-container active:scale-95 disabled:cursor-not-allowed disabled:bg-surface-container disabled:text-outline disabled:opacity-40 cursor-pointer transition-all"
                     >
                       <IconArrowUp size={18} stroke={2.5} />
                     </button>
@@ -1112,7 +1112,7 @@ export default function AiChatScreen({ user, onLogout, onNavigate }) {
                 </div>
               </form>
 
-              <p className="mt-2 text-center text-[11px] text-outline dark:text-neutral-400">
+              <p className="mt-2 text-center text-[11px] text-outline">
                 Felat can make mistakes. Verify critical academic facts with your course syllabus and instructor.
               </p>
             </div>
