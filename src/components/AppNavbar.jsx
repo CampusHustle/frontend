@@ -296,21 +296,7 @@ export default function AppNavbar({
             >
               <IconSparkles size={18} aria-hidden="true" />
             </button>
-
-            {/* Messages shortcut button */}
-           {/* <button
-              type="button"
-              aria-label="Messages"
-              onClick={() => onNavigate?.('chat')}
-              className={`inline-flex size-9 items-center justify-center rounded-full border border-outline-variant transition-colors cursor-pointer ${
-                activeView === 'chat'
-                  ? 'bg-primary text-on-primary border-primary'
-                  : 'text-on-surface-variant hover:text-primary'
-              }`}
-            >
-              <IconMessageCircle size={18} aria-hidden="true" />
-            </button>*/}
-          {/* Messages shortcut button */}
+            
           <button
             type="button"
             aria-label="Messages"
