@@ -61,6 +61,7 @@ function EditProfileForm({ user, onClose, onSave }) {
   const parts = (user?.name || '').split(' ')
   const [firstName, setFirstName] = useState(parts[0] || '')
   const [lastName, setLastName] = useState(parts.slice(1).join(' ') || '')
+  const [gender, setGender] = useState(user?.gender || '')
   const [profilePicUrl, setProfilePicUrl] = useState(user?.profilePicUrl || '')
   const [bio, setBio] = useState(user?.bio || '')
   const [university, setUniversity] = useState(user?.university || '')
@@ -119,6 +120,7 @@ function EditProfileForm({ user, onClose, onSave }) {
     const updatedUser = {
       ...user,
       name: fullName || user?.name || 'Student',
+      gender: gender ? gender.toLowerCase().trim() : null,
       profilePicUrl: profilePicUrl || '',
       bio: bio.trim(),
       university: university.trim(),
@@ -221,6 +223,49 @@ function EditProfileForm({ user, onClose, onSave }) {
               value={lastName}
               onChange={(e) => setLastName(e.target.value)}
             />
+          </div>
+        </div>
+
+        {/* Gender */}
+        <div className="flex flex-col gap-1">
+          <label className={labelClass}>
+            Gender
+          </label>
+          <div className="grid grid-cols-2 gap-3">
+            <label
+              className={`flex items-center gap-2.5 rounded-lg border p-2.5 cursor-pointer transition-all ${
+                gender === 'male'
+                  ? 'border-primary bg-primary/5 text-primary font-semibold ring-1 ring-primary'
+                  : 'border-outline-variant bg-surface-lowest text-on-surface hover:bg-surface-low'
+              }`}
+            >
+              <input
+                type="radio"
+                name="edit-gender"
+                value="male"
+                checked={gender === 'male'}
+                onChange={(e) => setGender(e.target.value)}
+                className="accent-primary size-3.5 cursor-pointer"
+              />
+              <span className="text-xs">Male</span>
+            </label>
+            <label
+              className={`flex items-center gap-2.5 rounded-lg border p-2.5 cursor-pointer transition-all ${
+                gender === 'female'
+                  ? 'border-primary bg-primary/5 text-primary font-semibold ring-1 ring-primary'
+                  : 'border-outline-variant bg-surface-lowest text-on-surface hover:bg-surface-low'
+              }`}
+            >
+              <input
+                type="radio"
+                name="edit-gender"
+                value="female"
+                checked={gender === 'female'}
+                onChange={(e) => setGender(e.target.value)}
+                className="accent-primary size-3.5 cursor-pointer"
+              />
+              <span className="text-xs">Female</span>
+            </label>
           </div>
         </div>
 
