@@ -37,6 +37,7 @@ vi.mock('../hooks/useSocket.js', () => ({
 }))
 
 vi.mock('../api/chatApi.js', () => ({
+  getConversations: vi.fn(() => Promise.resolve({ success: true, conversations: [] })),
   getMessagesWithUser: vi.fn(() =>
     Promise.resolve({
       success: true,

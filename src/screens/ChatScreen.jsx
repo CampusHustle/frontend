@@ -19,7 +19,6 @@ import {
 import AppNavbar from "../components/AppNavbar.jsx";
 import ConsentModal from "../components/ConsentModal.jsx";
 import { useSocket } from "../hooks/useSocket.js";
-import { MOCK_PEER } from "../api/mockChatApi.js";
 import { getMessagesWithUser } from "../api/chatApi.js";
 import { tutors } from "../api/mockUsers.js";
 import { getTutorById } from "../api/tutorApi.js";
@@ -385,125 +384,165 @@ function MessageInput({ onSend, onShareContact, disabled }) {
 
 export default function ChatScreen({ user, onLogout, onNavigate }) {
   const { id: peerIdParam } = useParams()
-  const { socket, status } = useSocket()
+  const { status, getSocket } = useSocket()
   const [conversations, setConversations] = useState([])
-  const [activePeer, setActivePeer] = useState(() => ({
-    _id: peerIdParam || MOCK_PEER?.id || 'u-sarah',
-    name: MOCK_PEER?.name || 'Sarah Johnson',
-    department: MOCK_PEER?.department || 'Computer Science',
-  }))
+  const [activePeer, setActivePeer] = useState(() => {
+    if (peerIdParam) {
+      const match = tutors.find((t) => (t._id || t.id) === peerIdParam)
+      if (match) return match
+      return {
+        _id: peerIdParam,
+        name: 'Peer Student',
+        department: 'Academic Contact',
+      }
+    }
+    return null
+  })
   const [messages, setMessages] = useState(() => (Array.isArray(INITIAL_MESSAGES) ? INITIAL_MESSAGES : []))
   const [searchQuery, setSearchQuery] = useState('')
   const [consentOpen, setConsentOpen] = useState(false)
   const [isLoadingMessages, setIsLoadingMessages] = useState(false)
 
   const currentUserId = user?._id || user?.id || 'me'
+  const userId = user?._id
+  const targetPeerId = peerIdParam || activePeer?._id || activePeer?.id
 
   // Load conversation inbox on mount
   useEffect(() => {
     let isMounted = true
-    getConversations()
-      .then((res) => {
-        if (isMounted && Array.isArray(res?.conversations)) {
-          setConversations(res.conversations)
-          if (!peerIdParam && res.conversations.length > 0 && res.conversations[0].peer) {
-            setActivePeer(res.conversations[0].peer)
+    if (typeof getConversations === 'function') {
+      getConversations()
+        .then((res) => {
+          if (isMounted && Array.isArray(res?.conversations)) {
+            setConversations(res.conversations)
+            if (!peerIdParam && res.conversations.length > 0 && res.conversations[0].peer) {
+              setActivePeer(res.conversations[0].peer)
+            }
           }
-        }
-      })
-      .catch(() => { })
+        })
+        .catch(() => { })
+    }
     return () => {
       isMounted = false
     }
   }, [peerIdParam])
-  const { id } = useParams();
-  const { status, getSocket } = useSocket();
-  const [messages, setMessages] = useState([]);
-  const [consentOpen, setConsentOpen] = useState(false);
-  const [isLoadingMessages, setIsLoadingMessages] = useState(false);
 
-  const currentUserId = user?._id || user?.id || "me";
-  const userId = user?._id;
-  const peer = tutors.find((t) => (t._id || t.id) === id) || MOCK_PEER;
-
+  // Sync activePeer when peerIdParam changes
   useEffect(() => {
-    if (!id || !userId) return;
-    let isMounted = true;
-    getMessagesWithUser(id)
+    if (!peerIdParam) return
+    let isMounted = true
+    getTutorById(peerIdParam)
       .then((res) => {
-        if (!isMounted) return;
-        const mapped = (res.messages ?? [])
-          .slice()
-          .reverse()
-          .map((m) => mapMessage(m, userId));
-        setMessages(mapped);
+        if (isMounted && res?.tutor) setActivePeer(res.tutor)
       })
       .catch(() => {
         if (isMounted) {
-          setActivePeer({
-            _id: peerIdParam,
-            name: 'Peer Student',
-            department: 'Academic Contact',
-          })
+          const match = tutors.find((t) => (t._id || t.id) === peerIdParam)
+          if (match) {
+            setActivePeer(match)
+          } else {
+            setActivePeer({
+              _id: peerIdParam,
+              name: 'Peer Student',
+              department: 'Academic Contact',
+            })
+          }
         }
       })
-      .catch(() => { })
-
-      .catch(() => setMessages([]));
     return () => {
-      isMounted = false;
-    };
-  }, [id, userId]);
+      isMounted = false
+    }
+  }, [peerIdParam])
 
+  // Fetch conversation messages
   useEffect(() => {
-    if (!id || !userId) return;
-    const socket = getSocket();
-    if (!socket) return;
+    if (!targetPeerId) return
+    let isMounted = true
 
-    const conversationId = [userId, id].sort().join("_");
+    getMessagesWithUser(targetPeerId)
+      .then((res) => {
+        if (!isMounted) return
+        const raw = res?.messages || []
+        const mapped = raw
+          .slice()
+          .reverse()
+          .map((m) => mapMessage(m, userId))
+        setMessages(mapped)
+      })
+      .catch(() => {
+        if (isMounted) {
+          getConversationMessages(targetPeerId)
+            .then((res) => {
+              if (isMounted && Array.isArray(res?.messages)) {
+                setMessages(res.messages)
+              }
+            })
+            .catch(() => { })
+        }
+      })
+      .finally(() => {
+        if (isMounted) setIsLoadingMessages(false)
+      })
+
+    return () => {
+      isMounted = false
+    }
+  }, [targetPeerId, userId])
+
+  // Socket setup for active conversation
+  useEffect(() => {
+    if (!targetPeerId || !userId) return
+    const socket = getSocket?.()
+    if (!socket) return
+
+    const conversationId = [userId, targetPeerId].sort().join('_')
 
     function onReceive(msg) {
-      setMessages((prev) => [...prev, mapMessage(msg, userId)]);
+      setMessages((prev) => [...prev, mapMessage(msg, userId)])
     }
 
     function onError(err) {
-      console.error("[chat socket error]", err);
+      console.error('[chat socket error]', err)
     }
 
-    socket.emit("join_conversation", { conversationId });
-    socket.on("message:receive", onReceive);
-    socket.on("error", onError);
+    socket.emit('join_conversation', { conversationId })
+    socket.on('message:receive', onReceive)
+    socket.on('error', onError)
 
     return () => {
-      socket.off("message:receive", onReceive);
-      socket.off("error", onError);
-    };
-  }, [id, userId, status, getSocket]);
+      socket.off('message:receive', onReceive)
+      socket.off('error', onError)
+    }
+  }, [targetPeerId, userId, status, getSocket])
 
-  const handleSend = useCallback(
+  const handleSendMessage = useCallback(
     (text) => {
-      const socket = getSocket();
-      if (!socket || !id || !userId) return;
-      const conversationId = [userId, id].sort().join("_");
-      socket.emit("message:send", { conversationId, content: text });
+      const socket = getSocket?.()
+      if (!socket || !targetPeerId || !userId) return
+      const conversationId = [userId, targetPeerId].sort().join('_')
+      socket.emit('message:send', { conversationId, content: text })
     },
-    [getSocket, id, userId],
-  );
+    [getSocket, targetPeerId, userId],
+  )
 
   const handleConsentConfirm = useCallback(() => {
-    setConsentOpen(false);
-    const socket = getSocket();
-    if (!socket || !id || !user?._id) return;
+    setConsentOpen(false)
+    const socket = getSocket?.()
+    if (!socket || !targetPeerId || !user?._id) return
 
-    const conversationId = [user._id, id].sort().join("_");
+    const conversationId = [user._id, targetPeerId].sort().join('_')
     const content = encodeContactCard({
-      name: sanitizeDisplayText(user?.name ?? ""),
-      email: sanitizeDisplayText(user?.email ?? ""),
+      name: sanitizeDisplayText(user?.name ?? ''),
+      email: sanitizeDisplayText(user?.email ?? ''),
       phone: user?.phone ? sanitizeDisplayText(user.phone) : null,
-    });
+    })
 
-    socket.emit("message:send", { conversationId, content });
-  }, [getSocket, id, user]);
+    socket.emit('message:send', { conversationId, content })
+  }, [getSocket, targetPeerId, user])
+
+  const filteredConversations = conversations.filter((c) =>
+    (c.peer?.name || '').toLowerCase().includes(searchQuery.toLowerCase())
+  )
 
   return (
     <div className="flex min-h-screen flex-col bg-surface font-body text-on-surface">
@@ -516,8 +555,9 @@ export default function ChatScreen({ user, onLogout, onNavigate }) {
 
       <main className="flex flex-1 overflow-hidden h-[calc(100vh-64px)]">
         <aside
-          className={`w-full md:w-80 lg:w-96 flex flex-col border-r border-surface-variant bg-surface-lowest ${activePeer ? 'hidden md:flex' : 'flex'
-            }`}
+          className={`w-full md:w-80 lg:w-96 flex flex-col border-r border-surface-variant bg-surface-lowest ${
+            activePeer ? 'hidden md:flex' : 'flex'
+          }`}
         >
           <div className="p-4 border-b border-surface-variant">
             <div className="flex items-center justify-between mb-3">
@@ -568,8 +608,9 @@ export default function ChatScreen({ user, onLogout, onNavigate }) {
                       setActivePeer(conv.peer)
                       onNavigate?.(`/chat/${conv.peer?._id}`)
                     }}
-                    className={`w-full p-4 text-left flex items-start gap-3 transition-colors hover:bg-surface-low cursor-pointer ${isSelected ? 'bg-surface-container-low border-l-4 border-primary' : ''
-                      }`}
+                    className={`w-full p-4 text-left flex items-start gap-3 transition-colors hover:bg-surface-low cursor-pointer ${
+                      isSelected ? 'bg-surface-container-low border-l-4 border-primary' : ''
+                    }`}
                   >
                     <PeerAvatar peer={conv.peer} size="md" />
                     <div className="flex-1 min-w-0">
@@ -599,8 +640,9 @@ export default function ChatScreen({ user, onLogout, onNavigate }) {
         </aside>
 
         <section
-          className={`flex-1 flex flex-col bg-surface-low ${!activePeer ? 'hidden md:flex' : 'flex'
-            }`}
+          className={`flex-1 flex flex-col bg-surface-low ${
+            !activePeer ? 'hidden md:flex' : 'flex'
+          }`}
         >
           {activePeer ? (
             <>
@@ -669,21 +711,14 @@ export default function ChatScreen({ user, onLogout, onNavigate }) {
             </div>
           )}
         </section>
-        <div className="flex flex-1 flex-col overflow-hidden bg-white/20 backdrop-blur-sm">
-          <ChatThread
-            messages={messages}
-            peer={peer}
-            currentUserId={currentUserId}
-          />
-        </div>
       </main>
 
       <ConsentModal
         isOpen={consentOpen}
-        peerName={peer?.name || "Tutor"}
+        peerName={activePeer?.name || 'Tutor'}
         onCancel={() => setConsentOpen(false)}
         onConfirm={handleConsentConfirm}
       />
     </div>
-  );
+  )
 }
