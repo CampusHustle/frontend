@@ -397,7 +397,6 @@ export default function ChatScreen({ user, onLogout, onNavigate }) {
   const [messages, setMessages] = useState([])
   const [searchQuery, setSearchQuery] = useState('')
   const [consentOpen, setConsentOpen] = useState(false)
-  const [isLoadingMessages, setIsLoadingMessages] = useState(false)
 
   const currentUserId = user?._id || user?.id || 'me'
   const userId = user?._id || user?.id
@@ -450,7 +449,6 @@ export default function ChatScreen({ user, onLogout, onNavigate }) {
   useEffect(() => {
     if (!activeId || !userId) return
     let isMounted = true
-    setIsLoadingMessages(true)
 
     getMessagesWithUser(activeId)
       .then((res) => {
@@ -465,9 +463,6 @@ export default function ChatScreen({ user, onLogout, onNavigate }) {
         if (isMounted) {
           setMessages([])
         }
-      })
-      .finally(() => {
-        if (isMounted) setIsLoadingMessages(false)
       })
 
     return () => {
@@ -725,17 +720,11 @@ export default function ChatScreen({ user, onLogout, onNavigate }) {
                 </div>
               </header>
 
-              {isLoadingMessages ? (
-                <div className="flex flex-1 items-center justify-center">
-                  <IconLoader2 size={32} className="animate-spin text-primary" />
-                </div>
-              ) : (
-                <ChatThread
-                  messages={messages}
-                  peer={activePeer}
-                  currentUserId={currentUserId}
-                />
-              )}
+              <ChatThread
+                messages={messages}
+                peer={activePeer}
+                currentUserId={currentUserId}
+              />
 
               <MessageInput
                 onSend={handleSendMessage}
