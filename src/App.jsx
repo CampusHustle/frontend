@@ -40,84 +40,9 @@ import {
 } from './utils/session.js'
 import { profileFromForm, hasCompletedProfile } from './utils/user.js'
 
-const initialDummyNotes = [
-  {
-    id: 1,
-    contentType: 'PDF NOTES',
-    price: '240 ETB',
-    numericPrice: 240,
-    title: 'Advanced Data Structures & Algorithms',
-    course: 'CS 301',
-    department: 'Computer Science',
-    authorName: 'Prof. John Doe',
-    authorAvatar: 'https://i.pravatar.cc/150?u=john',
-    coverImage: 'https://images.unsplash.com/photo-1516116216624-53e697fedbea?w=400&q=80',
-  },
-  {
-    id: 2,
-    contentType: 'PDF NOTES',
-    price: '150 ETB',
-    numericPrice: 150,
-    title: 'Macroeconomics Midterm Master Notes',
-    course: 'ECON 201',
-    department: 'Economics',
-    authorName: 'Sarah Jenkins',
-    authorAvatar: 'https://i.pravatar.cc/150?u=sarah',
-    coverImage: 'https://images.unsplash.com/photo-1611095790444-1dfa35e37b52?w=400&q=80',
-  },
-  {
-    id: 3,
-    contentType: 'PDF + QUIZ',
-    price: '185 ETB',
-    numericPrice: 185,
-    title: 'Microeconomics Theory & Problem Sets Solutions',
-    course: 'ECON 201',
-    department: 'Economics',
-    authorName: 'Dawit Yohannes',
-    authorAvatar: 'https://i.pravatar.cc/150?u=dawit',
-    coverImage: 'https://images.unsplash.com/photo-1454165804606-c3d57bc86b40?w=400&q=80',
-  },
-  {
-    id: 4,
-    contentType: 'Exam Prep',
-    price: '290 ETB',
-    numericPrice: 290,
-    title: 'Calculus III Comprehensive Review & Practice Solutions',
-    course: 'MATH 302',
-    department: 'Mathematics',
-    authorName: 'Elena Rostova',
-    authorAvatar: 'https://i.pravatar.cc/150?u=elena',
-    coverImage: 'https://images.unsplash.com/photo-1635070041078-e363dbe005cb?w=400&q=80',
-  },
-  {
-    id: 5,
-    contentType: 'PDF NOTES',
-    price: '120 ETB',
-    numericPrice: 120,
-    title: 'Linear Algebra Summary Cheat Sheets',
-    course: 'MATH 201',
-    department: 'Mathematics',
-    authorName: 'Alex Rivera',
-    authorAvatar: 'https://i.pravatar.cc/150?u=alex',
-    coverImage: 'https://images.unsplash.com/photo-1509228468518-180dd4864904?w=400&q=80',
-  },
-  {
-    id: 6,
-    contentType: 'PDF + QUIZ',
-    price: '220 ETB',
-    numericPrice: 220,
-    title: 'Machine Learning Fundamentals & Math Review',
-    course: 'CS 440',
-    department: 'Computer Science',
-    authorName: 'David Kim',
-    authorAvatar: 'https://i.pravatar.cc/150?u=david',
-    coverImage: 'https://images.unsplash.com/photo-1555949963-ff9fe0c870eb?w=400&q=80',
-  },
-]
-
 export function AppRoutes() {
   const navigate = useNavigate()
-  const [availableTutorials, setAvailableTutorials] = useState(initialDummyNotes)
+  const [availableTutorials, setAvailableTutorials] = useState([])
 
   const handleAddNote = (newNote) => {
     setAvailableTutorials((prev) => [newNote, ...prev])

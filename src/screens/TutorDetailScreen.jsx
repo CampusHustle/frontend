@@ -17,6 +17,7 @@ import {
 } from '@tabler/icons-react'
 import { getTutorById } from '../api/tutorApi.js'
 import { createBooking } from '../api/bookingApi.js'
+import { getNotesByTutor } from '../api/noteApi.js'
 import Footer from '../components/Footer.jsx'
 import AppNavbar from '../components/AppNavbar.jsx'
 
@@ -231,34 +232,48 @@ export function BookingStatusBadge({ status }) {
   }
 }
 
-function BookingPanel({
-  tutor,
-  selected,
-  onRequestBooking,
-  confirmation,
-  bookingStatus = 'idle',
-  onSendMessage,
-}) {
+function BookingPanel({ tutor, selected, onRequestBooking, confirmation, bookingStatus, onSendMessage }) {
+  const isPending = bookingStatus === 'pending'
+  const isConfirmed = bookingStatus === 'confirmed'
+
   return (
-    <div className="flex flex-col justify-center rounded-xl border border-surface-variant bg-surface p-6 shadow-level-1">
-      <div className="mb-4 text-center">
-        <span className="font-display text-3xl font-bold text-primary">ETB {tutor.hourlyRate}</span>
-        <span className="text-base text-outline"> / hour</span>
+    <div className="flex flex-col rounded-xl border border-surface-variant bg-surface p-6 shadow-level-1">
+      <h2 className="mb-2 font-display text-xl font-bold text-primary">Book a Session</h2>
+      <p className="mb-4 text-xs font-semibold uppercase tracking-wider text-outline">
+        ETB {tutor.hourlyRate} / hour · 1-on-1 tutoring
+      </p>
+
+      {/* Real-Time Booking Status Indicator (FR-5, FR-6) */}
+      <div className="mb-4">
+        <BookingStatusBadge status={bookingStatus} />
       </div>
 
-      {bookingStatus !== 'idle' ? (
-        <div className="mb-5 space-y-3">
-          <BookingStatusBadge status={bookingStatus} />
-          {confirmation && (
-            <p className="text-center text-xs text-on-surface-variant">{confirmation}</p>
-          )}
+      <div className="mb-4 flex flex-col gap-2 rounded-lg bg-surface-container-low p-4 text-sm">
+        <div className="flex justify-between">
+          <span className="text-on-surface-variant">Selected Slot</span>
+          <span className="font-semibold text-on-surface">
+            {selected ? `${selected.day} at ${selected.time}` : 'None chosen'}
+          </span>
         </div>
-      ) : (
-        <p className="mb-5 text-center text-sm text-on-surface-variant">
-          {selected
-            ? `You selected ${selected.day} at ${selected.time}. Request a booking to confirm.`
-            : 'Select a time slot from the grid to request a booking. Sessions are held via campus library or Zoom.'}
-        </p>
+        <div className="flex justify-between">
+          <span className="text-on-surface-variant">Rate</span>
+          <span className="font-semibold text-on-surface">ETB {tutor.hourlyRate}</span>
+        </div>
+        <div className="flex justify-between border-t border-surface-variant pt-2">
+          <span className="font-bold text-on-surface">Estimated Total</span>
+          <span className="font-bold text-primary">
+            {selected ? `ETB ${tutor.hourlyRate}` : '—'}
+          </span>
+        </div>
+      </div>
+
+      {confirmation && (
+        <div
+          role="status"
+          className="mb-4 rounded-lg bg-secondary-container/20 border border-secondary-container p-3 text-xs font-medium text-on-surface"
+        >
+          {confirmation}
+        </div>
       )}
 
       {bookingStatus === 'idle' && (
@@ -266,17 +281,28 @@ function BookingPanel({
           type="button"
           disabled={!selected}
           onClick={onRequestBooking}
-          className="w-full rounded-lg bg-secondary-container py-3 text-sm font-semibold text-on-secondary-container shadow-level-1 transition-all hover:shadow-level-2 hover:-translate-y-px disabled:cursor-not-allowed disabled:opacity-50 disabled:hover:shadow-level-1 disabled:hover:translate-y-0"
+          className="w-full rounded-lg bg-primary py-3 text-sm font-semibold text-on-primary shadow-level-1 transition-all hover:bg-primary-container hover:shadow-level-2 hover:-translate-y-px disabled:cursor-not-allowed disabled:opacity-50"
         >
           Request Booking
         </button>
       )}
 
-      {bookingStatus === 'confirmed' && (
+      {isPending && (
+        <button
+          type="button"
+          disabled
+          className="w-full rounded-lg bg-amber-500/20 border border-amber-500/40 py-3 text-sm font-semibold text-amber-800 dark:text-amber-300 cursor-not-allowed flex items-center justify-center gap-2"
+        >
+          <IconClock size={16} className="animate-spin" />
+          <span>Awaiting Tutor Approval...</span>
+        </button>
+      )}
+
+      {isConfirmed && (
         <button
           type="button"
           onClick={onSendMessage}
-          className="w-full rounded-lg bg-emerald-600 py-3 text-sm font-semibold text-white shadow-level-1 transition-all hover:bg-emerald-500 hover:shadow-level-2 flex items-center justify-center gap-2"
+          className="w-full rounded-lg bg-emerald-600 py-3 text-sm font-semibold text-white shadow-level-1 transition-all hover:bg-emerald-500 hover:shadow-level-2 flex items-center justify-center gap-2 cursor-pointer"
         >
           <IconMessageCircle size={18} />
           <span>Join Live Chat</span>
@@ -297,7 +323,7 @@ function BookingPanel({
       <button
         type="button"
         onClick={onSendMessage}
-        className="mt-2 w-full rounded-lg border border-primary py-3 text-sm font-semibold text-primary transition-colors hover:bg-surface-container-low"
+        className="mt-2 w-full rounded-lg border border-primary py-3 text-sm font-semibold text-primary transition-colors hover:bg-surface-container-low cursor-pointer"
       >
         Send Message
       </button>
@@ -305,63 +331,76 @@ function BookingPanel({
   )
 }
 
-function NotesSection({ tutor, onNavigate, availableTutorials = [] }) {
-  const notes = useMemo(() => {
-    const byDept = availableTutorials.filter((n) => n.department === tutor.department)
-    return (byDept.length > 0 ? byDept : availableTutorials).slice(0, 3).map((note, index) => ({
-      ...note,
-      price: `ETB ${[10, 5, 8][index] ?? 5}`,
-      Icon: NOTE_ICONS[index % NOTE_ICONS.length],
-    }))
-  }, [tutor.department, availableTutorials])
+function NotesSection({ tutor, onNavigate }) {
+  const [tutorNotes, setTutorNotes] = useState([])
+
+  useEffect(() => {
+    const tutorId = tutor?._id || tutor?.id
+    if (!tutorId) return
+    let isMounted = true
+    getNotesByTutor(tutorId)
+      .then((res) => {
+        if (isMounted) {
+          const arr = Array.isArray(res?.notes) ? res.notes : Array.isArray(res?.data) ? res.data : []
+          setTutorNotes(arr)
+        }
+      })
+      .catch(() => {})
+    return () => {
+      isMounted = false
+    }
+  }, [tutor])
+
+  if (tutorNotes.length === 0) {
+    return null
+  }
 
   return (
     <section className="flex flex-col gap-4">
       <div className="flex items-end justify-between">
         <h2 className="font-display text-2xl font-bold text-primary">
-          Study Notes by {tutor.name.split(' ')[0]}
+          Study Notes by {tutor.name?.split(' ')[0] || 'Tutor'}
         </h2>
         <button
           type="button"
-          onClick={() => onNavigate('marketplace')}
-          className="text-sm font-medium text-primary transition-colors hover:text-secondary-container"
+          onClick={() => onNavigate?.('marketplace')}
+          className="text-sm font-medium text-primary transition-colors hover:text-secondary-container cursor-pointer"
         >
           View All
         </button>
       </div>
       <div className="hide-scrollbar flex snap-x gap-4 overflow-x-auto pb-2">
-        {notes.map((note) => (
-          <button
-            key={note.id}
-            type="button"
-            onClick={() => onNavigate('marketplace')}
-            className="group flex w-[280px] min-w-[280px] snap-start flex-col rounded-xl border border-surface-variant bg-surface p-4 shadow-level-1 transition-shadow hover:shadow-level-2"
-          >
-            <div className="relative mb-3 flex h-32 items-center justify-center overflow-hidden rounded-lg bg-surface-container">
-              <img
-                src={note.coverImage}
-                alt=""
-                className="absolute inset-0 h-full w-full object-cover opacity-80 mix-blend-multiply"
-              />
-              <note.Icon
-                size={40}
-                className="relative z-10 text-primary"
-                aria-hidden="true"
-              />
-            </div>
-            <div className="mb-2 flex items-start justify-between gap-2">
-              <h3 className="line-clamp-2 text-left text-sm font-semibold text-on-surface transition-colors group-hover:text-primary">
-                {note.title}
-              </h3>
-              <span className="shrink-0 rounded-md bg-primary-container px-2 py-0.5 text-sm font-semibold text-on-primary-container">
-                {note.price}
-              </span>
-            </div>
-            <p className="mt-auto line-clamp-2 text-left text-sm text-outline">
-              {note.course} · {note.contentType}
-            </p>
-          </button>
-        ))}
+        {tutorNotes.map((note, index) => {
+          const Icon = NOTE_ICONS[index % NOTE_ICONS.length]
+          const priceStr = typeof note.price === 'number' ? (note.price === 0 ? 'Free' : `${note.price} ETB`) : 'Free'
+          return (
+            <button
+              key={note._id || note.id}
+              type="button"
+              onClick={() => onNavigate?.(`/notes/${note._id || note.id}`)}
+              className="group flex w-[280px] min-w-[280px] snap-start flex-col rounded-xl border border-surface-variant bg-surface p-4 shadow-level-1 transition-shadow hover:shadow-level-2 cursor-pointer"
+            >
+              <div className="relative mb-3 flex h-32 items-center justify-center overflow-hidden rounded-lg bg-surface-container">
+                <Icon
+                  size={40}
+                  className="relative z-10 text-primary"
+                  aria-hidden="true"
+                />
+              </div>
+              <div className="mb-2 flex items-start justify-between gap-2">
+                <h3 className="line-clamp-2 text-left text-sm font-semibold text-on-surface transition-colors group-hover:text-primary">
+                  {note.title}
+                </h3>
+                <span className="shrink-0 rounded-md bg-primary-container px-2 py-0.5 text-sm font-semibold text-on-primary-container">
+                  {priceStr}
+                </span>
+              </div>
+              <p className="mt-auto line-clamp-2 text-left text-sm text-outline">
+                {note.course}
+              </p>
+            </button>
+          )
+        })}
       </div>
     </section>
   )
