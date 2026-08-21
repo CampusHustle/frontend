@@ -145,7 +145,7 @@ describe('FloatingAiAssistant Component', () => {
     })
 
     const user = userEvent.setup()
-    render(<FloatingAiAssistant user={null} />)
+    render(<FloatingAiAssistant user={mockUser} />)
 
     await user.click(screen.getByRole('button', { name: /Open Felat/i }))
 
@@ -178,7 +178,7 @@ describe('FloatingAiAssistant Component', () => {
     })
 
     const user = userEvent.setup()
-    render(<FloatingAiAssistant user={null} />)
+    render(<FloatingAiAssistant user={mockUser} />)
 
     await user.click(screen.getByRole('button', { name: /Open Felat/i }))
 

@@ -384,11 +384,12 @@ function MessageInput({ onSend, onShareContact, disabled }) {
 }
 
 export default function ChatScreen({ user, onLogout, onNavigate }) {
-  const { id: peerIdParam } = useParams()
-  const { socket, status } = useSocket()
+  const { id: peerIdParam, id: routeId } = useParams()
+  const activeId = peerIdParam || routeId
+  const { socket, status, getSocket } = useSocket()
   const [conversations, setConversations] = useState([])
   const [activePeer, setActivePeer] = useState(() => ({
-    _id: peerIdParam || MOCK_PEER?.id || 'u-sarah',
+    _id: activeId || MOCK_PEER?.id || 'u-sarah',
     name: MOCK_PEER?.name || 'Sarah Johnson',
     department: MOCK_PEER?.department || 'Computer Science',
   }))
@@ -398,6 +399,7 @@ export default function ChatScreen({ user, onLogout, onNavigate }) {
   const [isLoadingMessages, setIsLoadingMessages] = useState(false)
 
   const currentUserId = user?._id || user?.id || 'me'
+  const userId = user?._id || user?.id
 
   // Load conversation inbox on mount
   useEffect(() => {
@@ -406,7 +408,7 @@ export default function ChatScreen({ user, onLogout, onNavigate }) {
       .then((res) => {
         if (isMounted && Array.isArray(res?.conversations)) {
           setConversations(res.conversations)
-          if (!peerIdParam && res.conversations.length > 0 && res.conversations[0].peer) {
+          if (!activeId && res.conversations.length > 0 && res.conversations[0].peer) {
             setActivePeer(res.conversations[0].peer)
           }
         }
@@ -415,95 +417,87 @@ export default function ChatScreen({ user, onLogout, onNavigate }) {
     return () => {
       isMounted = false
     }
-  }, [peerIdParam])
-  const { id } = useParams();
-  const { status, getSocket } = useSocket();
-  const [messages, setMessages] = useState([]);
-  const [consentOpen, setConsentOpen] = useState(false);
-  const [isLoadingMessages, setIsLoadingMessages] = useState(false);
-
-  const currentUserId = user?._id || user?.id || "me";
-  const userId = user?._id;
-  const peer = tutors.find((t) => (t._id || t.id) === id) || MOCK_PEER;
+  }, [activeId])
 
   useEffect(() => {
-    if (!id || !userId) return;
-    let isMounted = true;
-    getMessagesWithUser(id)
+    if (!activeId || !userId) return
+    let isMounted = true
+    setIsLoadingMessages(true)
+    getMessagesWithUser(activeId)
       .then((res) => {
-        if (!isMounted) return;
-        const mapped = (res.messages ?? [])
+        if (!isMounted) return
+        const mapped = (res?.messages ?? [])
           .slice()
           .reverse()
-          .map((m) => mapMessage(m, userId));
-        setMessages(mapped);
+          .map((m) => mapMessage(m, userId))
+        setMessages(mapped)
       })
       .catch(() => {
         if (isMounted) {
-          setActivePeer({
-            _id: peerIdParam,
-            name: 'Peer Student',
-            department: 'Academic Contact',
-          })
+          setMessages([])
         }
       })
-      .catch(() => { })
-
-      .catch(() => setMessages([]));
+      .finally(() => {
+        if (isMounted) setIsLoadingMessages(false)
+      })
     return () => {
-      isMounted = false;
-    };
-  }, [id, userId]);
+      isMounted = false
+    }
+  }, [activeId, userId])
 
   useEffect(() => {
-    if (!id || !userId) return;
-    const socket = getSocket();
-    if (!socket) return;
+    if (!activeId || !userId) return
+    const activeSocket = socket || (typeof getSocket === 'function' ? getSocket() : null)
+    if (!activeSocket) return
 
-    const conversationId = [userId, id].sort().join("_");
+    const conversationId = [userId, activeId].sort().join('_')
 
     function onReceive(msg) {
-      setMessages((prev) => [...prev, mapMessage(msg, userId)]);
+      setMessages((prev) => [...prev, mapMessage(msg, userId)])
     }
 
     function onError(err) {
-      console.error("[chat socket error]", err);
+      console.error('[chat socket error]', err)
     }
 
-    socket.emit("join_conversation", { conversationId });
-    socket.on("message:receive", onReceive);
-    socket.on("error", onError);
+    activeSocket.emit('join_conversation', { conversationId })
+    activeSocket.on('message:receive', onReceive)
+    activeSocket.on('error', onError)
 
     return () => {
-      socket.off("message:receive", onReceive);
-      socket.off("error", onError);
-    };
-  }, [id, userId, status, getSocket]);
+      activeSocket.off('message:receive', onReceive)
+      activeSocket.off('error', onError)
+    }
+  }, [activeId, userId, status, socket, getSocket])
 
   const handleSend = useCallback(
     (text) => {
-      const socket = getSocket();
-      if (!socket || !id || !userId) return;
-      const conversationId = [userId, id].sort().join("_");
-      socket.emit("message:send", { conversationId, content: text });
+      const activeSocket = socket || (typeof getSocket === 'function' ? getSocket() : null)
+      if (!activeSocket || !activeId || !userId) return
+      const conversationId = [userId, activeId].sort().join('_')
+      activeSocket.emit('message:send', { conversationId, content: text })
     },
-    [getSocket, id, userId],
-  );
+    [socket, getSocket, activeId, userId]
+  )
 
   const handleConsentConfirm = useCallback(() => {
-    setConsentOpen(false);
-    const socket = getSocket();
-    if (!socket || !id || !user?._id) return;
+    setConsentOpen(false)
+    const activeSocket = socket || (typeof getSocket === 'function' ? getSocket() : null)
+    if (!activeSocket || !activeId || !userId) return
 
-    const conversationId = [user._id, id].sort().join("_");
+    const conversationId = [userId, activeId].sort().join('_')
     const content = encodeContactCard({
-      name: sanitizeDisplayText(user?.name ?? ""),
-      email: sanitizeDisplayText(user?.email ?? ""),
+      name: sanitizeDisplayText(user?.name ?? ''),
+      email: sanitizeDisplayText(user?.email ?? ''),
       phone: user?.phone ? sanitizeDisplayText(user.phone) : null,
-    });
+    })
 
-    socket.emit("message:send", { conversationId, content });
-  }, [getSocket, id, user]);
+    activeSocket.emit('message:send', { conversationId, content })
+  }, [socket, getSocket, activeId, userId, user])
+
+  const filteredConversations = conversations.filter((c) =>
+    (c?.peer?.name || '').toLowerCase().includes(searchQuery.toLowerCase())
+  )
 
   return (
     <div className="flex min-h-screen flex-col bg-surface font-body text-on-surface">
@@ -646,7 +640,7 @@ export default function ChatScreen({ user, onLogout, onNavigate }) {
               )}
 
               <MessageInput
-                onSend={handleSendMessage}
+                onSend={handleSend}
                 onShareContact={() => setConsentOpen(true)}
               />
             </>
@@ -669,21 +663,14 @@ export default function ChatScreen({ user, onLogout, onNavigate }) {
             </div>
           )}
         </section>
-        <div className="flex flex-1 flex-col overflow-hidden bg-white/20 backdrop-blur-sm">
-          <ChatThread
-            messages={messages}
-            peer={peer}
-            currentUserId={currentUserId}
-          />
-        </div>
       </main>
 
       <ConsentModal
         isOpen={consentOpen}
-        peerName={peer?.name || "Tutor"}
+        peerName={activePeer?.name || 'Tutor'}
         onCancel={() => setConsentOpen(false)}
         onConfirm={handleConsentConfirm}
       />
     </div>
-  );
+  )
 }

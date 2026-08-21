@@ -307,8 +307,6 @@ function welcomeMessage() {
 }
 
 export default function FloatingAiAssistant({ user }) {
-  if (!user) return null
-
   const [isOpen, setIsOpen] = useState(false)
   const [messages, setMessages] = useState(() => [welcomeMessage()])
   const [draft, setDraft] = useState('')
@@ -459,6 +457,8 @@ export default function FloatingAiAssistant({ user }) {
       setAttachment(file)
     }
   }
+
+  if (!user && !isOpen && !activeTutorId) return null
 
   return (
     <>

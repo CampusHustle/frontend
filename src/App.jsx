@@ -278,8 +278,6 @@ export function AppRoutes() {
             />
           }
         />
-<<<<<<< HEAD
-
         <Route
           path="/tutor/:id"
           element={
