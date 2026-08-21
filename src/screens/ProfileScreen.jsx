@@ -2,6 +2,7 @@ import { useState, useEffect, useMemo } from 'react'
 import { useNavigate } from 'react-router-dom'
 import {
   IconCircleCheckFilled,
+  IconAlertCircleFilled,
   IconStarFilled,
   IconEdit,
   IconTrash,
@@ -390,6 +391,7 @@ export default function ProfileScreen({
   const [localUser, setLocalUser] = useState(null)
   const [isEditing, setIsEditing] = useState(false)
   const [savedToast, setSavedToast] = useState('')
+  const [toastType, setToastType] = useState('success')
   const [localNotes, setLocalNotes] = useState(null)
   const [noteToDelete, setNoteToDelete] = useState(null)
   const [isDeleting, setIsDeleting] = useState(false)
@@ -397,22 +399,34 @@ export default function ProfileScreen({
   const activeUser = localUser || user || null
   const notes = localNotes !== null ? localNotes : userNotes
 
-  // Fetch from API if no userNotes passed as prop
+  const showToast = (message, type = 'success') => {
+    setSavedToast(message)
+    setToastType(type)
+    setTimeout(() => setSavedToast(''), 3000)
+  }
+
+  // Always sync own notes from the API and merge with locally added ones
   useEffect(() => {
-    if (!userNotes || userNotes.length === 0) {
-      if (activeUser?._id || activeUser?.id) {
-        let isMounted = true
-        getMyUploadedNotes(activeUser._id || activeUser.id)
-          .then((res) => {
-            if (isMounted && (res?.notes || res?.data)) {
-              setLocalNotes(res.notes || res.data)
-            }
+    const userId = activeUser?._id || activeUser?.id
+    if (!userId) return undefined
+    let isMounted = true
+    getMyUploadedNotes(userId)
+      .then((res) => {
+        if (!isMounted) return
+        const fetched = res?.notes || res?.data || []
+        setLocalNotes((prev) => {
+          const base = prev !== null ? prev : userNotes || []
+          const merged = [...base]
+          fetched.forEach((n) => {
+            const key = n.id || n._id
+            if (!merged.some((m) => (m.id || m._id) === key)) merged.push(n)
           })
-          .catch(() => {})
-        return () => {
-          isMounted = false
-        }
-      }
+          return merged
+        })
+      })
+      .catch(() => {})
+    return () => {
+      isMounted = false
     }
   }, [userNotes, activeUser?._id, activeUser?.id])
 
@@ -420,8 +434,7 @@ export default function ProfileScreen({
     setLocalUser(updatedUser)
     setIsEditing(false)
     onUpdateProfile?.(updatedUser)
-    setSavedToast('Profile updated successfully!')
-    setTimeout(() => setSavedToast(''), 3000)
+    showToast('Profile updated successfully!')
   }
 
   const handleEditNote = (note) => {
@@ -445,22 +458,23 @@ export default function ProfileScreen({
   }
 
   const handleConfirmDelete = async () => {
-    if (!noteToDelete) return
+    if (!noteToDelete || isDeleting) return
     const id = noteToDelete.id || noteToDelete._id
     setIsDeleting(true)
 
     try {
-      await deleteNote(id).catch(() => {})
-    } catch {
-      // Optimistic UI fallback
+      await deleteNote(id)
+      setLocalNotes((prev) =>
+        (prev !== null ? prev : userNotes).filter((n) => (n.id || n._id) !== id)
+      )
+      onDeleteNote?.(id)
+      showToast('Note material deleted successfully!', 'success')
+    } catch (err) {
+      showToast(err?.message || 'Failed to delete note. Please try again.', 'error')
+    } finally {
+      setIsDeleting(false)
+      setNoteToDelete(null)
     }
-
-    setLocalNotes((prev) => (prev !== null ? prev : userNotes).filter((n) => (n.id || n._id) !== id))
-    onDeleteNote?.(id)
-    setIsDeleting(false)
-    setNoteToDelete(null)
-    setSavedToast('Note material deleted successfully!')
-    setTimeout(() => setSavedToast(''), 3000)
   }
 
   return (
@@ -477,9 +491,17 @@ export default function ProfileScreen({
         {savedToast && (
           <div
             role="status"
-            className="mb-4 flex items-center gap-2 rounded-xl border border-emerald-500/30 bg-emerald-500/10 px-4 py-2.5 text-xs font-semibold text-emerald-700 dark:text-emerald-400 animate-in fade-in duration-200"
+            className={`mb-4 flex items-center gap-2 rounded-xl border px-4 py-2.5 text-xs font-semibold animate-in fade-in duration-200 ${
+              toastType === 'error'
+                ? 'border-red-500/30 bg-red-500/10 text-red-700 dark:text-red-400'
+                : 'border-emerald-500/30 bg-emerald-500/10 text-emerald-700 dark:text-emerald-400'
+            }`}
           >
-            <IconCircleCheckFilled size={18} />
+            {toastType === 'error' ? (
+              <IconAlertCircleFilled size={18} />
+            ) : (
+              <IconCircleCheckFilled size={18} />
+            )}
             <span>{savedToast}</span>
           </div>
         )}

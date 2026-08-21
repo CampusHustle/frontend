@@ -59,7 +59,7 @@ export const API_ENDPOINTS = Object.freeze({
     UPDATE: (id) => `/api/notes/${id}`,
     DELETE: (id) => `/api/notes/${id}`,
     BY_TUTOR: (tutorId) => `/api/notes/tutor/${tutorId}`,
-    MY_NOTES: '/api/notes/my-notes',
+    MY_NOTES: '/api/notes/mine',
     PURCHASE: (id) => `/api/notes/${id}/purchase`,
     MY_PURCHASES: '/api/notes/purchases/me',
   },

@@ -11,6 +11,7 @@ import {
   IconPhoto,
   IconSchool,
   IconCheck,
+  IconAlertCircleFilled,
 } from '@tabler/icons-react'
 import AppNavbar from '../components/AppNavbar.jsx'
 import Footer from '../components/Footer.jsx'
@@ -66,13 +67,15 @@ export default function PostListingScreen({
   })
   const [documentFile, setDocumentFile] = useState(null)
   const [feedback, setFeedback] = useState('')
+  const [feedbackType, setFeedbackType] = useState('success')
 
   const handleDocumentSelect = (file) => {
     setDocumentFile(file)
   }
 
-  const handleAction = (message) => {
+  const handleAction = (message, type = 'success') => {
     setFeedback(message)
+    setFeedbackType(type)
     window.setTimeout(() => setFeedback(''), 4000)
   }
 
@@ -81,34 +84,29 @@ export default function PostListingScreen({
     const formattedPrice = numericPriceValue > 0 ? `${numericPriceValue} ETB` : 'Free'
 
     if (isEditing) {
-      const updated = {
-        ...editingNote,
-        title: title.trim() || editingNote.title,
-        course: subject || editingNote.course,
-        department: subject || editingNote.department,
-        contentType: contentType || editingNote.contentType || 'PDF Notes',
-        price: formattedPrice,
-        numericPrice: numericPriceValue,
-        description: description.trim() || editingNote.description,
-      }
-
-      if (onUpdateNote) {
-        onUpdateNote(updated)
-      }
+      // Payload matches the PATCH/PUT /api/notes/:noteId contract:
+      // only { title, course, description, price, previewPages } are editable,
+      // and empty title/course values are rejected by the server.
+      const payload = {}
+      if (title.trim()) payload.title = title.trim()
+      if (subject.trim()) payload.course = subject.trim()
+      payload.description = description.trim()
+      payload.price = String(numericPriceValue)
 
       try {
         const id = editingNote.id || editingNote._id
-        if (id) {
-          await updateNote(id, {
-            title: title.trim(),
-            course: subject,
-            contentType,
-            description: description.trim(),
-            price: String(numericPriceValue),
-          }).catch(() => {})
-        }
-      } catch {
-        // Optimistic UI fallback
+        const res = id ? await updateNote(id, payload) : null
+        onUpdateNote?.({
+          ...editingNote,
+          ...payload,
+          contentType: contentType || editingNote.contentType || 'PDF Notes',
+          price: formattedPrice,
+          numericPrice: numericPriceValue,
+          ...(res?.note || {}),
+        })
+      } catch (err) {
+        handleAction(err?.message || 'Failed to update tutorial. Please try again.', 'error')
+        return
       }
 
       handleAction('Tutorial updated successfully!')
@@ -197,9 +195,17 @@ export default function PostListingScreen({
         {feedback && (
           <div
             role="status"
-            className="mb-6 rounded-lg border border-emerald-500/30 bg-emerald-500/10 px-4 py-3 text-sm font-medium text-emerald-700 dark:text-emerald-400 shadow-level-1 flex items-center gap-2"
+            className={`mb-6 rounded-lg border px-4 py-3 text-sm font-medium shadow-level-1 flex items-center gap-2 ${
+              feedbackType === 'error'
+                ? 'border-red-500/30 bg-red-500/10 text-red-700 dark:text-red-400'
+                : 'border-emerald-500/30 bg-emerald-500/10 text-emerald-700 dark:text-emerald-400'
+            }`}
           >
-            <IconCheck size={18} />
+            {feedbackType === 'error' ? (
+              <IconAlertCircleFilled size={18} />
+            ) : (
+              <IconCheck size={18} />
+            )}
             <span>{feedback}</span>
           </div>
         )}
