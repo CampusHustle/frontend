@@ -112,43 +112,49 @@ export default function Hero({ onNavigate }) {
         </div>
 
         {/* Hero Content */}
-       <div className="hero-content w-full px-4 sm:px-6">
-         <div className="hero-header w-full">
-    
-    <h1 className="hero-title flex flex-col text-4xl sm:text-5xl md:text-6xl lg:text-7xl font-bold leading-tight break-words">
-      <span className=" block">Trade your notes.</span>
-      <span className=" block">Tutor your peers.</span>
-      <span className=" block text-primary">Grow your hustle.</span>
-    </h1>
-    
-    <div className="hero-copy mt-6 w-full max-w-2xl">
-      <p className="hero-description text-base sm:text-lg md:text-xl whitespace-normal break-words leading-relaxed">
-        Campus Hustle connects Ethiopian university students to buy verified study notes, book top peer tutors, and monetize academic excellence with Telebirr &amp; CBE.
-      </p>
-    </div>
+        <div className="hero-content w-full px-4 sm:px-6 md:px-8">
+          <div className="hero-header w-full max-w-2xl text-left flex flex-col items-start">
+            <h1 className="hero-title flex flex-col text-left font-bold text-white tracking-tight">
+              <span className="hero-title-line block">Trade your notes.</span>
+              <span className="hero-title-line block">Tutor your peers.</span>
+              <span className="hero-title-line block text-amber-300">Grow your hustle.</span>
+            </h1>
+            
+            <div className="hero-copy mt-4 sm:mt-5 w-full max-w-xl text-left">
+              <p className="hero-description text-sm sm:text-base md:text-lg text-white/90 leading-relaxed">
+                Campus Hustle connects Ethiopian university students to buy verified study notes, book top peer tutors, and monetize academic excellence with Telebirr &amp; CBE.
+              </p>
+            </div>
 
-    <div className="hero-cta-row mt-10 flex flex-col sm:flex-row items-stretch sm:items-center gap-4 w-full" aria-label="Primary hero actions">
-      <button className="hero-cta-group group relative flex items-center justify-center gap-2 rounded-full bg-primary px-8 py-4 min-h-[56px] text-base md:text-lg font-bold text-on-primary shadow-lg transition-all hover:bg-primary/90 hover:scale-[1.02] active:scale-95 w-full sm:w-auto" type="button" onClick={handleCta}>
-        <span className="hero-button hero-button-secondary">Start Your Hustle</span>
-        <span className="hero-icon-link flex-shrink-0">
-          <svg className="action-link-icon size-6 transition-transform group-hover:translate-x-1" viewBox="0 0 116 116" fill="none" aria-hidden="true">
-            <circle cx="57.9961" cy="58" r="48.5" stroke="currentColor" strokeWidth="3" />
-            <path
-              d="M38.7276 82.1197L76.9948 33.5985M36.0114 38.4406L76.9948 33.5985L81.837 74.582"
-              stroke="currentColor"
-              strokeWidth="3"
-              strokeLinecap="round"
-              strokeLinejoin="round"
-            />
-          </svg>
-        </span>
-      </button>
-      <button className="hero-cta-group hero-cta-signin flex items-center justify-center rounded-full bg-white/10 backdrop-blur-md border border-white/20 px-8 py-4 min-h-[56px] text-base md:text-lg font-bold text-white transition-all hover:bg-white/20 w-full sm:w-auto" type="button" onClick={() => onNavigate?.('login')}>
-        <span className="hero-button hero-button-tertiary">Sign in</span>
-      </button>
-    </div>
-    
-  </div>
+            <div className="hero-cta-row mt-8 flex flex-col sm:flex-row items-stretch sm:items-center gap-4 w-full sm:w-auto" aria-label="Primary hero actions">
+              <button
+                className="hero-cta-group group relative flex items-center justify-center gap-2 rounded-full bg-primary px-7 py-3.5 min-h-[52px] text-base font-bold text-on-primary shadow-lg transition-all hover:bg-primary/90 hover:scale-[1.02] active:scale-95 w-full sm:w-auto"
+                type="button"
+                onClick={handleCta}
+              >
+                <span className="hero-button hero-button-secondary">Start Your Hustle</span>
+                <span className="hero-icon-link flex-shrink-0">
+                  <svg className="action-link-icon size-5 transition-transform group-hover:translate-x-1" viewBox="0 0 116 116" fill="none" aria-hidden="true">
+                    <circle cx="57.9961" cy="58" r="48.5" stroke="currentColor" strokeWidth="3" />
+                    <path
+                      d="M38.7276 82.1197L76.9948 33.5985M36.0114 38.4406L76.9948 33.5985L81.837 74.582"
+                      stroke="currentColor"
+                      strokeWidth="3"
+                      strokeLinecap="round"
+                      strokeLinejoin="round"
+                    />
+                  </svg>
+                </span>
+              </button>
+              <button
+                className="hero-cta-group hero-cta-signin flex items-center justify-center rounded-full bg-white/10 backdrop-blur-md border border-white/20 px-7 py-3.5 min-h-[52px] text-base font-bold text-white transition-all hover:bg-white/20 w-full sm:w-auto"
+                type="button"
+                onClick={() => onNavigate?.('login')}
+              >
+                <span className="hero-button hero-button-tertiary">Sign in</span>
+              </button>
+            </div>
+          </div>
 
 
           <div className="hero-bottom mt-16 lg:mt-auto w-full pb-8">
