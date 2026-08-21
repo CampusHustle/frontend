@@ -1,6 +1,7 @@
 import { describe, it, expect, vi, beforeEach, afterEach } from 'vitest'
 import { getConversationMessages, getMessagesWithUser } from '../api/chatApi.js'
 import { askFelatAi } from '../api/aiApi.js'
+import { encodeContactCard, decodeContactCard } from '../utils/contactCard.js'
 
 describe('chatApi and aiApi', () => {
   beforeEach(() => {
@@ -77,5 +78,22 @@ describe('chatApi and aiApi', () => {
     expect(capturedBody.tutorId).toBe('t-10')
     expect(result.grounded).toBe(true)
     expect(result.answer).toContain('Opportunity cost')
+  })
+})
+
+describe('contactCard encoding/decoding', () => {
+  it('encodes and decodes contact info properly', () => {
+    const original = { name: 'Abebe Bikila', email: 'abebe@campus.edu.et', phone: '+251911223344' }
+    const encoded = encodeContactCard(original)
+    expect(encoded.startsWith('[[CONTACT_CARD]]')).toBe(true)
+
+    const decoded = decodeContactCard(encoded)
+    expect(decoded).toEqual(original)
+  })
+
+  it('returns null when decoding plain text or invalid JSON', () => {
+    expect(decodeContactCard('Hello there!')).toBeNull()
+    expect(decodeContactCard('[[CONTACT_CARD]]invalid_json')).toBeNull()
+    expect(decodeContactCard('[[CONTACT_CARD]]{"foo":"bar"}')).toBeNull()
   })
 })
