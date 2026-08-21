@@ -64,13 +64,15 @@ const setup = (onNavigate) => {
 }
 
 describe('FindTutorPage', () => {
-  it('renders the tutor grid with tutors from API', async () => {
+  it('renders the tutor grid excluding the current logged-in user', async () => {
     setup()
 
     expect(screen.getByRole('heading', { name: 'Find Tutors' })).toBeInTheDocument()
     await waitFor(() => {
-      expect(screen.getByText('Sarah Johnson')).toBeInTheDocument()
       expect(screen.getByText('David Miller')).toBeInTheDocument()
+      expect(screen.getByText('Elena Rodriguez')).toBeInTheDocument()
+      // Logged-in user (Sarah Johnson) must not be in the list
+      expect(screen.queryByText('Sarah Johnson')).not.toBeInTheDocument()
     })
   })
 
@@ -81,7 +83,7 @@ describe('FindTutorPage', () => {
 
     await waitFor(() => {
       expect(screen.getByText('Elena Rodriguez')).toBeInTheDocument()
-      expect(screen.queryByText('Sarah Johnson')).not.toBeInTheDocument()
+      expect(screen.queryByText('David Miller')).not.toBeInTheDocument()
     })
   })
 
