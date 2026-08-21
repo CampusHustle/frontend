@@ -187,4 +187,38 @@ describe('ProfileScreen My Notes Section (View, Edit, Delete)', () => {
     await user.type(searchInput, 'NonExistentSubject')
     expect(screen.getByText(/No notes found matching "NonExistentSubject"/i)).toBeInTheDocument()
   })
+
+  it('only displays notes authored by the current user and ignores other users notes', () => {
+    const mixedNotes = [
+      {
+        id: 201,
+        title: 'Daniel Personal Study Notes',
+        course: 'CS 101',
+        authorName: 'Daniel Gidey',
+        price: 'Free',
+      },
+      {
+        id: 202,
+        title: 'Stranger External Material',
+        course: 'BIO 100',
+        authorName: 'Dr. Someone Else',
+        authorId: 'other-user-999',
+        price: '500 ETB',
+      },
+    ]
+
+    render(
+      <MemoryRouter>
+        <ProfilePage user={initialUser} userNotes={mixedNotes} />
+      </MemoryRouter>
+    )
+
+    // User's own note is displayed
+    expect(screen.getByText('Daniel Personal Study Notes')).toBeInTheDocument()
+    expect(screen.getByRole('button', { name: 'Edit Daniel Personal Study Notes' })).toBeInTheDocument()
+    expect(screen.getByRole('button', { name: 'Delete Daniel Personal Study Notes' })).toBeInTheDocument()
+
+    // Other user's note is filtered out
+    expect(screen.queryByText('Stranger External Material')).not.toBeInTheDocument()
+  })
 })

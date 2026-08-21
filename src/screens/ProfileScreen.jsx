@@ -169,20 +169,46 @@ function ProfileCard({ user }) {
   )
 }
 
+function isUserOwnedNote(note, activeUser) {
+  if (!activeUser) return true
+  const userId = activeUser.id || activeUser._id
+  const userName = (activeUser.name || '').trim().toLowerCase()
+  const userEmail = (activeUser.email || '').trim().toLowerCase()
+
+  // Match by author ID / user ID
+  if (note.authorId && userId && String(note.authorId) === String(userId)) return true
+  if (note.userId && userId && String(note.userId) === String(userId)) return true
+  if (note.tutorId && userId && String(note.tutorId) === String(userId)) return true
+
+  // Match by author Name / Email
+  if (note.authorName && userName && note.authorName.trim().toLowerCase() === userName) return true
+  if (note.authorEmail && userEmail && note.authorEmail.trim().toLowerCase() === userEmail) return true
+
+  // Default authored in session / generic author
+  if (note.authorName === 'Current User' || note.authorName === 'You') return true
+  if (!note.authorId && !note.userId && !note.authorName) return true
+
+  return false
+}
+
 function MyNotesSection({ notes = [], onEditNote, onDeleteNote, onUploadNew, user }) {
   const [searchQuery, setSearchQuery] = useState('')
 
+  const userOwnedNotes = useMemo(() => {
+    return (notes || []).filter((n) => isUserOwnedNote(n, user))
+  }, [notes, user])
+
   const filteredNotes = useMemo(() => {
     const q = searchQuery.trim().toLowerCase()
-    if (!q) return notes
-    return notes.filter((n) => {
+    if (!q) return userOwnedNotes
+    return userOwnedNotes.filter((n) => {
       const title = (n.title || '').toLowerCase()
       const course = (n.course || n.department || '').toLowerCase()
       const type = (n.contentType || '').toLowerCase()
       const desc = (n.description || '').toLowerCase()
       return title.includes(q) || course.includes(q) || type.includes(q) || desc.includes(q)
     })
-  }, [notes, searchQuery])
+  }, [userOwnedNotes, searchQuery])
 
   return (
     <section aria-labelledby="my-notes-heading" className="mt-6 rounded-xl border border-surface-variant bg-surface-lowest p-6 shadow-level-1">
@@ -193,7 +219,7 @@ function MyNotesSection({ notes = [], onEditNote, onDeleteNote, onUploadNew, use
             My Notes
           </h3>
           <span className="rounded-full bg-surface-container px-2.5 py-0.5 text-xs font-bold text-on-surface-variant border border-surface-variant">
-            {notes.length}
+            {userOwnedNotes.length}
           </span>
         </div>
 
@@ -226,7 +252,7 @@ function MyNotesSection({ notes = [], onEditNote, onDeleteNote, onUploadNew, use
         </div>
       </div>
 
-      {notes.length === 0 ? (
+      {userOwnedNotes.length === 0 ? (
         <div className="flex flex-col items-center justify-center rounded-xl border border-dashed border-surface-variant bg-surface-low p-10 text-center">
           <div className="flex size-14 items-center justify-center rounded-2xl bg-surface-container text-on-surface-variant mb-3 shadow-xs">
             <IconBook size={28} />
@@ -259,6 +285,7 @@ function MyNotesSection({ notes = [], onEditNote, onDeleteNote, onUploadNew, use
             const authorDisplayName = note.authorName || user?.name || 'Current User'
             const authorDisplayAvatar =
               note.authorAvatar || user?.avatar || user?.profilePicUrl || 'https://i.pravatar.cc/150'
+            const isOwner = isUserOwnedNote(note, user)
 
             return (
               <article
@@ -317,28 +344,30 @@ function MyNotesSection({ notes = [], onEditNote, onDeleteNote, onUploadNew, use
                     />
                   </div>
 
-                  {/* Bottom Edit & Delete Actions */}
-                  <div className="mt-3 flex items-center justify-end gap-2 border-t border-surface-variant/40 pt-3">
-                    <button
-                      type="button"
-                      onClick={() => onEditNote(note)}
-                      aria-label={`Edit ${note.title}`}
-                      className="inline-flex items-center gap-1.5 rounded-lg border border-surface-variant bg-surface-lowest px-3 py-1.5 text-xs font-semibold text-on-surface hover:border-primary hover:text-primary transition-colors shadow-xs cursor-pointer"
-                    >
-                      <IconEdit size={14} />
-                      <span>Edit</span>
-                    </button>
+                  {/* Bottom Edit & Delete Actions (Only for user's own notes) */}
+                  {isOwner && (
+                    <div className="mt-3 flex items-center justify-end gap-2 border-t border-surface-variant/40 pt-3">
+                      <button
+                        type="button"
+                        onClick={() => onEditNote(note)}
+                        aria-label={`Edit ${note.title}`}
+                        className="inline-flex items-center gap-1.5 rounded-lg border border-surface-variant bg-surface-lowest px-3 py-1.5 text-xs font-semibold text-on-surface hover:border-primary hover:text-primary transition-colors shadow-xs cursor-pointer"
+                      >
+                        <IconEdit size={14} />
+                        <span>Edit</span>
+                      </button>
 
-                    <button
-                      type="button"
-                      onClick={() => onDeleteNote(note)}
-                      aria-label={`Delete ${note.title}`}
-                      className="inline-flex items-center gap-1.5 rounded-lg border border-error/30 bg-error/10 px-3 py-1.5 text-xs font-semibold text-error hover:bg-error hover:text-white transition-colors shadow-xs cursor-pointer"
-                    >
-                      <IconTrash size={14} />
-                      <span>Delete</span>
-                    </button>
-                  </div>
+                      <button
+                        type="button"
+                        onClick={() => onDeleteNote(note)}
+                        aria-label={`Delete ${note.title}`}
+                        className="inline-flex items-center gap-1.5 rounded-lg border border-error/30 bg-error/10 px-3 py-1.5 text-xs font-semibold text-error hover:bg-error hover:text-white transition-colors shadow-xs cursor-pointer"
+                      >
+                        <IconTrash size={14} />
+                        <span>Delete</span>
+                      </button>
+                    </div>
+                  )}
                 </div>
               </article>
             )

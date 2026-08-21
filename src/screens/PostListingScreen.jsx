@@ -34,7 +34,12 @@ export default function PostListingScreen({
   const navigate = useNavigate()
   const location = useLocation()
 
-  const editingNote = initialNote || location?.state?.note || null
+  const editingNote =
+    initialNote ||
+    location?.state?.note ||
+    location?.state?.tutorial ||
+    location?.state?.material ||
+    null
   const isEditing = Boolean(editingNote)
 
   const [title, setTitle] = useState(() => editingNote?.title || '')
@@ -45,7 +50,9 @@ export default function PostListingScreen({
     if (!editingNote) return false
     return (
       (typeof editingNote.numericPrice === 'number' && editingNote.numericPrice > 0) ||
-      (typeof editingNote.price === 'string' && editingNote.price !== 'Free' && !editingNote.price.startsWith('0'))
+      (typeof editingNote.price === 'string' &&
+        editingNote.price !== 'Free' &&
+        !editingNote.price.startsWith('0'))
     )
   })
   const [price, setPrice] = useState(() => {

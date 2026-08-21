@@ -107,7 +107,11 @@ export function AppRoutes() {
       routeMap[targetView] ||
       (typeof targetView === 'string' && targetView.startsWith('/') ? targetView : '/')
     saveSessionView(targetView)
-    navigate(path)
+    if (context?.note) {
+      navigate(path, { state: { note: context.note } })
+    } else {
+      navigate(path)
+    }
   }
 
   const handleLogout = () => setShowLogoutWarning(true)
