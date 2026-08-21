@@ -140,9 +140,8 @@ export function AppRoutes() {
   }, [])
 
   const handleNavigate = (targetView, context = {}) => {
-    if (targetView === 'assistant') {
+    if (context && Object.keys(context).length > 0) {
       window.dispatchEvent(new CustomEvent('open-ai-assistant', { detail: context }))
-      return
     }
     const routeMap = {
       home: '/',
@@ -161,6 +160,7 @@ export function AppRoutes() {
       'tutor-requests': '/tutor-requests',
       assistant: '/assistant',
       ai: '/assistant',
+      'ai-chat': '/assistant',
       terms: '/terms',
       privacy: '/privacy',
     }

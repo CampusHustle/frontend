@@ -236,6 +236,21 @@ export default function AppNavbar({
           >
             Tutors
           </a>
+          <a
+            href="#"
+            onClick={(e) => {
+              e.preventDefault()
+              onNavigate?.('assistant')
+            }}
+            className={
+              activeView === 'assistant' || activeView === 'ai'
+                ? 'border-b-2 border-secondary-container pb-1 text-primary font-bold flex items-center gap-1.5'
+                : 'text-on-surface-variant transition-colors hover:text-primary flex items-center gap-1.5'
+            }
+          >
+            <IconSparkles size={16} className="text-emerald-500" />
+            <span>AI Assistant</span>
+          </a>
         </div>
 
         <div className="flex items-center gap-3">
