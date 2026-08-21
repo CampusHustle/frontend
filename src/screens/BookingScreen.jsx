@@ -27,7 +27,6 @@ export default function BookingScreen({ user, onLogout, onNavigate }) {
 
   /* ── load student bookings exclusively from live API ── */
   const loadBookings = useCallback(async () => {
-    setLoading(true)
     setError(null)
     try {
       const res = await getUserBookings({ role: 'student' })
@@ -54,8 +53,36 @@ export default function BookingScreen({ user, onLogout, onNavigate }) {
   }, [])
 
   useEffect(() => {
-    loadBookings()
-  }, [loadBookings])
+    let isMounted = true
+    getUserBookings({ role: 'student' })
+      .then((res) => {
+        if (!isMounted) return
+        const list = res?.data || res?.bookings || []
+        const formatted = list.map((b) => ({
+          ...b,
+          id: b._id || b.id,
+          tutorName: b.tutorId?.name || b.tutorName || 'Tutor',
+          tutorProfilePicUrl: b.tutorId?.profilePicUrl || b.tutorPic || b.tutorProfilePicUrl || '',
+          studentName: b.studentId?.name || b.studentName || 'Student',
+          scheduledDate: b.availabilityId
+            ? `${b.availabilityId.dayOfWeek || ''} at ${b.availabilityId.startTime || ''}`.trim() || 'Upcoming'
+            : b.time || b.scheduledDate || 'Upcoming',
+          subject: b.subject || 'Tutoring Session',
+          title: b.title || b.subject || 'Tutoring Session',
+          price: b.price || b.tutorId?.hourlyRate || 35,
+        }))
+        setBookings(formatted)
+      })
+      .catch((err) => {
+        if (isMounted) setError(err?.message || 'Failed to load bookings. Please try again.')
+      })
+      .finally(() => {
+        if (isMounted) setLoading(false)
+      })
+    return () => {
+      isMounted = false
+    }
+  }, [])
 
   /* ── toast helper ── */
   function showToast(msg) {

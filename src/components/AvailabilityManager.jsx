@@ -1,4 +1,4 @@
-import { useState, useEffect, useCallback } from 'react'
+import { useState, useEffect } from 'react'
 import {
   IconCalendar,
   IconClock,
@@ -58,28 +58,29 @@ export default function AvailabilityManager() {
     setTimeout(() => setToast(null), 3000)
   }
 
-  const loadAvailability = useCallback(async () => {
-    setLoading(true)
-    setError(null)
-    try {
-      const res = await getMyAvailability()
-      if (res?.data && Array.isArray(res.data)) {
-        setSlots(res.data)
-      } else if (res?.slots && Array.isArray(res.slots)) {
-        setSlots(res.slots)
-      } else {
-        setSlots([])
-      }
-    } catch (err) {
-      setError(err?.message || 'Failed to load availability slots.')
-    } finally {
-      setLoading(false)
+  useEffect(() => {
+    let isMounted = true
+    getMyAvailability()
+      .then((res) => {
+        if (!isMounted) return
+        if (res?.data && Array.isArray(res.data)) {
+          setSlots(res.data)
+        } else if (res?.slots && Array.isArray(res.slots)) {
+          setSlots(res.slots)
+        } else {
+          setSlots([])
+        }
+      })
+      .catch((err) => {
+        if (isMounted) setError(err?.message || 'Failed to load availability slots.')
+      })
+      .finally(() => {
+        if (isMounted) setLoading(false)
+      })
+    return () => {
+      isMounted = false
     }
   }, [])
-
-  useEffect(() => {
-    loadAvailability()
-  }, [loadAvailability])
 
   const handleAddSlot = async (e) => {
     e.preventDefault()

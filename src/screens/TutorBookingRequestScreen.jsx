@@ -4,8 +4,6 @@ import {
   IconX,
   IconRefresh,
   IconCalendar,
-  IconClock,
-  IconUser,
   IconMessageCircle,
 } from '@tabler/icons-react'
 import AppNavbar from '../components/AppNavbar.jsx'
@@ -168,7 +166,6 @@ export default function TutorBookingRequestScreen({ user, onLogout, onNavigate }
   const isTutor = user?.role === 'tutor' || user?.isTutor === true
 
   const load = useCallback(async () => {
-    setLoading(true)
     setError(null)
     try {
       const res = await getUserBookings({ role: 'tutor' })
@@ -195,8 +192,36 @@ export default function TutorBookingRequestScreen({ user, onLogout, onNavigate }
   }, [])
 
   useEffect(() => {
-    load()
-  }, [load])
+    let isMounted = true
+    getUserBookings({ role: 'tutor' })
+      .then((res) => {
+        if (!isMounted) return
+        const list = res?.data || res?.bookings || []
+        const formatted = list.map((b) => ({
+          ...b,
+          id: b._id || b.id,
+          studentName: b.studentId?.name || b.studentName || 'Student',
+          studentProfilePicUrl: b.studentId?.profilePicUrl || b.studentProfilePicUrl || '',
+          subject: b.subject || b.title || 'Tutoring Session',
+          message: b.message || '',
+          scheduledDate: b.availabilityId
+            ? `${b.availabilityId.dayOfWeek || ''} at ${b.availabilityId.startTime || ''}`.trim() || 'Upcoming Session'
+            : b.scheduledDate || b.time || 'Upcoming Session',
+          hourlyRate: b.price || b.hourlyRate || 35,
+          status: b.status,
+        }))
+        setRequests(formatted)
+      })
+      .catch((err) => {
+        if (isMounted) setError(err?.message || 'Failed to load booking requests.')
+      })
+      .finally(() => {
+        if (isMounted) setLoading(false)
+      })
+    return () => {
+      isMounted = false
+    }
+  }, [])
 
   function showToast(msg) {
     setToast(msg)

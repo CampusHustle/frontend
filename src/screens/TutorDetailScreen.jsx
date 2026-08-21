@@ -407,13 +407,11 @@ export default function TutorDetailScreen({ user, onLogout, onNavigate, availabl
   const [bookingStatus, setBookingStatus] = useState(initialBookingStatus)
   const [tutor, setTutor] = useState(null)
   const [slots, setSlots] = useState(() => buildSlots(id ?? 'unknown'))
-  const [loadingSlots, setLoadingSlots] = useState(false)
+  const loadingSlots = false
 
   useEffect(() => {
     if (!id) return
     let isMounted = true
-
-    setSlots(buildSlots(id))
 
     getTutorAvailability(id)
       .then((res) => {
@@ -477,7 +475,7 @@ export default function TutorDetailScreen({ user, onLogout, onNavigate, availabl
     )
   }
 
-  const handleRequestBooking = () => {
+  const handleRequestBooking = async () => {
     if (!selected) return
     const dayLabel = selected.dayOfWeek || selected.day || 'Monday'
     const timeLabel = selected.startTime || selected.time || '09:00'
@@ -485,19 +483,25 @@ export default function TutorDetailScreen({ user, onLogout, onNavigate, availabl
     const targetTutorId = tutor?._id || tutor?.id || id
     const isMongoId = typeof slotId === 'string' && /^[0-9a-fA-F]{24}$/.test(slotId)
 
-    setBookingStatus('pending')
-    setConfirmation(`Booking request sent for ${dayLabel} at ${timeLabel}.`)
+    try {
+      const res = await createBooking({
+        availabilityId: isMongoId ? slotId : undefined,
+        tutorId: targetTutorId,
+        dayOfWeek: dayLabel,
+        startTime: timeLabel,
+        day: dayLabel,
+        time: timeLabel,
+      })
 
-    createBooking({
-      availabilityId: isMongoId ? slotId : undefined,
-      tutorId: targetTutorId,
-      dayOfWeek: dayLabel,
-      startTime: timeLabel,
-      day: dayLabel,
-      time: timeLabel,
-    }).catch((err) => {
+      if (res?.success !== false) {
+        setBookingStatus('pending')
+        setConfirmation(`Booking request sent for ${dayLabel} at ${timeLabel}.`)
+      }
+    } catch (err) {
       console.error('Booking request error:', err)
-    })
+      setBookingStatus('idle')
+      setConfirmation(err?.response?.data?.message || err?.message || 'Failed to request booking.')
+    }
   }
 
   const handleSendMessage = () => {

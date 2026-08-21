@@ -27,6 +27,13 @@ vi.mock('../api/tutorApi.js', () => ({
   }),
 }))
 
+vi.mock('../api/bookingApi.js', () => ({
+  createBooking: vi.fn().mockResolvedValue({ success: true }),
+  getUserBookings: vi.fn().mockResolvedValue({ success: true, data: [] }),
+  updateBookingStatus: vi.fn().mockResolvedValue({ success: true }),
+  getTutorAvailability: vi.fn().mockResolvedValue({ success: true, data: [] }),
+}))
+
 const setup = (id = testTutor.id, onNavigate = vi.fn()) => {
   const user = userEvent.setup()
   const onLogout = vi.fn()
