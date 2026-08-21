@@ -16,6 +16,8 @@ import {
   getUnreadNotificationCount,
   markAllNotificationsAsRead,
 } from '../api/notificationApi.js'
+import { getUnreadMessageCount } from '../api/chatApi.js'
+import { getSharedSocket } from '../services/socket.js'
 
 function getInitial(name) {
   return (name || 'Student').trim().charAt(0).toUpperCase() || 'S'
@@ -56,6 +58,7 @@ export default function AppNavbar({
   )
   const [isSearchExpanded, setIsSearchExpanded] = useState(false)
   const [unreadCount, setUnreadCount] = useState(0)
+  const [unreadMessageCount, setUnreadMessageCount] = useState(0)
   const [notifications, setNotifications] = useState([])
   const [showNotifications, setShowNotifications] = useState(false)
   const searchInputRef = useRef(null)
@@ -72,6 +75,44 @@ export default function AppNavbar({
         }
       })
       .catch(() => {})
+
+    getUnreadMessageCount()
+      .then((res) => {
+        if (isMounted && typeof res?.count === 'number') {
+          setUnreadMessageCount(res.count)
+        }
+      })
+      .catch(() => {})
+
+    const socket = getSharedSocket()
+    if (socket) {
+      const handleMessageNotify = () => {
+        setUnreadMessageCount((prev) => prev + 1)
+      }
+      const handleUnreadUpdated = () => {
+        getUnreadMessageCount()
+          .then((res) => {
+            if (isMounted && typeof res?.count === 'number') {
+              setUnreadMessageCount(res.count)
+            }
+          })
+          .catch(() => {})
+      }
+      const handleNotificationNew = () => {
+        setUnreadCount((prev) => prev + 1)
+      }
+
+      socket.on('message:notify', handleMessageNotify)
+      socket.on('message:unread_updated', handleUnreadUpdated)
+      socket.on('notification:new', handleNotificationNew)
+
+      return () => {
+        isMounted = false
+        socket.off('message:notify', handleMessageNotify)
+        socket.off('message:unread_updated', handleUnreadUpdated)
+        socket.off('notification:new', handleNotificationNew)
+      }
+    }
 
     return () => {
       isMounted = false
@@ -258,13 +299,18 @@ export default function AppNavbar({
             type="button"
             aria-label="Messages"
             onClick={() => onNavigate?.('chat')}
-            className={`inline-flex size-9 items-center justify-center rounded-full border border-outline-variant transition-colors cursor-pointer ${
+            className={`relative inline-flex size-9 items-center justify-center rounded-full border border-outline-variant transition-colors cursor-pointer ${
               activeView === 'chat'
                 ? 'bg-primary text-on-primary border-primary'
                 : 'text-on-surface-variant hover:text-primary'
             }`}
           >
             <IconMessageCircle size={18} aria-hidden="true" />
+            {unreadMessageCount > 0 && (
+              <span className="absolute -top-1 -right-1 flex size-4 items-center justify-center rounded-full bg-error text-[10px] font-bold text-on-error shadow-sm animate-pulse">
+                {unreadMessageCount > 9 ? '9+' : unreadMessageCount}
+              </span>
+            )}
           </button>
 
           <button

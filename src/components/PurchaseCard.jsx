@@ -13,10 +13,7 @@ export default function PurchaseCard({ note, handleMakePayment }) {
           <p className="text-[10px] sm:text-[11px] uppercase font-bold tracking-wider text-outline">Total Price</p>
           <div className="flex flex-wrap items-baseline gap-2 mt-0.5">
             <span className="text-2xl sm:text-3xl font-extrabold text-primary font-display tracking-tight">
-              ${note.price.toFixed(2)}
-            </span>
-            <span className="rounded-full bg-secondary-container/20 px-2.5 py-0.5 text-[10px] sm:text-xs font-bold text-amber-500 dark:text-amber-300 border border-secondary-container/40">
-              {note.priceEtb} ETB
+              {note.priceEtb || (typeof note.price === 'number' ? Math.round(note.price * 10) : note.price) || 150} ETB
             </span>
           </div>
         </div>

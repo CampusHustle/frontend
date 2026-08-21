@@ -215,7 +215,7 @@ export default function NotePaymentScreen({ user, onNavigate, onLogout, initialS
               </div>
               <div className="flex justify-between border-b border-surface-variant pb-2.5">
                 <span className="text-outline">Total Amount:</span>
-                <span className="font-extrabold text-emerald-500">{note.priceEtb} ETB (${note.priceUsd.toFixed(2)} USD)</span>
+                <span className="font-extrabold text-emerald-500">{note.priceEtb} ETB</span>
               </div>
               <div className="flex justify-between border-b border-surface-variant pb-2.5">
                 <span className="text-outline">Transaction Ref:</span>
@@ -305,7 +305,6 @@ export default function NotePaymentScreen({ user, onNavigate, onLogout, initialS
                   <div className="text-right shrink-0">
                     <p className="text-xs text-outline">Total Due</p>
                     <p className="text-2xl font-black text-secondary font-display">{note.priceEtb} ETB</p>
-                    <p className="text-[11px] text-outline">(${note.priceUsd.toFixed(2)} USD)</p>
                   </div>
                 </div>
 

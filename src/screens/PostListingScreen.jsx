@@ -47,7 +47,7 @@ export default function PostListingScreen({ user, onLogout, onNavigate, onAddNot
 
     // Construct Mock API payload (Lifting State Up)
     const numericPriceValue = isPremium ? parseFloat(price) || 0 : 0
-    const formattedPrice = numericPriceValue > 0 ? `$${numericPriceValue.toFixed(2)}` : 'Free'
+    const formattedPrice = numericPriceValue > 0 ? `${numericPriceValue} ETB` : 'Free'
     
     const newNote = {
       id: Date.now(),

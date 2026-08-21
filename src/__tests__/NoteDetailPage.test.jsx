@@ -27,7 +27,7 @@ describe('NoteDetailPage & NotePaymentPage', () => {
       expect(screen.getByRole('heading', { name: /Reaction Mechanisms Masterclass/i })).toBeInTheDocument()
     })
 
-    expect(screen.getByText('$18.50')).toBeInTheDocument()
+    expect(screen.getByText(/150 ETB/)).toBeInTheDocument()
     expect(screen.getByText(/About these notes/i)).toBeInTheDocument()
     expect(screen.getByText(/Sarah Jenkins/i)).toBeInTheDocument()
 

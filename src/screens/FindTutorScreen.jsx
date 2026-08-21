@@ -125,7 +125,7 @@ function TutorCard({ tutor, onView }) {
 export default function FindTutorScreen({ user, onLogout, onNavigate }) {
   const [query, setQuery] = useState('')
   const [selectedDepts, setSelectedDepts] = useState([])
-  const [maxRate, setMaxRate] = useState(60)
+  const [maxRate, setMaxRate] = useState(500)
   const [minRating, setMinRating] = useState(0)
   const [sortBy, setSortBy] = useState('rating')
   const [visibleCount, setVisibleCount] = useState(VISIBLE_STEP)
@@ -162,7 +162,7 @@ export default function FindTutorScreen({ user, onLogout, onNavigate }) {
         const res = await searchTutors({
           q: query.trim() || undefined,
           department: selectedDepts.length === 1 ? selectedDepts[0] : undefined,
-          maxPrice: maxRate < 100 ? maxRate : undefined,
+          maxPrice: maxRate < 500 ? maxRate : undefined,
           minRating: minRating > 0 ? minRating : undefined,
           sortBy: sortBy === 'Price: Low to High' ? 'price_asc' : sortBy === 'Highest Rated' ? 'rating' : 'rating',
         })
@@ -207,7 +207,7 @@ export default function FindTutorScreen({ user, onLogout, onNavigate }) {
     return tutorList.filter((t) => {
       const matchDept = selectedDepts.length === 0 || selectedDepts.includes(t.department)
       const hourly = typeof t.hourlyRate === 'number' ? t.hourlyRate : 0
-      const matchRate = hourly <= maxRate
+      const matchRate = maxRate >= 500 ? true : hourly <= maxRate
       const rating =
         typeof t.rating?.knowledge === 'number'
           ? t.rating.knowledge
@@ -288,8 +288,9 @@ export default function FindTutorScreen({ user, onLogout, onNavigate }) {
                 <h3 className="text-xs font-bold uppercase tracking-wider text-outline mb-2">Hourly Rate</h3>
                 <input
                   type="range"
-                  min="10"
-                  max="100"
+                  min="20"
+                  max="500"
+                  step="10"
                   value={maxRate}
                   onChange={(e) => {
                     setMaxRate(Number(e.target.value))
@@ -298,8 +299,8 @@ export default function FindTutorScreen({ user, onLogout, onNavigate }) {
                   className="w-full accent-primary cursor-pointer"
                 />
                 <div className="flex justify-between text-xs text-outline mt-1 font-medium">
-                  <span>ETB 10</span>
-                  <span>ETB {maxRate === 100 ? '100+' : maxRate}</span>
+                  <span>ETB 20</span>
+                  <span>{maxRate >= 500 ? 'ETB 500+' : `ETB ${maxRate}`}</span>
                 </div>
               </div>
 
