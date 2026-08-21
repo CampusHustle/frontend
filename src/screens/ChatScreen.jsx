@@ -345,8 +345,10 @@ export default function ChatScreen({ user, onLogout, onNavigate }) {
     }
   }, [id])
 
+  const userId = user?._id
+
   useEffect(() => {
-    if (!id || !user?._id) return
+    if (!id || !userId) return
     let isMounted = true
     getMessagesWithUser(id)
       .then((res) => {
@@ -354,24 +356,24 @@ export default function ChatScreen({ user, onLogout, onNavigate }) {
         const mapped = (res.messages ?? [])
           .slice()
           .reverse()
-          .map((m) => mapMessage(m, user._id))
+          .map((m) => mapMessage(m, userId))
         setMessages(mapped)
       })
       .catch(() => setMessages([]))
     return () => {
       isMounted = false
     }
-  }, [id, user?._id])
+  }, [id, userId])
 
   useEffect(() => {
-    if (!id || !user?._id) return
+    if (!id || !userId) return
     const socket = getSocket()
     if (!socket) return
 
-    const conversationId = [user._id, id].sort().join('_')
+    const conversationId = [userId, id].sort().join('_')
 
     function onReceive(msg) {
-      setMessages((prev) => [...prev, mapMessage(msg, user._id)])
+      setMessages((prev) => [...prev, mapMessage(msg, userId)])
     }
 
     function onError(err) {
@@ -386,14 +388,14 @@ export default function ChatScreen({ user, onLogout, onNavigate }) {
       socket.off('message:receive', onReceive)
       socket.off('error', onError)
     }
-  }, [id, user?._id, status, getSocket])
+  }, [id, userId, status, getSocket])
 
   const handleSend = useCallback((text) => {
     const socket = getSocket()
-    if (!socket || !id || !user?._id) return
-    const conversationId = [user._id, id].sort().join('_')
+    if (!socket || !id || !userId) return
+    const conversationId = [userId, id].sort().join('_')
     socket.emit('message:send', { conversationId, content: text })
-  }, [getSocket, id, user?._id])
+  }, [getSocket, id, userId])
 
   function handleConsentConfirm() {
     setConsentOpen(false)
