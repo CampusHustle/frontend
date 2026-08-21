@@ -20,6 +20,12 @@ import NoteDetailPage from './pages/NoteDetailPage.jsx'
 import NotePaymentPage from './pages/NotePaymentPage.jsx'
 import LogoutWarningModal from './components/LogoutWarningModal.jsx'
 import FloatingAiAssistant from './components/FloatingAiAssistant.jsx'
+import { AdminLayout } from './admin/components/AdminLayout.jsx'
+import DashboardOverviewScreen from './admin/screens/DashboardOverviewScreen.jsx'
+import VerificationQueueScreen from './admin/screens/VerificationQueueScreen.jsx'
+import ReportsModerationScreen from './admin/screens/ReportsModerationScreen.jsx'
+import ReportDetailScreen from './admin/screens/ReportDetailScreen.jsx'
+import UserManagementScreen from './admin/screens/UserManagementScreen.jsx'
 import {
   logoutUser,
   updateCurrentUserProfile,
