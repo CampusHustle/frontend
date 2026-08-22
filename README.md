@@ -1,4 +1,4 @@
-# Campus Hustle 🚀
+# Campus Hustle  🚀
 
 > **The ultimate peer-to-peer campus marketplace & micro-gig platform for university students.**
 
