@@ -227,7 +227,20 @@ export default function SignupScreen({ onSwitchToLogin, onSignupSuccess, onNavig
               />
             </div>
 
-            {errors.form && <Toast type="error" message={errors.form} />}
+            {errors.form && (
+              <div className="flex flex-col gap-1.5">
+                <Toast type="error" message={errors.form} />
+                {errors.form.toLowerCase().includes('already exists') && (
+                  <button
+                    type="button"
+                    onClick={onSwitchToLogin}
+                    className="text-xs font-semibold text-primary underline text-center hover:text-secondary"
+                  >
+                    Already registered? Click here to Log in →
+                  </button>
+                )}
+              </div>
+            )}
             {status === 'success' && (
               <Toast type="success" message="Account created successfully" />
             )}
