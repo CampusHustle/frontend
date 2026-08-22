@@ -4,6 +4,31 @@ import userEvent from '@testing-library/user-event'
 import NoteDetailPage from '../pages/NoteDetailPage.jsx'
 import NotePaymentPage from '../pages/NotePaymentPage.jsx'
 
+const testDbNote = {
+  _id: 'note_123',
+  title: 'Organic Chemistry: Reaction Mechanisms Masterclass',
+  course: 'Chemistry 201',
+  department: 'Chemistry',
+  price: 150,
+  description: 'Comprehensive reaction mechanisms masterclass covering SN1/SN2.',
+  fileUrl: 'https://example.com/chem.pdf',
+  tutorId: {
+    name: 'Sarah Jenkins',
+    department: 'Chemistry',
+    university: 'Addis Ababa University',
+    profilePicUrl: null,
+    rating: { knowledge: 4.9, count: 42 },
+  },
+}
+
+vi.mock('../api/noteApi.js', () => ({
+  getNoteById: vi.fn().mockImplementation(async (id) => ({
+    success: true,
+    note: { ...testDbNote, _id: id || 'note_123' },
+  })),
+  purchaseNote: vi.fn().mockResolvedValue({ success: true, message: 'Purchased' }),
+}))
+
 describe('NoteDetailPage & NotePaymentPage', () => {
   beforeEach(() => {
     Object.defineProperty(navigator, 'clipboard', {
@@ -23,7 +48,7 @@ describe('NoteDetailPage & NotePaymentPage', () => {
       expect(screen.getByRole('heading', { name: /Reaction Mechanisms Masterclass/i })).toBeInTheDocument()
     })
 
-    expect(screen.getByText('$18.50')).toBeInTheDocument()
+    expect(screen.getByText(/150 ETB/)).toBeInTheDocument()
     expect(screen.getByText(/About these notes/i)).toBeInTheDocument()
     expect(screen.getByText(/Sarah Jenkins/i)).toBeInTheDocument()
 

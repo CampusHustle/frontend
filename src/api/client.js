@@ -4,6 +4,7 @@ import {
   saveAuthTokens,
   clearSession,
 } from '../utils/session.js'
+import { API_BASE_URL } from '../config/env.js'
 
 export class ApiError extends Error {
   constructor(message, status = 500, code = 'API_ERROR', details = null) {
@@ -29,10 +30,8 @@ async function getRefreshedToken() {
 function getUrl(endpoint, params) {
   let fullUrl = endpoint
   if (!endpoint.startsWith('http://') && !endpoint.startsWith('https://')) {
-    const base =
-      import.meta.env.VITE_API_URL ||
-      (typeof window !== 'undefined' && window.location?.origin ? window.location.origin : 'http://localhost:5173')
-    fullUrl = `${base.replace(/\/$/, '')}${endpoint.startsWith('/') ? endpoint : `/${endpoint}`}`
+    const base = API_BASE_URL
+    fullUrl = `${base}${endpoint.startsWith('/') ? endpoint : `/${endpoint}`}`
   }
 
   if (params && typeof params === 'object') {
@@ -118,13 +117,23 @@ export async function request(endpoint, options = {}) {
     !endpoint.includes('/api/auth/register') &&
     !endpoint.includes('/api/auth/refresh')
   ) {
-    const newToken = await getRefreshedToken()
-    const retryHeaders = {
-      ...headers,
-      Authorization: `Bearer ${newToken}`,
+    const refreshToken = getRefreshToken()
+    if (refreshToken) {
+      try {
+        const newToken = await getRefreshedToken()
+        if (newToken) {
+          const retryHeaders = {
+            ...headers,
+            Authorization: `Bearer ${newToken}`,
+          }
+          const retryResponse = await fetch(url, { ...options, headers: retryHeaders })
+          return parseResponse(retryResponse)
+        }
+      } catch (err) {
+        clearSession()
+        throw err
+      }
     }
-    const retryResponse = await fetch(url, { ...options, headers: retryHeaders })
-    return parseResponse(retryResponse)
   }
 
   return parseResponse(response)

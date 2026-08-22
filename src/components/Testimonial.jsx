@@ -141,12 +141,12 @@ export default function Testimonial() {
                     <p className="text-sm text-on-surface-variant">{activeStory.role}</p>
                     <p className="text-xs text-outline font-medium">{activeStory.campus}</p>
                   </div>
-                  <div className="ml-auto hidden sm:flex flex-col items-end">
+                  <div className="w-full sm:w-auto sm:ml-auto flex flex-wrap sm:flex-col items-start sm:items-end gap-1.5 mt-2 sm:mt-0">
                     <span className="inline-flex items-center gap-1 rounded-full bg-hustle-500/15 px-3 py-1 text-xs font-bold text-hustle-700">
                       <IconSparkles size={13} />
                       {activeStory.stat}
                     </span>
-                    <span className="mt-1 text-[11px] text-outline">{activeStory.course}</span>
+                    <span className="text-[11px] text-outline">{activeStory.course}</span>
                   </div>
                 </div>
               </motion.div>

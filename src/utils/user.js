@@ -8,6 +8,7 @@ export function profileFromForm(form) {
   const name = [form.firstName, form.lastName].filter(Boolean).join(' ').trim()
   return {
     ...(name ? { name } : {}),
+    gender: form.gender ? form.gender.toLowerCase().trim() : undefined,
     profilePicUrl: form.profilePicUrl || '',
     bio: form.bio?.trim() || '',
     university: form.university?.trim() || '',

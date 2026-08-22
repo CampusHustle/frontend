@@ -1,4 +1,5 @@
 import apiClient from './client.js'
+import { API_ENDPOINTS } from '../config/env.js'
 
 /**
  * Searches tutors with optional filters (query, subject, department, minPrice, maxPrice, minRating, sortBy, page, limit).
@@ -6,7 +7,7 @@ import apiClient from './client.js'
  * @returns {Promise<{ tutors: Array, total: number, page: number, totalPages: number }>}
  */
 export async function searchTutors(params = {}) {
-  return apiClient.get('/api/users/search', { params })
+  return apiClient.get(API_ENDPOINTS.USERS.SEARCH, { params })
 }
 
 /**
@@ -14,7 +15,7 @@ export async function searchTutors(params = {}) {
  * @returns {Promise<{ tags: string[] }>}
  */
 export async function getSkillTags() {
-  return apiClient.get('/api/users/skills')
+  return apiClient.get(API_ENDPOINTS.USERS.SKILLS)
 }
 
 /**
@@ -23,7 +24,7 @@ export async function getSkillTags() {
  * @returns {Promise<{ user: Object }>}
  */
 export async function getTutorById(tutorId) {
-  return apiClient.get(`/api/users/${tutorId}`)
+  return apiClient.get(API_ENDPOINTS.USERS.GET_BY_ID(tutorId))
 }
 
 /**
@@ -31,7 +32,7 @@ export async function getTutorById(tutorId) {
  * @param {string} targetUserId
  */
 export async function blockUser(targetUserId) {
-  return apiClient.post(`/api/users/block/${targetUserId}`)
+  return apiClient.post(API_ENDPOINTS.USERS.BLOCK(targetUserId))
 }
 
 /**
@@ -39,5 +40,5 @@ export async function blockUser(targetUserId) {
  * @param {string} targetUserId
  */
 export async function unblockUser(targetUserId) {
-  return apiClient.delete(`/api/users/block/${targetUserId}`)
+  return apiClient.delete(API_ENDPOINTS.USERS.UNBLOCK(targetUserId))
 }

@@ -14,33 +14,33 @@ const STATUS_CONFIG = {
     Icon: IconClock,
     label: 'Pending',
     containerClass:
-      'bg-[#fff8e1] border border-[#ffe082] text-[#7c5e00]',
-    iconClass: 'text-[#f59f00]',
-    dotClass: 'bg-[#f59f00]',
+      'bg-[#fff8e1] border border-[#ffe082] text-[#7c5e00] dark:bg-amber-950/40 dark:border-amber-700/50 dark:text-amber-300',
+    iconClass: 'text-[#f59f00] dark:text-amber-400',
+    dotClass: 'bg-[#f59f00] dark:bg-amber-400',
   },
   confirmed: {
     Icon: IconCircleCheck,
     label: 'Confirmed',
     containerClass:
-      'bg-[#e8f5e9] border border-[#c8e6c9] text-[#1b5e20]',
-    iconClass: 'text-[#2e7d32]',
-    dotClass: 'bg-[#2e7d32]',
+      'bg-[#e8f5e9] border border-[#c8e6c9] text-[#1b5e20] dark:bg-emerald-950/40 dark:border-emerald-700/50 dark:text-emerald-300',
+    iconClass: 'text-[#2e7d32] dark:text-emerald-400',
+    dotClass: 'bg-[#2e7d32] dark:bg-emerald-400',
   },
   completed: {
     Icon: IconCircleCheckFilled,
     label: 'Completed',
     containerClass:
-      'bg-[#e3f2fd] border border-[#bbdefb] text-[#0d47a1]',
-    iconClass: 'text-[#1565c0]',
-    dotClass: 'bg-[#1565c0]',
+      'bg-[#e3f2fd] border border-[#bbdefb] text-[#0d47a1] dark:bg-blue-950/40 dark:border-blue-700/50 dark:text-blue-300',
+    iconClass: 'text-[#1565c0] dark:text-blue-400',
+    dotClass: 'bg-[#1565c0] dark:bg-blue-400',
   },
   cancelled: {
     Icon: IconCircleX,
     label: 'Cancelled',
     containerClass:
-      'bg-[#fce4ec] border border-[#f8bbd0] text-[#880e4f]',
-    iconClass: 'text-[#c62828]',
-    dotClass: 'bg-[#c62828]',
+      'bg-[#fce4ec] border border-[#f8bbd0] text-[#880e4f] dark:bg-rose-950/40 dark:border-rose-700/50 dark:text-rose-300',
+    iconClass: 'text-[#c62828] dark:text-rose-400',
+    dotClass: 'bg-[#c62828] dark:bg-rose-400',
   },
 }
 

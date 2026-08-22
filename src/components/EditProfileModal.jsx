@@ -53,7 +53,7 @@ function TagInput({ id, placeholder, tags, onChange }) {
   )
 }
 
-const SCHEDULE_DAYS = ['Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat']
+const SCHEDULE_DAYS = ['Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat', 'Sun']
 const SCHEDULE_TIMES = ['9:00 AM', '2:00 PM', '5:00 PM']
 
 function EditProfileForm({ user, onClose, onSave }) {
@@ -61,6 +61,7 @@ function EditProfileForm({ user, onClose, onSave }) {
   const parts = (user?.name || '').split(' ')
   const [firstName, setFirstName] = useState(parts[0] || '')
   const [lastName, setLastName] = useState(parts.slice(1).join(' ') || '')
+  const [gender, setGender] = useState(user?.gender || '')
   const [profilePicUrl, setProfilePicUrl] = useState(user?.profilePicUrl || '')
   const [bio, setBio] = useState(user?.bio || '')
   const [university, setUniversity] = useState(user?.university || '')
@@ -119,6 +120,7 @@ function EditProfileForm({ user, onClose, onSave }) {
     const updatedUser = {
       ...user,
       name: fullName || user?.name || 'Student',
+      gender: gender ? gender.toLowerCase().trim() : null,
       profilePicUrl: profilePicUrl || '',
       bio: bio.trim(),
       university: university.trim(),
@@ -224,6 +226,49 @@ function EditProfileForm({ user, onClose, onSave }) {
           </div>
         </div>
 
+        {/* Gender */}
+        <div className="flex flex-col gap-1">
+          <label className={labelClass}>
+            Gender
+          </label>
+          <div className="grid grid-cols-2 gap-3">
+            <label
+              className={`flex items-center gap-2.5 rounded-lg border p-2.5 cursor-pointer transition-all ${
+                gender === 'male'
+                  ? 'border-primary bg-primary/5 text-primary font-semibold ring-1 ring-primary'
+                  : 'border-outline-variant bg-surface-lowest text-on-surface hover:bg-surface-low'
+              }`}
+            >
+              <input
+                type="radio"
+                name="edit-gender"
+                value="male"
+                checked={gender === 'male'}
+                onChange={(e) => setGender(e.target.value)}
+                className="accent-primary size-3.5 cursor-pointer"
+              />
+              <span className="text-xs">Male</span>
+            </label>
+            <label
+              className={`flex items-center gap-2.5 rounded-lg border p-2.5 cursor-pointer transition-all ${
+                gender === 'female'
+                  ? 'border-primary bg-primary/5 text-primary font-semibold ring-1 ring-primary'
+                  : 'border-outline-variant bg-surface-lowest text-on-surface hover:bg-surface-low'
+              }`}
+            >
+              <input
+                type="radio"
+                name="edit-gender"
+                value="female"
+                checked={gender === 'female'}
+                onChange={(e) => setGender(e.target.value)}
+                className="accent-primary size-3.5 cursor-pointer"
+              />
+              <span className="text-xs">Female</span>
+            </label>
+          </div>
+        </div>
+
         {/* Academic Info */}
         <div className="flex flex-col gap-1">
           <label htmlFor="edit-university" className={labelClass}>
@@ -296,15 +341,15 @@ function EditProfileForm({ user, onClose, onSave }) {
         {/* Hourly Rate */}
         <div className="flex flex-col gap-1">
           <label htmlFor="edit-rate" className={labelClass}>
-            Hourly Tutoring Rate ($/hr)
+            Hourly Tutoring Rate (ETB/hr)
           </label>
           <input
             id="edit-rate"
             type="number"
             min="0"
-            step="5"
+            step="any"
             className={fieldClass}
-            placeholder="Leave empty if buying only"
+            placeholder="e.g. 150 (leave empty if buying only)"
             value={hourlyRate}
             onChange={(e) => setHourlyRate(e.target.value)}
           />
@@ -363,7 +408,7 @@ function EditProfileForm({ user, onClose, onSave }) {
             </div>
           </div>
 
-          <div className="grid grid-cols-6 gap-1.5 pt-1">
+          <div className="grid grid-cols-7 gap-1.5 pt-1">
             {SCHEDULE_DAYS.map((day) => (
               <div key={day} className="text-center text-[10px] font-bold text-outline">
                 {day}

@@ -60,28 +60,31 @@ const sectionClass = 'border-b border-surface-highest py-6'
 const labelClass = 'text-sm font-semibold text-on-surface'
 const headingClass = 'font-display mb-4 text-xl font-semibold text-primary'
 
-const SCHEDULE_DAYS = ['Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat']
+const SCHEDULE_DAYS = ['Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat', 'Sun']
 const SCHEDULE_TIMES = ['9:00 AM', '2:00 PM', '5:00 PM']
 
 export default function CompleteProfileScreen({ user, onFinish }) {
   const fileInputRef = useRef(null)
   const [isSubmitting, setIsSubmitting] = useState(false)
   const [errorMsg, setErrorMsg] = useState('')
+  const effectiveUser = user || (typeof window !== 'undefined' ? JSON.parse(localStorage.getItem('ch_session_user') || 'null') : null)
+
   const [form, setForm] = useState(() => {
-    const parts = (user?.name || '').split(' ')
+    const parts = (effectiveUser?.name || '').split(' ')
     return {
       firstName: parts[0] || '',
       lastName: parts.slice(1).join(' ') || '',
-      profilePicUrl: user?.profilePicUrl || '',
-      bio: user?.bio || '',
-      university: user?.university || '',
-      major: user?.department || user?.major || '',
-      year: user?.year ? String(user.year) : '1',
-      skills: user?.skillsLearning || [],
-      subjects: user?.skillsTeaching || [],
-      hourlyRate: user?.hourlyRate ? String(user.hourlyRate) : '',
-      availability: Array.isArray(user?.availability)
-        ? user.availability
+      gender: effectiveUser?.gender || '',
+      profilePicUrl: effectiveUser?.profilePicUrl || '',
+      bio: effectiveUser?.bio || '',
+      university: effectiveUser?.university || 'Mekelle University',
+      major: effectiveUser?.department || effectiveUser?.major || '',
+      year: effectiveUser?.year ? String(effectiveUser.year) : '1',
+      skills: effectiveUser?.skillsLearning || [],
+      subjects: effectiveUser?.skillsTeaching || [],
+      hourlyRate: effectiveUser?.hourlyRate ? String(effectiveUser.hourlyRate) : '',
+      availability: Array.isArray(effectiveUser?.availability) && effectiveUser.availability.length > 0
+        ? effectiveUser.availability
         : ['Mon-9:00 AM', 'Wed-2:00 PM', 'Fri-9:00 AM'],
     }
   })
@@ -219,6 +222,47 @@ export default function CompleteProfileScreen({ user, onFinish }) {
                 </div>
               </div>
               <div className="flex flex-col gap-1">
+                <label className={labelClass}>
+                  Gender
+                </label>
+                <div className="grid grid-cols-2 gap-3">
+                  <label
+                    className={`flex items-center gap-2.5 rounded-xl border p-3 cursor-pointer transition-all ${
+                      form.gender === 'male'
+                        ? 'border-primary bg-primary/5 text-primary font-semibold ring-1 ring-primary'
+                        : 'border-outline-variant bg-surface-lowest text-on-surface hover:bg-surface-low'
+                    }`}
+                  >
+                    <input
+                      type="radio"
+                      name="gender"
+                      value="male"
+                      checked={form.gender === 'male'}
+                      onChange={set('gender')}
+                      className="accent-primary size-4 cursor-pointer"
+                    />
+                    <span className="text-sm">Male</span>
+                  </label>
+                  <label
+                    className={`flex items-center gap-2.5 rounded-xl border p-3 cursor-pointer transition-all ${
+                      form.gender === 'female'
+                        ? 'border-primary bg-primary/5 text-primary font-semibold ring-1 ring-primary'
+                        : 'border-outline-variant bg-surface-lowest text-on-surface hover:bg-surface-low'
+                    }`}
+                  >
+                    <input
+                      type="radio"
+                      name="gender"
+                      value="female"
+                      checked={form.gender === 'female'}
+                      onChange={set('gender')}
+                      className="accent-primary size-4 cursor-pointer"
+                    />
+                    <span className="text-sm">Female</span>
+                  </label>
+                </div>
+              </div>
+              <div className="flex flex-col gap-1">
                 <label className={labelClass} htmlFor="bio">
                   Bio
                 </label>
@@ -333,19 +377,19 @@ export default function CompleteProfileScreen({ user, onFinish }) {
               </div>
               <div className="flex max-w-[200px] flex-col gap-1">
                 <label className={labelClass} htmlFor="rate">
-                  Hourly Rate ($)
+                  Hourly Rate (ETB/hr)
                 </label>
                 <div className="relative">
-                  <span className="absolute left-3 top-1/2 -translate-y-1/2 text-base text-outline">
-                    $
+                  <span className="pointer-events-none absolute left-3 top-1/2 -translate-y-1/2 text-xs font-bold text-outline">
+                    ETB
                   </span>
                   <input
                     id="rate"
                     type="number"
                     min="0"
-                    step="5"
-                    className={`${fieldClass} pl-8`}
-                    placeholder="25"
+                    step="any"
+                    className={`${fieldClass} pl-12`}
+                    placeholder="150"
                     value={form.hourlyRate}
                     onChange={set('hourlyRate')}
                   />
@@ -384,7 +428,7 @@ export default function CompleteProfileScreen({ user, onFinish }) {
                 </div>
               </div>
 
-              <div className="grid grid-cols-6 gap-2 pt-2">
+              <div className="grid grid-cols-7 gap-2 pt-2">
                 {SCHEDULE_DAYS.map((day) => (
                   <div key={day} className="mb-1 text-center text-xs font-bold text-outline">
                     {day}
