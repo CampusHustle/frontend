@@ -4,7 +4,6 @@ import {
   IconStarFilled,
   IconLoader2,
 } from '@tabler/icons-react'
-import { tutors as initialTutors } from '../api/mockUsers.js'
 import { searchTutors, getSkillTags } from '../api/tutorApi.js'
 import Footer from '../components/Footer.jsx'
 import AppNavbar from '../components/AppNavbar.jsx'
@@ -52,8 +51,8 @@ function TutorCard({ tutor, onView }) {
     typeof tutor.rating?.knowledge === 'number'
       ? tutor.rating.knowledge
       : typeof tutor.rating === 'number'
-      ? tutor.rating
-      : 5.0
+        ? tutor.rating
+        : 5.0
 
   return (
     <div
@@ -68,54 +67,43 @@ function TutorCard({ tutor, onView }) {
       <div className="flex gap-4 mb-4 relative z-10">
         <Avatar user={tutor} className="w-14 h-14 shrink-0" />
         <div className="min-w-0 flex-1">
-          <div className="flex items-start justify-between gap-2">
-            <div className="min-w-0">
-              <div className="flex items-center gap-1.5">
-                <h3 className="font-display text-base font-bold text-primary truncate">{tutor.name}</h3>
-                <IconCircleCheckFilled
-                  size={16}
-                  className="text-tertiary-container shrink-0"
-                  title="Verified Student"
-                  aria-label="Verified tutor"
-                />
-              </div>
-              <p className="text-xs text-on-surface-variant truncate mt-0.5">
-                {tutor.department || 'Academic Tutor'}{tutor.university ? `, ${tutor.university}` : ''}
-              </p>
-            </div>
-            <div className="flex items-center gap-1 bg-primary-container px-2.5 py-1 rounded-full shrink-0">
-              <IconStarFilled size={14} className="text-on-primary-container" aria-hidden="true" />
-              <span className="text-sm font-semibold text-on-primary-container">
-                {ratingValue.toFixed(1)}
-              </span>
-            </div>
+          <div className="flex items-center gap-1.5 mb-1">
+            <h3 className="font-display font-semibold text-lg text-on-surface truncate group-hover:text-primary transition-colors">
+              {tutor.name}
+            </h3>
+            {tutor.isEmailVerified && (
+              <IconCircleCheckFilled
+                size={18}
+                className="text-primary shrink-0"
+                aria-label="Verified Student"
+              />
+            )}
+          </div>
+          <p className="text-xs text-outline font-medium truncate mb-2">
+            {tutor.department || tutor.university}
+          </p>
+
+          <div className="flex items-center gap-1.5">
+            <IconStarFilled size={14} className="text-amber-500 dark:text-amber-400" aria-hidden="true" />
+            <span className="font-bold text-xs text-on-surface">
+              {ratingValue.toFixed(1)}
+            </span>
+            <span className="text-[11px] text-outline">
+              ({tutor.rating?.count ?? tutor.reviewsCount ?? 0})
+            </span>
           </div>
         </div>
       </div>
 
-      {/* Teaching Skills Chips */}
-      {tutor.skillsTeaching?.length > 0 && (
-        <div className="flex flex-wrap gap-1.5 mb-4 z-10">
-          {tutor.skillsTeaching.slice(0, 3).map((skill) => (
-            <span
-              key={skill}
-              className="bg-surface-high text-on-surface-variant text-xs font-medium px-3 py-1 rounded-full"
-            >
-              {skill}
-            </span>
-          ))}
-          {tutor.skillsTeaching.length > 3 && (
-            <span className="bg-surface-high text-on-surface-variant text-xs font-medium px-3 py-1 rounded-full">
-              +{tutor.skillsTeaching.length - 3}
-            </span>
-          )}
-        </div>
-      )}
+      {/* Bio / Description */}
+      <p className="text-xs text-on-surface-variant line-clamp-2 mb-4 relative z-10">
+        {tutor.bio || 'Verified peer tutor on CampusHustle.'}
+      </p>
 
       {/* Price & Book Action */}
       <div className="mt-auto flex justify-between items-center pt-4 border-t border-surface-variant z-10">
         <div className="text-base font-bold text-primary">
-          ${tutor.hourlyRate || 25} <span className="text-xs text-on-surface-variant font-normal">/hr</span>
+          ETB {tutor.hourlyRate || 25} <span className="text-xs text-on-surface-variant font-normal">/hr</span>
         </div>
         <button
           type="button"
@@ -137,11 +125,11 @@ function TutorCard({ tutor, onView }) {
 export default function FindTutorScreen({ user, onLogout, onNavigate }) {
   const [query, setQuery] = useState('')
   const [selectedDepts, setSelectedDepts] = useState([])
-  const [maxRate, setMaxRate] = useState(60)
+  const [maxRate, setMaxRate] = useState(500)
   const [minRating, setMinRating] = useState(0)
   const [sortBy, setSortBy] = useState('rating')
   const [visibleCount, setVisibleCount] = useState(VISIBLE_STEP)
-  const [tutorList, setTutorList] = useState(initialTutors)
+  const [tutorList, setTutorList] = useState([])
   const [skillTags, setSkillTags] = useState([])
   const [isLoading, setIsLoading] = useState(false)
 
@@ -174,9 +162,10 @@ export default function FindTutorScreen({ user, onLogout, onNavigate }) {
         const res = await searchTutors({
           q: query.trim() || undefined,
           department: selectedDepts.length === 1 ? selectedDepts[0] : undefined,
-          maxPrice: maxRate < 100 ? maxRate : undefined,
+          maxPrice: maxRate < 500 ? maxRate : undefined,
           minRating: minRating > 0 ? minRating : undefined,
           sortBy: sortBy === 'Price: Low to High' ? 'price_asc' : sortBy === 'Highest Rated' ? 'rating' : 'rating',
+          excludeUserId: user?._id || user?.id || undefined,
         })
 
         if (isMounted && res?.tutors && Array.isArray(res.tutors) && res.tutors.length > 0) {
@@ -205,7 +194,7 @@ export default function FindTutorScreen({ user, onLogout, onNavigate }) {
       isMounted = false
       clearTimeout(timer)
     }
-  }, [query, selectedDepts, maxRate, minRating, sortBy])
+  }, [query, selectedDepts, maxRate, minRating, sortBy, user])
 
   const handleDeptToggle = (dept) => {
     setSelectedDepts((prev) =>
@@ -214,18 +203,22 @@ export default function FindTutorScreen({ user, onLogout, onNavigate }) {
     setVisibleCount(VISIBLE_STEP)
   }
 
+  const currentUserId = user?._id || user?.id ? String(user._id || user.id) : null
+
   const filtered = useMemo(() => {
     const q = query.trim().toLowerCase()
     return tutorList.filter((t) => {
+      const tutorId = String(t._id || t.id || '')
+      if (currentUserId && tutorId === currentUserId) return false
       const matchDept = selectedDepts.length === 0 || selectedDepts.includes(t.department)
       const hourly = typeof t.hourlyRate === 'number' ? t.hourlyRate : 0
-      const matchRate = hourly <= maxRate
+      const matchRate = maxRate >= 500 ? true : hourly <= maxRate
       const rating =
         typeof t.rating?.knowledge === 'number'
           ? t.rating.knowledge
           : typeof t.rating === 'number'
-          ? t.rating
-          : 5.0
+            ? t.rating
+            : 5.0
       const matchRating = rating >= minRating
       const matchQuery =
         !q ||
@@ -235,7 +228,7 @@ export default function FindTutorScreen({ user, onLogout, onNavigate }) {
         (Array.isArray(t.skillsTeaching) && t.skillsTeaching.some((s) => s.toLowerCase().includes(q)))
       return matchDept && matchRate && matchRating && matchQuery
     })
-  }, [tutorList, query, selectedDepts, maxRate, minRating])
+  }, [tutorList, query, selectedDepts, maxRate, minRating, currentUserId])
 
   const visibleTutors = useMemo(
     () => filtered.slice(0, visibleCount),
@@ -300,8 +293,9 @@ export default function FindTutorScreen({ user, onLogout, onNavigate }) {
                 <h3 className="text-xs font-bold uppercase tracking-wider text-outline mb-2">Hourly Rate</h3>
                 <input
                   type="range"
-                  min="10"
-                  max="100"
+                  min="20"
+                  max="500"
+                  step="10"
                   value={maxRate}
                   onChange={(e) => {
                     setMaxRate(Number(e.target.value))
@@ -310,31 +304,37 @@ export default function FindTutorScreen({ user, onLogout, onNavigate }) {
                   className="w-full accent-primary cursor-pointer"
                 />
                 <div className="flex justify-between text-xs text-outline mt-1 font-medium">
-                  <span>$10</span>
-                  <span>${maxRate === 100 ? '100+' : maxRate}</span>
+                  <span>ETB 20</span>
+                  <span>{maxRate >= 500 ? 'ETB 500+' : `ETB ${maxRate}`}</span>
                 </div>
               </div>
 
               {/* Minimum Rating Filter */}
               <div>
-                <h3 className="text-xs font-bold uppercase tracking-wider text-outline mb-2">Minimum Rating</h3>
-                <div className="flex gap-1.5 cursor-pointer">
+                <div className="flex items-center justify-between mb-2">
+                  <h3 className="text-xs font-bold uppercase tracking-wider text-outline">Minimum Rating</h3>
+                  {minRating > 0 && (
+                    <span className="text-xs font-bold text-amber-500 dark:text-amber-400">{minRating}★ &amp; up</span>
+                  )}
+                </div>
+                <div className="flex gap-1.5 items-center">
                   {[1, 2, 3, 4, 5].map((star) => (
                     <button
                       key={star}
                       type="button"
+                      aria-label={`Filter by ${star} stars and above`}
                       onClick={() => {
                         setMinRating(minRating === star ? 0 : star)
                         setVisibleCount(VISIBLE_STEP)
                       }}
-                      className="focus:outline-none transition-transform active:scale-95"
+                      className="focus:outline-none transition-transform active:scale-95 hover:scale-110 cursor-pointer"
                     >
                       <IconStarFilled
-                        size={20}
+                        size={22}
                         className={
                           star <= minRating
-                            ? 'text-secondary-container'
-                            : 'text-surface-variant'
+                            ? 'text-amber-400 drop-shadow-[0_0_6px_rgba(251,191,36,0.6)] transition-all'
+                            : 'text-surface-variant hover:text-amber-300/60 transition-colors'
                         }
                       />
                     </button>
@@ -360,7 +360,7 @@ export default function FindTutorScreen({ user, onLogout, onNavigate }) {
 
         {/* Tutor Grid Section */}
         <section className="md:col-span-9">
-          <div className="flex justify-between items-end mb-6">
+          <div className="flex flex-col sm:flex-row sm:items-end justify-between gap-4 mb-6">
             <div>
               <h1 className="font-display text-2xl sm:text-3xl font-bold text-primary tracking-tight">
                 Find Tutors
@@ -371,7 +371,7 @@ export default function FindTutorScreen({ user, onLogout, onNavigate }) {
               </p>
             </div>
 
-            <div className="hidden md:flex items-center gap-2">
+            <div className="flex items-center justify-between sm:justify-end gap-2 w-full sm:w-auto">
               <span className="text-xs font-medium text-outline">Sort by:</span>
               <select
                 value={sortBy}
@@ -383,6 +383,41 @@ export default function FindTutorScreen({ user, onLogout, onNavigate }) {
                 <option value="Highest Rated">Highest Rated</option>
               </select>
             </div>
+          </div>
+
+          {/* Mobile Horizontal Filter Chips */}
+          <div className="flex md:hidden items-center gap-2 overflow-x-auto pb-3 mb-4 -mx-4 px-4 no-scrollbar">
+            <button
+              type="button"
+              onClick={() => {
+                setSelectedDepts([])
+                setVisibleCount(VISIBLE_STEP)
+              }}
+              className={`shrink-0 rounded-full px-3 py-1 text-xs font-semibold transition-colors cursor-pointer border ${
+                selectedDepts.length === 0
+                  ? 'bg-primary text-on-primary border-primary shadow-sm'
+                  : 'bg-surface-lowest text-on-surface-variant border-surface-variant hover:border-primary'
+              }`}
+            >
+              All Subjects
+            </button>
+            {availableDepts.map((dept) => {
+              const isSelected = selectedDepts.includes(dept)
+              return (
+                <button
+                  key={dept}
+                  type="button"
+                  onClick={() => handleDeptToggle(dept)}
+                  className={`shrink-0 rounded-full px-3 py-1 text-xs font-semibold transition-colors cursor-pointer border ${
+                    isSelected
+                      ? 'bg-primary text-on-primary border-primary shadow-sm'
+                      : 'bg-surface-lowest text-on-surface-variant border-surface-variant hover:border-primary'
+                  }`}
+                >
+                  {dept}
+                </button>
+              )
+            })}
           </div>
 
           {filtered.length === 0 ? (

@@ -56,23 +56,30 @@ export default function MovementGallery() {
 
       <section id="gallery" className="gallery-section" aria-label="Featured note packages and tutor offerings">
         <div className="gallery-grid">
-          {GALLERY_ITEMS.map((item) => (
-            <div
-              key={item.name}
-              className={`gallery-item ${item.isFeatured ? 'is-featured' : ''}`}
-            >
-              <img src={item.image} alt={item.name} loading="lazy" width="400" height="400" className="object-cover size-full" />
-              <div className="gallery-item-overlay">
-                <div className="gallery-item-bottom">
-                  <p className="gallery-item-desc">{item.desc}</p>
-                  <div className="gallery-item-bottom-row">
-                    <span className="gallery-item-meta">{item.name} - by {item.owner}</span>
-                    <span className="gallery-item-university">{item.campus}</span>
+          {GALLERY_ITEMS.map((item, index) => {
+            // Progressive reveal: Show first 3 on mobile. Reveal 4th on md. Reveal 5th and 6th on lg.
+            let visibilityClass = '';
+            if (index === 3) visibilityClass = 'hidden md:flex';
+            if (index >= 4) visibilityClass = 'hidden lg:flex';
+
+            return (
+              <div
+                key={item.name}
+                className={`gallery-item ${item.isFeatured ? 'is-featured' : ''} ${visibilityClass}`}
+              >
+                <img src={item.image} alt={item.name} loading="lazy" width="400" height="400" className="object-cover size-full" />
+                <div className="gallery-item-overlay">
+                  <div className="gallery-item-bottom">
+                    <p className="gallery-item-desc whitespace-normal text-sm md:text-base">{item.desc}</p>
+                    <div className="gallery-item-bottom-row">
+                      <span className="gallery-item-meta whitespace-normal text-xs md:text-sm">{item.name} - by {item.owner}</span>
+                      <span className="gallery-item-university whitespace-normal text-xs">{item.campus}</span>
+                    </div>
                   </div>
                 </div>
               </div>
-            </div>
-          ))}
+            );
+          })}
         </div>
       </section>
     </section>

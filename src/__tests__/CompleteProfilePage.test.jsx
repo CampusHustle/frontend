@@ -34,13 +34,14 @@ describe('CompleteProfilePage', () => {
     expect(screen.queryByText('Python')).not.toBeInTheDocument()
   })
 
-  it('submits the filled-in profile data', async () => {
+  it('submits the filled-in profile data with gender', async () => {
     const { user, onFinish } = setup()
 
     await user.clear(screen.getByLabelText('First Name'))
     await user.type(screen.getByLabelText('First Name'), 'Jane')
     await user.clear(screen.getByLabelText('Last Name'))
     await user.type(screen.getByLabelText('Last Name'), 'Doe')
+    await user.click(screen.getByLabelText('Female'))
     await user.selectOptions(screen.getByLabelText('Year of Study'), 'senior')
     const skillInput = screen.getByLabelText('Academic Skills')
     await user.type(skillInput, 'Python{Enter}')
@@ -52,9 +53,11 @@ describe('CompleteProfilePage', () => {
       expect.objectContaining({
         firstName: 'Jane',
         lastName: 'Doe',
+        gender: 'female',
         year: 'senior',
         skills: ['Python'],
       }),
     )
   })
 })
+

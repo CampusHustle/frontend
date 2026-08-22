@@ -1,4 +1,5 @@
 import apiClient from './client.js'
+import { API_ENDPOINTS } from '../config/env.js'
 
 /**
  * Submits a review and star ratings for a completed booking
@@ -6,7 +7,7 @@ import apiClient from './client.js'
  * @returns {Promise<{ success: boolean, message: string, review: Object }>}
  */
 export async function createReview(reviewData) {
-  return apiClient.post('/api/reviews', reviewData)
+  return apiClient.post(API_ENDPOINTS.REVIEWS.CREATE, reviewData)
 }
 
 /**
@@ -16,5 +17,5 @@ export async function createReview(reviewData) {
  * @returns {Promise<{ success: boolean, count: number, reviews: Array, total: number }>}
  */
 export async function getUserReviews(userId, params = {}) {
-  return apiClient.get(`/api/reviews/user/${userId}`, { params })
+  return apiClient.get(API_ENDPOINTS.REVIEWS.BY_USER(userId), { params })
 }

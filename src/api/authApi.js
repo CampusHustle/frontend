@@ -1,4 +1,5 @@
 import apiClient from './client.js'
+import { API_ENDPOINTS } from '../config/env.js'
 import {
   saveAuthTokens,
   saveSessionUser,
@@ -11,7 +12,7 @@ import {
  * Returns { user, accessToken, refreshToken, verificationToken? }
  */
 export async function registerUser(userData) {
-  const data = await apiClient.post('/api/auth/register', userData)
+  const data = await apiClient.post(API_ENDPOINTS.AUTH.REGISTER, userData)
   if (data?.accessToken) {
     saveAuthTokens({
       accessToken: data.accessToken,
@@ -29,7 +30,7 @@ export async function registerUser(userData) {
  * Returns { user, accessToken, refreshToken }
  */
 export async function loginUser(credentials) {
-  const data = await apiClient.post('/api/auth/login', credentials)
+  const data = await apiClient.post(API_ENDPOINTS.AUTH.LOGIN, credentials)
   if (data?.accessToken) {
     saveAuthTokens({
       accessToken: data.accessToken,
@@ -46,14 +47,14 @@ export async function loginUser(credentials) {
  * Verifies email using verification token string.
  */
 export async function verifyEmail(token) {
-  return apiClient.post('/api/auth/verify-email', { token })
+  return apiClient.post(API_ENDPOINTS.AUTH.VERIFY_EMAIL, { token })
 }
 
 /**
  * Resends verification email.
  */
 export async function resendVerification(email) {
-  return apiClient.post('/api/auth/resend-verification', { email })
+  return apiClient.post(API_ENDPOINTS.AUTH.RESEND_VERIFICATION, { email })
 }
 
 /**
@@ -61,7 +62,7 @@ export async function resendVerification(email) {
  */
 export async function refreshAuthToken(refreshToken = getRefreshToken()) {
   if (!refreshToken) throw new Error('No refresh token found')
-  const data = await apiClient.post('/api/auth/refresh', { refreshToken })
+  const data = await apiClient.post(API_ENDPOINTS.AUTH.REFRESH, { refreshToken })
   if (data?.accessToken) {
     saveAuthTokens({
       accessToken: data.accessToken,
@@ -76,7 +77,7 @@ export async function refreshAuthToken(refreshToken = getRefreshToken()) {
  */
 export async function logoutUser() {
   try {
-    await apiClient.post('/api/auth/logout', {})
+    await apiClient.post(API_ENDPOINTS.AUTH.LOGOUT, {})
   } catch {
     // Ignore network/server logout errors and clean local session anyway
   } finally {
@@ -88,7 +89,7 @@ export async function logoutUser() {
  * Retrieves the current authenticated user's full profile.
  */
 export async function getCurrentUserProfile() {
-  const data = await apiClient.get('/api/users/me')
+  const data = await apiClient.get(API_ENDPOINTS.USERS.ME)
   if (data?.user) {
     saveSessionUser(data.user)
   }
@@ -99,7 +100,18 @@ export async function getCurrentUserProfile() {
  * Updates current authenticated user's profile.
  */
 export async function updateCurrentUserProfile(profileData) {
-  const data = await apiClient.put('/api/users/me', profileData)
+  const data = await apiClient.put(API_ENDPOINTS.USERS.UPDATE_ME, profileData)
+  if (data?.user) {
+    saveSessionUser(data.user)
+  }
+  return data
+}
+
+/**
+ * Switches authenticated user's role (student <-> tutor).
+ */
+export async function switchUserRole(newRole) {
+  const data = await apiClient.patch('/api/users/me/role', { role: newRole })
   if (data?.user) {
     saveSessionUser(data.user)
   }

@@ -1,4 +1,5 @@
 import apiClient from './client.js'
+import { API_ENDPOINTS } from '../config/env.js'
 
 /**
  * Fetches available time slots for a specific tutor
@@ -6,7 +7,7 @@ import apiClient from './client.js'
  * @returns {Promise<{ success: boolean, count: number, slots?: Array, data?: Array }>}
  */
 export async function getTutorAvailability(tutorId) {
-  return apiClient.get(`/api/availability/tutor/${tutorId}`)
+  return apiClient.get(API_ENDPOINTS.AVAILABILITY.BY_TUTOR(tutorId))
 }
 
 /**
@@ -14,7 +15,7 @@ export async function getTutorAvailability(tutorId) {
  * @returns {Promise<{ success: boolean, count: number, data?: Array }>}
  */
 export async function getMyAvailability() {
-  return apiClient.get('/api/availability/me')
+  return apiClient.get(API_ENDPOINTS.AVAILABILITY.ME)
 }
 
 /**
@@ -23,7 +24,7 @@ export async function getMyAvailability() {
  * @returns {Promise<{ success: boolean, data?: Object }>}
  */
 export async function createAvailabilitySlot(slotData) {
-  return apiClient.post('/api/availability', slotData)
+  return apiClient.post(API_ENDPOINTS.AVAILABILITY.CREATE, slotData)
 }
 
 /**
@@ -32,7 +33,7 @@ export async function createAvailabilitySlot(slotData) {
  * @returns {Promise<{ success: boolean, message: string }>}
  */
 export async function deleteAvailabilitySlot(slotId) {
-  return apiClient.delete(`/api/availability/${slotId}`)
+  return apiClient.delete(API_ENDPOINTS.AVAILABILITY.DELETE(slotId))
 }
 
 /**
@@ -41,7 +42,7 @@ export async function deleteAvailabilitySlot(slotId) {
  * @returns {Promise<{ success: boolean, message: string, data?: Object }>}
  */
 export async function createBooking(bookingData) {
-  return apiClient.post('/api/bookings', bookingData)
+  return apiClient.post(API_ENDPOINTS.BOOKINGS.CREATE, bookingData)
 }
 
 /**
@@ -50,7 +51,7 @@ export async function createBooking(bookingData) {
  * @returns {Promise<{ success: boolean, count: number, data?: Array }>}
  */
 export async function getUserBookings(params = {}) {
-  return apiClient.get('/api/bookings', { params })
+  return apiClient.get(API_ENDPOINTS.BOOKINGS.LIST, { params })
 }
 
 /**
@@ -59,7 +60,7 @@ export async function getUserBookings(params = {}) {
  * @returns {Promise<{ success: boolean, data?: Object }>}
  */
 export async function getBookingById(bookingId) {
-  return apiClient.get(`/api/bookings/${bookingId}`)
+  return apiClient.get(API_ENDPOINTS.BOOKINGS.GET_BY_ID(bookingId))
 }
 
 /**
@@ -69,5 +70,5 @@ export async function getBookingById(bookingId) {
  * @returns {Promise<{ success: boolean, message: string, data?: Object }>}
  */
 export async function updateBookingStatus(bookingId, status) {
-  return apiClient.patch(`/api/bookings/${bookingId}/status`, { status })
+  return apiClient.patch(API_ENDPOINTS.BOOKINGS.UPDATE_STATUS(bookingId), { status })
 }
