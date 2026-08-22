@@ -6,7 +6,7 @@ import Toast from '../components/Toast.jsx'
 import { loginUser } from '../api/authApi.js'
 import { validateEmail, validatePassword } from '../utils/validators.js'
 
-export default function LoginScreen({ onSwitchToSignup, onLoginSuccess }) {
+export default function LoginScreen({ onSwitchToSignup, onLoginSuccess, onNeedsVerification }) {
   const [values, setValues] = useState({ email: '', password: '' })
   const [errors, setErrors] = useState({})
   const [status, setStatus] = useState('idle')
@@ -37,6 +37,12 @@ export default function LoginScreen({ onSwitchToSignup, onLoginSuccess }) {
       onLoginSuccess?.(result.user || result)
     } catch (err) {
       setStatus('error')
+      // If the account exists but email is not verified, redirect to verify screen
+      const errorCode = err?.data?.error?.code || err?.code
+      if (errorCode === 'EMAIL_NOT_VERIFIED') {
+        onNeedsVerification?.(values.email)
+        return
+      }
       const errorMessage =
         typeof err?.message === 'string'
           ? err.message

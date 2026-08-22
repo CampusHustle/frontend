@@ -153,6 +153,11 @@ export function AppRoutes() {
                   handleNavigate('complete-profile')
                 }
               }}
+              onNeedsVerification={(email) => {
+                setPendingEmail(email)
+                setPendingVerificationToken('')
+                handleNavigate('verify-email')
+              }}
             />
           }
         />
